@@ -1,12 +1,13 @@
 ---
 layout: sip
 title: SIP-35 - Opaque types
-
-vote-status: complete
-vote-text: This SIP has been implemented with some changes in Scala 3.0.0
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/opaque-types.html
 ---
+
+> This proposal has been implemented with some changes in Scala 3.0.0.
 
 **Authors: Erik Osheim and Jorge Vicente Cantero**
 
