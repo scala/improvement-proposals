@@ -1,9 +1,8 @@
 ---
 layout: sip
 title: SIP-18 - Modularizing Language Features
-
-vote-status: complete
-vote-text: This SIP has already been accepted and completed. Let the record show Paul is against it.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/modularizing-language-features.html
 ---
