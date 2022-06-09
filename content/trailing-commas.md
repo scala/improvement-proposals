@@ -1,11 +1,13 @@
 ---
 layout: inner-page-no-masthead
 title: SIP-27 - Trailing Commas
-vote-status: complete
-vote-text: This SIP has already been accepted and completed, and is a part of Scala 2.12.2.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/trailing-commas.html
 ---
+
+> This proposal has been shipped in Scala 2.12.2.
 
 **By: Dale Wijnand**
 
