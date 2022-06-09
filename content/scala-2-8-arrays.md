@@ -1,8 +1,8 @@
 ---
 layout: sip
 title: SID-7 - Scala 2.8 Arrays
-vote-status: complete
-vote-text: This SIP has already been accepted and completed.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/scala-2-8-arrays.html
 ---
