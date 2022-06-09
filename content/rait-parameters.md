@@ -1,11 +1,13 @@
 ---
 layout: sip
 title: SIP-25 - Trait Parameters
-vote-status: complete
-vote-text: Trait parameters are implemented in Scala 3.0.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/trait-parameters.html
 ---
+
+> This proposal has been implemented in Scala 3.0.
 
 __Martin Odersky__
 
