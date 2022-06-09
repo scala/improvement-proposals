@@ -1,11 +1,13 @@
 ---
 layout: sip
 title: SIP-37 - Quote escapes for interpolations
-vote-status: complete
-vote-text: This SIP has been implemented in Scala 2.13.6 and Scala 3.0.0
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/interpolation-quote-escape.html
 ---
+
+> This proposal has been implemented in Scala 2.13.6 and Scala 3.0.0.
 
 **By: Martijn Hoekstra**
 
