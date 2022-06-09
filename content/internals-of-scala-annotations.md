@@ -1,8 +1,8 @@
 ---
 layout: sip
 title: SID-5 - Internals of Scala Annotations
-vote-status: complete
-vote-text: This SIP has already been accepted and completed.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/internals-of-scala-annotations.html
 ---
