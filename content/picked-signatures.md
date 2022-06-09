@@ -1,8 +1,8 @@
 ---
 layout: sip
 title: SID-10 - Storage of pickled Scala signatures in class files
-vote-status: complete
-vote-text: This SIP has already been accepted and completed.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/picked-signatures.html
 ---
