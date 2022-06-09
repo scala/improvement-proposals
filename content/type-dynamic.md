@@ -1,9 +1,8 @@
 ---
 layout: sip
 title: SIP-17 - Type Dynamic
-
-vote-status: complete
-vote-text: This SIP has already been accepted and completed.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/type-dynamic.html
 ---
