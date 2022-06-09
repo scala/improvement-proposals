@@ -1,8 +1,8 @@
 ---
 layout: sip
 title: SIP-14 - Futures and Promises
-vote-status: complete
-vote-text: This SIP has already been accepted and completed.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/futures-promises.html
 ---
