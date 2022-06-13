@@ -1,0 +1,15 @@
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  generate_docs:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: coursier/cache-action@v6
+      - uses: VirtusLab/scala-cli-setup@0.1.6
+      - name: Generate SIP documentation
+        env:
+          IMPROVEMENT_BOT_TOKEN: ${{ secrets.IMPROVEMENT_BOT_TOKEN }}
+        run: scala-cli .github/scripts/generate-docs.scala
