@@ -9,6 +9,7 @@ jobs:
     steps:
       - uses: coursier/cache-action@v6
       - uses: VirtusLab/scala-cli-setup@v0.1.7
+      - uses: actions/checkout@v3
       - name: Generate SIP documentation
         env:
           IMPROVEMENT_BOT_TOKEN: ${{ secrets.IMPROVEMENT_BOT_TOKEN }}
