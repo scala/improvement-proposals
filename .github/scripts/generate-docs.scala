@@ -116,7 +116,7 @@ class Updater(sipsRepo: os.Path, docsRepo: os.Path, github: Github[IO]):
       run(s"git commit -m \"Update SIPs state\"", docsRepo)
       // Note that here the push may fail if someone pushed something in the middle
       // of the execution of the script
-      run("git push --dry-run", docsRepo)
+      run("git push", docsRepo)
     else
       println("No changes to push.")
     end if
