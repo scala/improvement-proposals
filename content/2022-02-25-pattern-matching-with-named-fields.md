@@ -117,7 +117,9 @@ object User:
   def unapply(user: User): Option[
     (String, Int, String) & 
     { type Names = ("name", "age", "city") }
-  ] = Some((user.name, user.age, user.city)).asInstanceOf
+  ] = Some((user.name, user.age, user.city)).asInstanceOf[
+      Option[(String, Int, String) & { type Names = ("name", "age", "city") }]
+    ]
 ```
 
 // TODO: Describe why Names can also be use toplevel.
