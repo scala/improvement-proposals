@@ -50,17 +50,6 @@ In the worst case it breaks silently, if two fields with the same type switch pl
 My personal motivation comes from using [`matchPattern` in ScalaTest](https://www.scalatest.org/user_guide/using_matchers#matchingAPattern)
 and got bitten by it every time my data model changed slightly.
 
-## Counter-Examples
-
-This SIP doesn't aim to allow pattern where parameters go into the pattern, e.g:
-
-```scala
-val map = Map("Berlin" -> 10, "Paris" -> 5)
-
-map match
-  case Map("Paris" = five) => five
-```
-
 ## Design
 
 THe goal is to allow named parameter in deconstruction as in construction.
