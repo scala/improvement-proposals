@@ -79,7 +79,7 @@ But they have no motivational use case. Maybe they should be disallowed.
 
 ```scala
   case User(city = city1, city = city2) => a // error city is used twice
-  case User(name1, name = name2) => a // error city is used twice
+  case User(name1, name = name2) => a // error name is used twice
 ```
 
 The same should happen if the `User` had a field with a [deprecated name](https://www.scala-lang.org/api/current/scala/deprecatedName.html).
