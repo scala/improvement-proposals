@@ -107,7 +107,7 @@ This order seems the requires a single look ahead in the parser.
 * Maybe leave fields without names
 
 This SIP proposes basically to use [shapeless records](https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#extensible-records) for the specific purpose of pattern matching.
-For incomplete list of alternatives see [alternative desugaring](#alternative-desugaring) below.
+For an incomplete list of alternatives, see [alternative desugaring](#alternative-desugaring) below.
 
 Pro:
 
