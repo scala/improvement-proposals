@@ -42,7 +42,7 @@ val annasCity = user match
   case User("Anna", _, c) => c
 ```
 
-This makes it hard which parameter means what, basically the same idea as for named arguments. Adding underscores until the compile is happy is also not a great experience. IDEs help here, by showing the names.
+This makes it hard to see which parameter means what. The same issue led to named arguments. Adding underscores until the compiler is happy is also not a great experience. IDEs help here, by showing the names.
 
 In addition, the code breaks every time a field of `User` gets added, rearranged, or removed.
 In the worst case it breaks silently, if two fields with the same type switch places.
