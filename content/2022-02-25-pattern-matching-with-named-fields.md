@@ -128,7 +128,7 @@ The reason to pull the names out, instead of keeping them near to their type, is
 
 ## Implementation
 
-If a pattern with a name is encountered, the compiler looks up list of provided names and places the trees accordingly.
+If a pattern with a name is encountered, the compiler looks up the list of provided names and places the trees accordingly.
 
 The list of names either provided by the return type of the unapply method or by the constructor list of the case class.
 
