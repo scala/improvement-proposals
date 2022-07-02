@@ -146,7 +146,7 @@ case User(
 )
 ```
 
-This allows us to glace over the details of how pattern matching gets desugared further down the line.
+This allows us to gloss over the details of how pattern matching gets desugared further down the line.
 
 ## Drawbacks
 
