@@ -14,7 +14,7 @@ redirect_from: /sips/pending/2021-06-25-named-pattern-matching.html
 
 ## Motivation
 
-An readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
+A readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
 
 Link to work in progress implementation lives here: https://github.com/Jentsch/dotty
 
@@ -33,7 +33,7 @@ val annasCity = user match
 
 The Deconstruction allows the same syntax as the construction and seems to be what people intuitively expect. See for example the very first post in [Scala Contributors Thread][contributors-thread] for this topic.
 
-Without names in patterns users have to use underscore a lot. The example above would be written as:
+Without names in patterns, users have to use underscore a lot. The example above would be written as:
 
 //TODO: how offend does this pattern occur?
 
@@ -44,16 +44,16 @@ val annasCity = user match
 
 This makes it hard to see which parameter means what. The same issue led to named arguments. Adding underscores until the compiler is happy is also not a great experience. IDEs help here, by showing the names.
 
-In addition, the code breaks every time a field of `User` gets added, rearranged, or removed.
-In the best case the broken patterns fail to compile and needs to fixed manually.
-In the worst case a pattern breaks silently, if two fields with the same type switch places.
+Additionally, the code breaks every time a field of `User` gets added, rearranged, or removed.
+In the best case, the broken patterns fail to compile and needs to fixed manually.
+In the worst case, a pattern breaks silently, if two fields with the same type switch places.
 
 My personal motivation comes from using [`matchPattern` in ScalaTest](https://www.scalatest.org/user_guide/using_matchers#matchingAPattern)
 and got bitten by it every time my data model changed slightly.
 
 ## Design
 
-THe goal is to allow named parameter in deconstruction as in construction.
+The goal is to allow named parameter in deconstruction as in construction.
 
 ### Mixed usage
 
@@ -76,9 +76,9 @@ The same should happen if the `User` had a field with a [deprecated name](https:
 
 ### Order of name and term
 
-Normally an equal sign assigns the result of the right side to the left side. With the proposed syntax that's not the case. However, for most, if not all, people that's the correct order.
+Normally, an equal sign assigns the result of the right side to the left side. With the proposed syntax, that's not the case. However, for most, if not all, people that's the correct order.
 
-This order seems the requires a single look ahead in the parser.
+This order seems to require a single look ahead in the parser.
 
 ### Desugaring
 
@@ -102,16 +102,16 @@ For an incomplete list of alternatives, see [alternative desugaring](#alternativ
 Pro:
 
 * with shapeless records we have a good understanding what we are doing, however we need to tweak the encoding a bit
-* with some helper definitions the usage could be quite short
+* with some helper definitions, the usage could be quite short
 * reuse possible
 
 Con:
 
-* opens an can of worms, as this encoding could be useful for other requested features like [named tuples](named-tuple), which would require more thought-out design
+* opens a can of worms, as this encoding could be useful for other requested features like [named tuples](named-tuple), which would require more thought-out design
 * no support for `@deprecatedName`
 * identifiers are represented with string literals
-* no meaningfull way to use names within variadic patterns 
-  (the encoding enforces to use the names in order. A name like `last` in `Seq` could be implmented with this encoding.)
+* no meaningful way to use names within variadic patterns 
+  (the encoding enforces to use the names in order. A name like `last` in `Seq` could be implemented with this encoding.)
 
 Example for user:
 
@@ -155,7 +155,7 @@ This allows us to gloss over the details of how pattern matching gets desugared 
 
 ### Allow skipping arguments
 
-Whenever a single named argument is used in pattern, the pattern can have fewer arguments than the unapply provides. This is driven by the motivation the make pattern matching extensible.
+Whenever a single named argument is used in a pattern, the pattern can have fewer arguments than the unapply provides. This is driven by the motivation to make pattern matching extensible.
 But this leads to (arguably small) inconsistency, as pointed out by Lionel Parreaux in the [Scala Contributors Thread](https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/44). This could lead users to use a named pattern, just to skip all parameters.
 
 ```scala
@@ -203,11 +203,11 @@ In addition, this breaks the intuitive similarity between construction and decon
 
 ### Alternative desugaring
 
-As the above described desugaring has its drawbacks.Here are some alternatives with other drawbacks, and maybe better trade-offs.
+As the above described desugaring has its drawbacks. Here are some alternatives with other drawbacks, and maybe better trade-offs.
 
 #### Use underscore methods
 
-In the sprit of [name based pattern matching](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#name-based-match):
+In the spirit of [name based pattern matching](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#name-based-match):
 
 ```scala
 object User:
@@ -226,13 +226,13 @@ Pro:
 
 * allows to have more named fields than positional fields
 * allows `@deprecatedName`
-* enabled meaningfull names in variadic patterns
+* enabled meaningful names in variadic patterns
 
 Con:
 
 * How to detect that a name means the same as a position? Maybe detect simple patterns like the last line in the example?
 * It's long and verbose, without any shortcuts in sight.
-* An underscore at the beginning of a name isn't an unheard of pattern, even in Scala. This could accidentally expose fields, which weren't suppose to become fields.
+* An underscore at the beginning of a name isn't an unheard of pattern, even in Scala. This could accidentally expose fields, which weren't supposed to become fields.
 
 #### Annotated `unapply` method
 
@@ -263,7 +263,7 @@ object User:
 Pro:
 
 * should be easy to implement
-* the type and the method can inherited from traits and allow some kind of reuse
+* the type and the method can inherit from traits and allow some kind of reuse
 
 Con:
 
@@ -279,7 +279,7 @@ Lionel Parreaux proposed a more powerful mechanism, where if guards of cases cou
   case User(age = Age(years)) => years // both cases do the same thing
 ```
 
-His proposal is strictly more powerful, but arguably less intuitive. Both, Pattern matching with named fields and Partial destructuring in guards could be implemented along each other. Named fields for simple patterns and destructuring in guards for complex patterns. However, they offer two ways to do the same thing and could lead to lots of bike shedding, if both got added to the language.
+His proposal is strictly more powerful, but arguably less intuitive. Both, pattern matching with named fields and Partial destructuring in guards could be implemented along each other. Named fields for simple patterns and destructuring in guards for complex patterns. However, they offer two ways to do the same thing and could lead to lots of bike shedding, if both got added to the language.
 
 ## Open questions
 
