@@ -283,9 +283,7 @@ His proposal is strictly more powerful, but arguably less intuitive. Both, patte
 
 ## Open questions
 
-It could be useful to add extractors with just named fields to sealed traits and enums.
-
-What would reuse would look like? What is desirable?
+May, search for TODO in this file.
 
 ## References
 
