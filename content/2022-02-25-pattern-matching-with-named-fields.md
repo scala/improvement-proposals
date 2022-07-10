@@ -45,7 +45,8 @@ val annasCity = user match
 This makes it hard to see which parameter means what. The same issue led to named arguments. Adding underscores until the compiler is happy is also not a great experience. IDEs help here, by showing the names.
 
 In addition, the code breaks every time a field of `User` gets added, rearranged, or removed.
-In the worst case it breaks silently, if two fields with the same type switch places.
+In the best case the broken patterns fail to compile and needs to fixed manually.
+In the worst case a pattern breaks silently, if two fields with the same type switch places.
 
 My personal motivation comes from using [`matchPattern` in ScalaTest](https://www.scalatest.org/user_guide/using_matchers#matchingAPattern)
 and got bitten by it every time my data model changed slightly.
@@ -109,6 +110,8 @@ Con:
 * opens an can of worms, as this encoding could be useful for other requested features like [named tuples](named-tuple), which would require more thought-out design
 * no support for `@deprecatedName`
 * identifiers are represented with string literals
+* no meaningfull way to use names within variadic patterns 
+  (the encoding enforces to use the names in order. A name like `last` in `Seq` could be implmented with this encoding.)
 
 Example for user:
 
@@ -223,6 +226,7 @@ Pro:
 
 * allows to have more named fields than positional fields
 * allows `@deprecatedName`
+* enabled meaningfull names in variadic patterns
 
 Con:
 
