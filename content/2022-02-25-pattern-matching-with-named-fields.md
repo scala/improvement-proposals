@@ -259,9 +259,11 @@ object User:
 
 Pro:
 
-* allows to have more named fields than positional fields
+* have more named fields than positional fields
 * allows `@deprecatedName`
 * enabled meaningful names in variadic patterns
+* lazy evaluation patterns where bad field could have type `Nothing` or would throw could, but the pattern would match, as long the bad field isn't mentioned. (This would have many consequences)
+* It's easy to add extractors for maps in another SIP. At least on the encoding side.
 
 Con:
 
