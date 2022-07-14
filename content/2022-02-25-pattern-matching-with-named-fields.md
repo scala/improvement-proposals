@@ -12,13 +12,20 @@ redirect_from: /sips/pending/2021-06-25-named-pattern-matching.html
 |---------------|---------------|
 | Feb 25th 2022 | Initial Draft |
 
-## Motivation
+# Summary
 
-A readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
+With the first [first SIP ever named and default arguments](https://docs.scala-lang.org/sips/named-and-default-arguments.html) a feature disparity between case class constructors and case class deconstructors was introduced. This was an long outstanding issue. (for example https://github.com/scala/bug/issues/6524)
 
-Link to work in progress implementation lives here: https://github.com/Jentsch/dotty
+This SIP introduces a readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
 
-## Motivating Examples
+A WIP PR can be found here: https://github.com/Jentsch/dotty
+
+This SIP is for now structured in three sections: 
+Motivation to visualize the desired outcome. 
+Desgin to enumarate all goals and constrains for this SIP.
+Encoding describe how the design can be implemented, focused on the encoding choosen in the PR.
+
+# Motivating
 
 Given one wants to use pattern matching on a case class:
 
@@ -35,7 +42,7 @@ The Deconstruction allows the same syntax as the construction and seems to be wh
 
 Without names in patterns, users have to use underscore a lot. The example above would be written as:
 
-//TODO: how offend does this pattern occur?
+//TODO: how often does this pattern occur?
 
 ```scala
 val annasCity = user match
@@ -51,11 +58,11 @@ In the worst case, a pattern breaks silently, if two fields with the same type s
 My personal motivation comes from using [`matchPattern` in ScalaTest](https://www.scalatest.org/user_guide/using_matchers#matchingAPattern)
 and got bitten by it every time my data model changed slightly.
 
-## Design
+# Design
 
 The goal is to allow named parameter in deconstruction as in construction.
 
-### Mixed usage
+## Mixed usage
 
 Mixed patterns, with positional and named patterns are allowed to keep the similarity.
 But they have no motivational use case. Maybe they should be disallowed.
@@ -65,7 +72,7 @@ But they have no motivational use case. Maybe they should be disallowed.
   case User(_, city = c) => // Leading underscore are especially useless
 ```
 
-### Disallow same name twice
+## Disallow same name twice
 
 ```scala
   case User(city = city1, city = city2) => a // error city is used twice
@@ -74,13 +81,26 @@ But they have no motivational use case. Maybe they should be disallowed.
 
 The same should happen if the `User` had a field with a [deprecated name](https://www.scala-lang.org/api/current/scala/deprecatedName.html).
 
-### Order of name and term
+## Order of name and term
 
 Normally, an equal sign assigns the result of the right side to the left side. With the proposed syntax, that's not the case. However, for most, if not all, people that's the correct order.
 
 This order seems to require a single look ahead in the parser.
 
-### Desugaring
+## Ignoring of unused parameters
+
+To allow case class to become more extensible, all unused parameters should be ignored. So when a field is added to the cases class old patterns stay source compatible.
+
+```scala
+  case User(city = "Paris") => // is the same as
+  case User(_, _, "Paris") =>
+```
+
+TODO: Find consent here
+
+## Syntax
+
+## Desugaring
 
 > One important principle of Scala’s pattern matching design is that case classes should be abstractable. I.e. we want to be able to represent the abilities of a case class without exposing the case class itself. That also allows code to evolve from a case class to a regular class or a different case class while maintaining the interface of the old case class. [Martin Odersky](https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/52)
 
@@ -95,6 +115,8 @@ This order seems to require a single look ahead in the parser.
 
   But this could be an awful feature.
 * Maybe leave fields without names
+
+# Encoding
 
 This SIP proposes basically to use [shapeless records](https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#extensible-records) for the specific purpose of pattern matching.
 For an incomplete list of alternatives, see [alternative desugaring](#alternative-desugaring) below.
@@ -113,7 +135,7 @@ Con:
 * no meaningful way to use names within variadic patterns 
   (the encoding enforces to use the names in order. A name like `last` in `Seq` could be implemented with this encoding.)
 
-Example for user:
+Example for an extractor using option and tuple:
 
 ```scala
 object User:
@@ -125,7 +147,20 @@ object User:
     ]
 ```
 
-// TODO: Describe why Names can also be use toplevel.
+Example for an name based extractor:
+
+```scala
+object User:
+  def unapply(user: User) = MyUserExtractor(user)
+
+class UserExtractor(user: User) extends Product:
+  def _1: String = user.name
+  def _2: Int = user.age
+  def _3: String = user.city
+  type Names = ("name", "age", "city")
+  ...
+```
+The `Names` can be pulled either direcly from the return type of the `unapply` method, for name based extractors, or from the type of the returned `Option`. (The case where no tuple, but just a single type is return, e.g. `Option[Int]`, also can be expressed as `Option[Int & { Names = ("age") }]`.)
 
 The reason to pull the names out, instead of keeping them near to their type, is to prevent extractors to accidentally leaking the name.
 
@@ -270,7 +305,7 @@ Con:
 * the type and the method can be defined in unrelated traits. Only at the use site of the can be checked if the type and the method agree on the arity of the pattern.
 * no clear way of encoding deprecated name
 
-#### Partial destructuring in guards
+### Partial destructuring in guards
 
 Lionel Parreaux proposed a more powerful mechanism, where if guards of cases could them self contains destructuring patterns.
 
@@ -281,11 +316,11 @@ Lionel Parreaux proposed a more powerful mechanism, where if guards of cases cou
 
 His proposal is strictly more powerful, but arguably less intuitive. Both, pattern matching with named fields and Partial destructuring in guards could be implemented along each other. Named fields for simple patterns and destructuring in guards for complex patterns. However, they offer two ways to do the same thing and could lead to lots of bike shedding, if both got added to the language.
 
-## Open questions
+# Open questions
 
-May, search for TODO in this file.
+Search for TODO in this file.
 
-## References
+# References
 
 * [Scala Contributors Thread][contributors-thread]
 
