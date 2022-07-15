@@ -49,11 +49,13 @@ Currently, to start a Scala REPL with a dependency on the class path, users need
 
 With Scala CLI, starting a REPL with a given dependency is as simple as running:
 
-```scala-cli repl --dep com.lihaoyi::os-lib:0.7.8```
+```
+scala-cli repl --dep com.lihaoyi::os-lib:0.7.8
+```
 
 Compared to Ammonite, default Scala REPLs provided by Scala 2 and 3 - that Scala CLI uses by default - are somewhat limited. However, Scala CLI also offers to start Ammonite instead of the default Scala REPL, by passing `--ammonite` (or `--amm`) option to `scala-cli repl`.
 
-Additionally, `scala-cli repl` can also put code from given files / directories / snippets on the class path by just providing their locations as arguments. Running ```scala-cli repl foo.scala baz``` will compile code from `foo.scala` and the `baz` directory, and put their classes on the REPL class path (including their dependencies, scalac options etc. defined within those files).
+Additionally, `scala-cli repl` can also put code from given files / directories / snippets on the class path by just providing their locations as arguments. Running `scala-cli repl foo.scala baz` will compile code from `foo.scala` and the `baz` directory, and put their classes on the REPL class path (including their dependencies, scalac options etc. defined within those files).
 
 Compilation (and running scaladoc as well) benefit in a similar way from the ability to manage dependencies.
 
