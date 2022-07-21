@@ -10,10 +10,10 @@ title: SIP-NN Fewer Braces
 
 ## History
 
-| Date          | Version            |
-|---------------|--------------------|
-| July 1st 2022 | Initial Draft      |
-
+| Date           | Version            |
+|----------------|--------------------|
+| July 1st 2022  | Initial Draft      |
+| July 21st 2022 | Expanded Other Conerns Section |
 ## Summary
 
 The current state of Scala 3 makes braces optional around blocks and template definitions (i.e. bodies of classes, objects, traits, enums, or givens). This SIP proposes to allow optional braces also for function arguments.
@@ -24,10 +24,13 @@ The changes have been implemented and and made available under the language impo
 ## Motivation
 
 After extensive experience with the current indentation rules I conclude that they are overall a big success.
-However. they still feel incomplete and a bit unsystematic since we can replace `{...}` in the majority of situations, but there are also important classes of situations where braces remain mandatory. In particular, braces are currently needed around blocks as function arguments.
+However, they still feel incomplete and a bit unsystematic since we can replace `{...}` in the majority of situations, but there are also important classes of situations where braces remain mandatory. In particular, braces are currently needed around blocks as function arguments.
 
-It seems very natural to generalize the current class syntax indentation syntax to function arguments. In both cases, an indentation block is started by a colon at the end of a line.
+It seems very natural to generalize the current class syntax indentation syntax to function arguments. In both cases, an indentation block is started by a colon at the end of a line. Doing so will bring two major benefits:
 
+ - Better _consistency_, since we avoid the situation where braces are sometimes optional and in other places mandatory.
+ - Better _readability_ in many common use cases, similar to why current
+   optional braces lead to better readability.
 
 ## Proposed solution
 
@@ -102,7 +105,7 @@ ColonArgument    ::=  colon [LambdaStart]
 LambdaStart      ::=  FunParams (‘=>’ | ‘?=>’)
                    |  HkTypeParamClause ‘=>’
 ```
-### Compatibility
+## Compatibility
 
 The proposed solution changes the meaning of the following code fragments:
 ```scala
@@ -123,13 +126,134 @@ If there would be code using these idioms, it can be rewritten quite simply to a
     => Int)
 ```
 
-### Other concerns
+## Other concerns
+
+### Tooling
 
 Since this affects parsing, the scalameta parser and any other parser used in an IDE will also need to be updated. The necessary changes to the Scala 3 parser were made here: https://github.com/lampepfl/dotty/pull/15273/commits. The commit that embodies the core change set is here: https://github.com/lampepfl/dotty/pull/15273/commits/421bdd660b0456c2ff1ae386f032c41bb1e0212a.
 
-### Open questions
+### Handling Edge Cases
 
-None for me.
+The design intentionally does not allow `:` to be placed after an infix operator or after a previous indented argument. This is a consequence of the following clause in the spec above:
+
+> To this purpose we introduce a new `<colon>` token that reads as
+the standard colon "`:`" but is generated instead of it where `<colon>`
+is legal according to the context free syntax, but only if the previous token
+is an alphanumeric identifier, a backticked identifier, or one of the tokens `this`, `super`, "`)`", and "`]`".
+
+This was done to prevent hard-to-decypher symbol salad as in the following cases: (1)
+```scala
+a < b || :  // illegal
+  val x = f(c)
+  x > 0
+```
+or (2)
+```scala
+source --> : x =>  // illegal
+ val y = x * x
+ println(y)
+```
+or (3)
+```scala
+xo.fold:
+  defaultValue
+:  // illegal
+  x => f(x)
+```
+or (4)
+```scala
+xs.groupMapReduce: item =>
+  key(item)
+: item =>  // illegal
+  value(item)
+: (value1, value2) =>  // illegal
+  reduce(value1, value2)
+```
+
+I argue that the language already provides mechanisms to express these examples without having to resort to braces. (Aside: I don't think that resorting to braces occasionally is a bad thing, but some people argue that it is, so it's good to have alternatives). Basically, we have three options
+
+ - Use parentheses. That always works if the argument is a lambda.
+ - Use an explicit `apply` method call.
+ - Use a `locally` call.
+
+Here is how the examples above can be rewritten so that they are legal but still don't use braces:
+
+For (1), use `locally`:
+```scala
+a < b || locally:
+  val x = f(c)
+  x > 0
+```
+For (2), use parentheses:
+```scala
+source --> ( x =>
+  val y = x * x
+  println(y)
+)
+```
+For (3) and (4), use `apply`:
+```scala
+xo.fold:
+  defaultValue
+.apply:
+  x => f(x)
+
+xs.groupMapReduce: item =>
+  key(item)
+.apply: item =>
+  value(item)
+.apply: (value1, value2) =>
+  reduce(value1, value2)
+```
+**Note 1:** I don't argue that this syntax is _more readable_ than braces, just that it is reasonable. The goal of this SIP is to have the nicer syntax for
+all common cases and to not be atrocious for edge cases. I think this
+goal is achieved by the presented design.
+
+**Note 2:** The Scala compiler should add a peephole optimization
+that elides an eta expansion in front of `.apply`. E.g. the `fold` example should be compiled to the same code as `xs.fold(defaultValue)(x => f(x))`.
+
+**Note 3:** To avoid a runtime footprint, the `locally` method should be an inline method. We can achieve that by shadowing the stdlib, or else we can decide on a different name. `nested` or `block` have been proposed. In any case this could be done in a separate step.
+
+### Syntactic confusion with type ascription
+
+A frequently raised concern against using `:` as an indentation marker is that it is too close to type ascription and therefore might be confusing.
+
+However, I have seen no evidence so far that this is true in practice. Of course, one can make up examples that look ambiguous. But as outlined, the community build and the dotty code base do not contain a single case where
+a type ascription is now accidentally interpreted as an argument.
+
+Also the fact that Python chose `:` for type ascription even though it was already used as an indentation marker should give us confidence.
+
+In well written future Scala code we can use visual keys that would tell us immediately which is which. Namely:
+
+> If the `:` or `=>` is at the end of a line, it's an argument, otherwise it's a type ascription.
+
+According to the current syntax, if you want a multi-line type ascription, you _cannot_ write
+```scala
+anExpr:
+  aType
+```
+It _must be_ rewritten to
+```scala
+anExpr
+  : aType
+```
+(But, as stated above, it seems nobody actually writes code like that).
+Similarly, it is _recommended_ that you put `=>` in a multi-line function type at the start of lines instead of at the end. I.e. this code does not follow the guidelines (even though it is technically legal):
+```scala
+xs.map: ((x: Int) =>
+  Int)
+```
+You should reformat it like this:
+```scala
+val y = xs.map: ((x: Int)
+  => Int)
+```
+If we propose these guidelines then the only problem that remains is that if one intentionally writes confusing layout _and_ one reads only superficially then things can be confusing. But that's really nothing out of the ordinary.
+
+
+## Open questions
+
+None directly related to the SIP. As mentioned above we should decide eventually whether we should stick with `locally` or replace it by something else. But that is unrelated to the SIP proper and can be decided independently.
 
 ## Alternatives
 
