@@ -14,6 +14,7 @@ title: SIP-NN Fewer Braces
 |----------------|--------------------|
 | July 1st 2022  | Initial Draft      |
 | July 21st 2022 | Expanded Other Conerns Section |
+
 ## Summary
 
 The current state of Scala 3 makes braces optional around blocks and template definitions (i.e. bodies of classes, objects, traits, enums, or givens). This SIP proposes to allow optional braces also for function arguments.
@@ -172,7 +173,7 @@ xs.groupMapReduce: item =>
 
 I argue that the language already provides mechanisms to express these examples without having to resort to braces. (Aside: I don't think that resorting to braces occasionally is a bad thing, but some people argue that it is, so it's good to have alternatives). Basically, we have three options
 
- - Use parentheses. That always works if the argument is a lambda.
+ - Use parentheses.
  - Use an explicit `apply` method call.
  - Use a `locally` call.
 
@@ -273,6 +274,15 @@ val y = (xs.map: (Int => Int) =>
 ```
 would then not be legal anyway. But it turned out that there were several community projects that were using function types in ascriptions without enclosing parentheses, so this change was deemed to break too much code.
 
+@sjrd proposed in a [feature request](https://github.com/lampepfl/dotty-feature-requests/issues/299) that the `:` could be left out when
+followed by `case` on the next line. Example:
+```scala
+    val xs = List((1, "hello"), (true, "bar"), (false, "foo"))
+    val ys = xs.collect // note: no ':' here
+      case (b: Boolean, s) if b => s
+    println(ys)
+```
+This is a tradeoff between conciseness and consistency. In the interest of minimality, I would leave it out of the first version of the implementation. We can always add it later if we feel a need for it.
 
 ## Related work
 
