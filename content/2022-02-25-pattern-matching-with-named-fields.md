@@ -12,9 +12,9 @@ redirect_from: /sips/pending/2021-06-25-named-pattern-matching.html
 |---------------|---------------|
 | Feb 25th 2022 | Initial Draft |
 
-# Summary
+## Summary
 
-With the first [first SIP ever named and default arguments](https://docs.scala-lang.org/sips/named-and-default-arguments.html) a feature disparity between case class constructors and case class deconstructors was introduced. This was an long outstanding issue. (for example https://github.com/scala/bug/issues/6524)
+With the first [first SIP ever named and default arguments](https://docs.scala-lang.org/sips/named-and-default-arguments.html) a feature disparity between case class constructors and case class deconstructors was introduced. This was an long outstanding issue. (for example [scala/bugs#6524](scala_bug))
 
 This SIP introduces a readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
 
@@ -25,7 +25,7 @@ Motivation to visualize the desired outcome.
 Desgin to enumarate all goals and constrains for this SIP.
 Encoding describe how the design can be implemented, focused on the encoding choosen in the PR.
 
-# Motivating
+## Motivating
 
 Given one wants to use pattern matching on a case class:
 
@@ -42,27 +42,40 @@ The Deconstruction allows the same syntax as the construction and seems to be wh
 
 Without names in patterns, users have to use underscore a lot. The example above would be written as:
 
-//TODO: how often does this pattern occur?
-
 ```scala
 val annasCity = user match
   case User("Anna", _, c) => c
 ```
 
-This makes it hard to see which parameter means what. The same issue led to named arguments. Adding underscores until the compiler is happy is also not a great experience. IDEs help here, by showing the names.
+This common pattern makes it hard to see which parameter means what. The same issue led to named arguments. Adding underscores until the compiler is happy is also not a great experience. IDEs help here, by showing the names.
 
 Additionally, the code breaks every time a field of `User` gets added, rearranged, or removed.
 In the best case, the broken patterns fail to compile and needs to fixed manually.
 In the worst case, a pattern breaks silently, if two fields with the same type switch places.
 
 My personal motivation comes from using [`matchPattern` in ScalaTest](https://www.scalatest.org/user_guide/using_matchers#matchingAPattern)
-and got bitten by it every time my data model changed slightly.
+and got bitten by it every time my data model changed slightly. So named pattern matching is also allowed where ever normal pattern matching allowed:
 
-# Design
+```scala
+user should matchPattern { case User(name = "Sarah") => } // ScalaTest
+
+val User(age = ageOfUser) = user
+
+for {
+  User(name = userName) <- db.fetchUser()
+} yield userName
+
+def neighboursNameOfUser(user: User, allUsers: List[User]) =
+  allUsers.collect {
+    case neighbour @ User(city = user.city) if neighbour != user => neighbour.name
+  }
+```
+
+## Design
 
 The goal is to allow named parameter in deconstruction as in construction.
 
-## Mixed usage
+### Mixed usage
 
 Mixed patterns, with positional and named patterns are allowed to keep the similarity.
 But they have no motivational use case. Maybe they should be disallowed.
@@ -72,7 +85,7 @@ But they have no motivational use case. Maybe they should be disallowed.
   case User(_, city = c) => // Leading underscore are especially useless
 ```
 
-## Disallow same name twice
+### Disallow same name twice
 
 ```scala
   case User(city = city1, city = city2) => a // error city is used twice
@@ -81,13 +94,13 @@ But they have no motivational use case. Maybe they should be disallowed.
 
 The same should happen if the `User` had a field with a [deprecated name](https://www.scala-lang.org/api/current/scala/deprecatedName.html).
 
-## Order of name and term
+### Order of name and term
 
 Normally, an equal sign assigns the result of the right side to the left side. With the proposed syntax, that's not the case. However, for most, if not all, people that's the correct order.
 
 This order seems to require a single look ahead in the parser.
 
-## Ignoring of unused parameters
+### Ignoring of unused parameters
 
 To allow case class to become more extensible, all unused parameters should be ignored. So when a field is added to the cases class old patterns stay source compatible.
 
@@ -98,9 +111,9 @@ To allow case class to become more extensible, all unused parameters should be i
 
 TODO: Find consent here
 
-## Syntax
+### Syntax
 
-## Desugaring
+### Desugaring
 
 > One important principle of Scala’s pattern matching design is that case classes should be abstractable. I.e. we want to be able to represent the abilities of a case class without exposing the case class itself. That also allows code to evolve from a case class to a regular class or a different case class while maintaining the interface of the old case class. [Martin Odersky](https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/52)
 
@@ -116,7 +129,7 @@ TODO: Find consent here
   But this could be an awful feature.
 * Maybe leave fields without names
 
-# Encoding
+## Encoding
 
 This SIP proposes basically to use [shapeless records](https://github.com/milessabin/shapeless/wiki/Feature-overview:-shapeless-2.0.0#extensible-records) for the specific purpose of pattern matching.
 For an incomplete list of alternatives, see [alternative desugaring](#alternative-desugaring) below.
@@ -164,7 +177,13 @@ The `Names` can be pulled either direcly from the return type of the `unapply` m
 
 The reason to pull the names out, instead of keeping them near to their type, is to prevent extractors to accidentally leaking the name.
 
-## Implementation
+### Compatibility
+
+Older Scala version would just ignore the `Names` type member and should have no issue.
+
+TODO: But how much compatibility do we want here, when a newer version consumes the case class of an older scala version? It should be possible to recover the names of the case classes, but that may leaks internals.
+
+### Implementation
 
 If a pattern with a name is encountered, the compiler looks up the list of provided names and places the trees accordingly.
 
@@ -186,9 +205,9 @@ case User(
 
 This allows us to gloss over the details of how pattern matching gets desugared further down the line.
 
-## Drawbacks
+### Drawbacks
 
-### Allow skipping arguments
+#### Allow skipping arguments
 
 Whenever a single named argument is used in a pattern, the pattern can have fewer arguments than the unapply provides. This is driven by the motivation to make pattern matching extensible.
 But this leads to (arguably small) inconsistency, as pointed out by Lionel Parreaux in the [Scala Contributors Thread](https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/44). This could lead users to use a named pattern, just to skip all parameters.
@@ -197,7 +216,7 @@ But this leads to (arguably small) inconsistency, as pointed out by Lionel Parre
   case User(age = _) => "Just wanted to use the extractor, lol!"
 ```
 
-### Reordering of user code
+#### UNexpected execution of extractor code
 
 
 ```scala
@@ -205,21 +224,22 @@ But this leads to (arguably small) inconsistency, as pointed out by Lionel Parre
 object User:
   class UserExtractor(user: User):
     def _1 = println("Got name"); user.name
-    def _2 = println("Got age"); user.age
+    def _2 = system.error("Tried to get age")
     def _3 = println("Got city"); user.city
 
     type Names = ("name", "age", "city")
+
 // Ask for city, then for name
 val User(city = _, name = _) = user
 // But the execution shows:
 // Got name
-// Got age
+// Exception: Tried to get age
 // Got city
 ```
 
-## Alternatives
+### Alternatives
 
-### Without any changes to the language
+#### Without any changes to the language
 
 One alternative way of archiving most objectives, that is doable with current Scala, is to use specialized extractors.
 
@@ -236,7 +256,7 @@ user match
 Libraries like [Monocle][monocle] could be extended to reduce the boilerplate, but some boilerplate would remain.
 In addition, this breaks the intuitive similarity between construction and deconstruction.
 
-### Alternative desugaring
+#### Alternative desugaring
 
 As the above described desugaring has its drawbacks. Here are some alternatives with other drawbacks, and maybe better trade-offs.
 
@@ -256,6 +276,8 @@ object User:
   
   def unapply(user: User) = UserMatching(user)
 ```
+
+An alternative would be to prefix methods with a keyword (e.g. `case`) instead of using an underscore.
 
 Pro:
 
@@ -289,7 +311,7 @@ Con:
 * annotations are not very scalaish
 * no reuse possible
 
-#### Add type as vehicle
+##### Add type as vehicle
 
 ```scala
 object User:
@@ -307,7 +329,7 @@ Con:
 * the type and the method can be defined in unrelated traits. Only at the use site of the can be checked if the type and the method agree on the arity of the pattern.
 * no clear way of encoding deprecated name
 
-### Partial destructuring in guards
+#### Partial destructuring in guards
 
 Lionel Parreaux proposed a more powerful mechanism, where if guards of cases could them self contains destructuring patterns.
 
@@ -318,19 +340,21 @@ Lionel Parreaux proposed a more powerful mechanism, where if guards of cases cou
 
 His proposal is strictly more powerful, but arguably less intuitive. Both, pattern matching with named fields and Partial destructuring in guards could be implemented along each other. Named fields for simple patterns and destructuring in guards for complex patterns. However, they offer two ways to do the same thing and could lead to lots of bike shedding, if both got added to the language.
 
-# Open questions
+## Open questions
 
 Search for TODO in this file.
 
-# References
+## References
 
 * [Scala Contributors Thread][contributors-thread]
 
 * [Monocle][monocle]
 * [Named Tuple Arguments / Anonymous Case Classes][named-tuple]
 * [Partial Destructuring in Guards][partial-destructuring-in-guards]
+* [Ticket in scala/bugs](scala_bug)
 
 [monocle]: https://www.optics.dev/Monocle/ "Monocle"
 [named-tuple]: https://contributors.scala-lang.org/t/named-tuple-arguments-anonymous-case-classes/4352
 [contributors-thread]: https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/20 "Scala Contributors thread"
 [partial-destructuring-in-guards]: http://lptk.github.io/programming/2018/12/12/scala-pattern-warts-improvements.html#-partial-destructuring-in-guards
+[scala_bug]: https://github.com/scala/bug/issues/6524
