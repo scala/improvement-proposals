@@ -9,13 +9,13 @@ import org.http4s.jdkhttpclient.JdkHttpClient
 import github4s.{GHResponse, Github}
 import github4s.domain.{Issue, PRFilterAll, PRFilterBase, Pagination}
 import cats.effect.unsafe.implicits.global
-import io.circe.Json
-import io.circe.yaml.syntax.AsYaml
+import io.circe.{ Json, yaml }
 
 import scala.annotation.tailrec
 import scala.sys.process.Process
 
 val gitToken = sys.env("IMPROVEMENT_BOT_TOKEN")
+val yamlPrinter = yaml.Printer(preserveOrder = true)
 
 /**
  * Generate the sources of the page https://docs.scala-lang.org/sips/all.html from the
@@ -105,7 +105,7 @@ class Updater(sipsRepo: os.Path, docsRepo: os.Path, github: Github[IO]):
           .toLowerCase
       val fileContent =
         s"""---
-          |${frontmatter.asYaml.spaces2}
+          |${yamlPrinter.pretty(frontmatter)}
           |---
           |""".stripMargin
       os.write.over(outputPath / s"${fileName}.md", fileContent)
