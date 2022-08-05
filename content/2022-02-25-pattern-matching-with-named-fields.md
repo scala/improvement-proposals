@@ -18,7 +18,7 @@ With the first [first SIP ever named and default arguments](https://docs.scala-l
 
 This SIP introduces a readable, extensible, and intuitive way to deconstruct case classes in pattern matching.
 
-A WIP PR can be found here: https://github.com/Jentsch/dotty
+A WIP PR can be found here: https://github.com/Jentsch/dotty/tree/pattern-matching-with-named-fields
 
 This SIP is for now structured in three sections: 
 Motivation to visualize the desired outcome. 
@@ -109,9 +109,9 @@ To allow case class to become more extensible, all unused parameters should be i
   case User(_, _, "Paris") =>
 ```
 
-TODO: Find consent here
-
 ### Syntax
+
+
 
 ### Desugaring
 
@@ -145,7 +145,7 @@ Con:
 * opens a can of worms, as this encoding could be useful for other requested features like [named tuples](named-tuple), which would require more thought-out design
 * no support for `@deprecatedName`
 * identifiers are represented with string literals
-* no meaningful way to use names within variadic patterns 
+* no meaningful way to use names for [pure variadic patterns](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#sequence-match)
   (the encoding enforces to use the names in order. A name like `last` in `Seq` could be implemented with this encoding.)
 
 Example for an extractor using option and tuple:
@@ -216,7 +216,7 @@ But this leads to (arguably small) inconsistency, as pointed out by Lionel Parre
   case User(age = _) => "Just wanted to use the extractor, lol!"
 ```
 
-#### UNexpected execution of extractor code
+#### Unexpected execution of extractor code
 
 
 ```scala
