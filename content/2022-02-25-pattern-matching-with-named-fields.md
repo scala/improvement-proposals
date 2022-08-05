@@ -85,6 +85,17 @@ But they have no motivational use case. Maybe they should be disallowed.
   case User(_, city = c) => // Leading underscore are especially useless
 ```
 
+### Case classes with sequences
+
+For the case that the extractor is a mixure of [product and sequence match](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#product-sequence-match) the name of the sequence can only be used at the last position.
+
+```
+case class Country(name: String, cities: String*)
+val Country(cities = "Berlin") = ???  // ok
+val Country(cities = "Berlin", "Hamburg", name = "Germany") = ??? // not okay
+```
+
+
 ### Disallow same name twice
 
 ```scala
@@ -111,7 +122,14 @@ To allow case class to become more extensible, all unused parameters should be i
 
 ### Syntax
 
+This SIP proposes to change the syntax of `Patterns` to:
 
+```
+Patterns          ::=  NamedPattern {‘,’ NamedPattern}
+ArgumentPatterns  ::=  ‘(’ [Patterns] ‘)’
+                    |  ‘(’ [Patterns ‘,’] PatVar ‘*’ ‘)’
+NamedPattern      ::= [id ‘=’] Pattern
+```
 
 ### Desugaring
 
@@ -255,6 +273,14 @@ user match
 
 Libraries like [Monocle][monocle] could be extended to reduce the boilerplate, but some boilerplate would remain.
 In addition, this breaks the intuitive similarity between construction and deconstruction.
+
+#### Alternative syntax
+
+In `case User(age = a)` one could get confused, what gets defined (`a`) and what is the name from the case class.
+
+One alternative could be `case User(a <- age)` instead, but that would be deviation of the syntax in comparison to named arguments.
+
+Another issue is that the mixing of positional and named patterns lead to inconsistencies in the language. A syntax with clear separation would avoid that problem. For example `case User { age = a }`. 
 
 #### Alternative desugaring
 
