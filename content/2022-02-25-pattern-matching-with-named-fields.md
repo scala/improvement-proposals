@@ -91,7 +91,8 @@ For the case that the extractor is a mixure of [product and sequence match](http
 
 ```
 case class Country(name: String, cities: String*)
-val Country(cities = "Berlin") = ???  // ok
+val Country(cities = "Berlin", "Hamburg") = ???  // ok
+val Country(cities = "Berlin", _*) = ??? // ok
 val Country(cities = "Berlin", "Hamburg", name = "Germany") = ??? // not okay
 ```
 
