@@ -1,9 +1,9 @@
 ---
 layout: sip
 permalink: /sips/:title.html
-stage: ready for review
-status: implemented
-title: SIP-NN Fewer Braces
+stage: implementation
+status: under-review
+title: SIP-44 - Fewer Braces
 ---
 
 **By: Martin Odersky**
