@@ -1,7 +1,8 @@
 ---
 layout: sip
-title: SIP-NN - Support Binary Integer Literals
-vote-status: pending
+title: SIP-42 - Support Binary Integer Literals
+stage: implementation
+status: waiting-for-implementation
 permalink: /sips/:title.html
 ---
 
