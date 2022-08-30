@@ -117,7 +117,7 @@ We have described the motivation, syntax and implementation basis in the [dedica
 
 #### Commands, options and directives
 
-We have generated a complete lists of supported [commands](https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/commands.md), (CLI options)[https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/cli-options.md] and (directives)[https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/directives.md] that we propose for new `scala` command. Lists contain many options and commands that are marked as `experimental` and/or `internal` and as such, we could change them at any point.
+We have generated a complete lists of supported [commands](https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/commands.md), [CLI options](https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/cli-options.md) and [directives](https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/directives.md) that we propose for new `scala` command. Lists contain many options and commands that are marked as `experimental` and/or `internal` and as such, we could change them at any point.
 
 The lists was generated automatically and starting from next release of Scala CLI such documentation will be included on our website. Using that lists, it will be easy to track and spot any changes in exposed APIs.
 
@@ -125,10 +125,8 @@ The lists was generated automatically and starting from next release of Scala CL
 
 Adopting Scala CLI as the new `scala` command, as is, will change some of the behaviour of today's scripts. Some examples:
 
-- `scala repl` needs to be run to start a REPL instead of just `scala`
-- with `scala compile` and `scala doc`, some of the more obscure (or brand new) compile options need to be prefixed with `-O`
 - Scala CLI recognizes tests based on the extension used (`*.test.scala`) so running `scala compile a.scala a.test.scala` will only compile `a.scala`
-- Scala CLI has its own versioning scheme, that is not related to the Scala compiler. Default version used may dynamically change when new Scala version is released.
+- Scala CLI has its own versioning scheme, that is not related to the Scala compiler. Default version used may dynamically change when new Scala version is released. Similarly to Scala 3, we intend for Scala CLI to be backward compatible and this should help mitigate this risk.
 - By default, Scala CLI manages its own dependencies (e.g. scalac, zinc, Bloop) and resolves them lazily. This means that the first run of Scala CLI resolves quite some dependencies. Moreover, Scala CLI periodically checks for updates, new defaults accessing online resources (but it is not required to work, so Scala CLI can work in offline environment once setup)
 - Scala CLI can also be configured via using directives. Command line options have precedence over using directives, however using directives override defaults. Compiling a file starting with `//> using scala 2.13.8`, without providing a Scala version on the command line, will result in using `2.13.8` rather than the default Scala version. We consider this a feature. However, technically, this is a breaking change.
 
@@ -136,7 +134,7 @@ Adopting Scala CLI as the new `scala` command, as is, will change some of the be
 
 Scala CLI brings [using directives](https://scala-cli.virtuslab.org/docs/guides/using-directives) and  [conventions to mark the test files](https://scala-cli.virtuslab.org/docs/commands/test#test-sources). We are not sure if both can be accepted as a part of this SIP or we should have seperate SIPs for both (we have opened a [pre-SIP for using directives](https://contributors.scala-lang.org/t/pre-sip-using-directives/5700/15))
 
-Scala CLI is an ambitious project and may seem hard to maintain in the long-run. // TODO
+Scala CLI is an ambitious project and may seem hard to maintain in the long-run.
 
 
 ### Open questions
