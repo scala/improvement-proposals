@@ -113,6 +113,12 @@ Scala CLI can also be configured with ["using directives"](https://scala-cli.vir
 
 We have described the motivation, syntax and implementation basis in the [dedicated pre-SIP](https://contributors.scala-lang.org/t/pre-sip-using-directives/5700). Currently, we recommend to write using directives as comments, so making them part of the language specification is not necessary at this stage. Moreover, the new `scala` command could ignore using directives in the initial version, however we strongly suggest to include comment-based using directives from the start. 
 
+#### Commands, options and directives
+
+We have generated a complete lists of supported [commands](https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/commands.md), (CLI options)[https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/cli-options.md] and (directives)[https://github.com/romanowski/scala-cli/blob/6b7e9614078070ce8ff6cbcb0635b78901228749/website/src/pages/scala-command/directives.md] that we propose for new `scala` command. Lists contain many options and commands that are marked as `experimental` and/or `internal` and as such, we could change them at any point.
+
+The lists was generated automatically and starting from next release of Scala CLI such documentation will be included on our website. Using that lists, it will be easy to track and spot any changes in exposed APIs.
+
 ### Compatibility
 
 Adopting Scala CLI as the new `scala` command, as is, will change some of the behaviour of today's scripts. Some examples:
