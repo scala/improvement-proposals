@@ -16,14 +16,16 @@ title: SIP-NN Scala CLI as default Scala command
 
 ## Summary
 
-We propose to replace current scripts that are installed as "Scala": `scala`, `scalac` and `scaladoc` with Scala CLI - a batteries included tool to interact with Scala. Scala CLI brings all the features that the commands above provide and expand them with incremental compilation, dependency management, packaging and much more. 
+We propose to replace current script that is installed as `scala` with Scala CLI - a batteries included tool to interact with Scala. Scala CLI brings all the features that the commands above provide and expand them with incremental compilation, dependency management, packaging and much more. 
+
+Even though Scala CLI could replace `scaladoc` and `scalac` commands as well for now, we do not propose to replace them.
 
 
 ## Motivation
 
-The current default Scala scripts: `scala`, `scalac`, `scaladoc` are quite limited. Beside that, the `scala` command that starts the Scala REPL is hardly used by non-power users. 
+The current default `scala` script is quite limited since it can only start repl or run pre-compile Scala code.
 
-The current scripts are lacking basic features such as support for resolving dependencies, incremental compilation or support for outputs other than JVM. This forces any user that wants to do anything more than just basic things to learn and use SBT, Mill or an other build tool and that adds to the complexity of learning Scala. 
+The current script are lacking basic features such as support for resolving dependencies, incremental compilation or support for outputs other than JVM. This forces any user that wants to do anything more than just basic things to learn and use SBT, Mill or an other build tool and that adds to the complexity of learning Scala. 
 
 We observe that the current state of tooling in Scala is limiting creativity, with quite a high cost to create e.g. an application or a script with some dependencies that target Node.js. Many Scala developers are not choosing Scala for their personal projects, scripts, or small applications and we believe that the complexity of setting up a build tool is one of the reasons. 
 
@@ -41,7 +43,7 @@ Scala CLI offers [multiple native ways to be installed](https://scala-cli.virtus
 
 ### High-level overview
 
-Let us show a few examples where adopting Scala CLI as `scala` command would be a significant improvement ofer current scripts. For this, we have assumed a minial set of features. Each additionnal  Scala CLI feature included, such as `package`, would add more and more use cases.
+Let us show a few examples where adopting Scala CLI as `scala` command would be a significant improvement ofer current scripts. For this, we have assumed a minial set of features. Each additional  Scala CLI feature included, such as `package`, would add more and more use cases.
 
 **Using REPL with a 3rd-party dependency**
 
