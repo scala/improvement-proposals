@@ -73,6 +73,18 @@ This definition provides the expected source API at call site, but it has two is
 * It is more complex than expected, forcing a user looking at the API to navigate to the definition of `StoreGetOrElse` to make sense of it.
 * It is inefficient, as an intermediate instance of `StoreGetOrElse` must be created for each call to `getOrElse`.
 
+Another workaround is to return a polymorphic function, for example:
+~~~scala
+def getOrElse(k:Key): [V >: k.Value] => (default: V) => V = 
+    [V] => (default: V) => ???
+~~~
+While again, this provides the expected API at call site, it also has issues:
+* The behavior is not the same, as `default` has to be a by-value parameter
+* The definition is hard to visually parse, as users are more used to methods (and it is our opinion this should remain so)
+* The definition is cumbersome to write, especially if there are a lot of term parameters
+* Methods containing curried type clauses like `def foo[A][B](x: B)` cannot be represented in this way, as polymorphic methods always have to have a term parameter right after.
+* It is inefficient, as many closures must be created for each call to `getOrElse` (one per term clause to the right of the first non-initial type clause).
+
 ### Statically sized collection
 Let us suppose we have defined a statically sized collection `Vec[N <: Int, +A]`, which contains exactly `N` elements of type `A`. Its API could look like the following:
 ~~~ scala
