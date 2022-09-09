@@ -72,6 +72,7 @@ class Store:
 This definition provides the expected source API at call site, but it has two issues:
 * It is more complex than expected, forcing a user looking at the API to navigate to the definition of `StoreGetOrElse` to make sense of it.
 * It is inefficient, as an intermediate instance of `StoreGetOrElse` must be created for each call to `getOrElse`.
+* Overloading resolution looks at clauses after the first one, but only in methods, the above is ambiguous with any `def getOrElse(k:Key): ...`, whereas the proposed signature is not ambiguous with for example `def getOrElse(k:Key)[A,B](x: A, y: B)`
 
 Another workaround is to return a polymorphic function, for example:
 ~~~scala
@@ -84,6 +85,7 @@ While again, this provides the expected API at call site, it also has issues:
 * The definition is cumbersome to write, especially if there are a lot of term parameters
 * Methods containing curried type clauses like `def foo[A][B](x: B)` cannot be represented in this way, as polymorphic methods always have to have a term parameter right after.
 * It is inefficient, as many closures must be created for each call to `getOrElse` (one per term clause to the right of the first non-initial type clause).
+* Same problem as above with overloading
 
 ### Statically sized collection
 Let us suppose we have defined a statically sized collection `Vec[N <: Int, +A]`, which contains exactly `N` elements of type `A`. Its API could look like the following:
@@ -165,6 +167,8 @@ Param             ::=  id ‘:’ ParamType [‘=’ Expr]
 ~~~
 The main rules of interest are `DefParamClauses` and `DefParamClause`, which now allow any number of type parameter clauses, term parameter clauses and using parameter clauses, in any order.
 
+Note that these are also used for the right-hand side of extension methods, clause interleaving thus also applies to them.
+
 It is worth pointing out that there can still only be at most one implicit parameter clause, which, if present, must be at the end.
 
 The type system and semantics naturally generalize to these new method signatures.
@@ -179,6 +183,10 @@ class Pair[+A](val a: A)[+B](val b: B)
 Class signatures already have limitations compared to def signatures. For example, they must have at least one term parameter list. There is therefore precedent for limiting their expressiveness compared to def parameter lists.
 
 The rationale for this restriction is that classes also define associated types. It is unclear what the type of an instance of `Pair` with `A` and `B` should be. It could be defined as `Foo[A][B]`. That still leaves holes in terms of path-dependent types, as `B`'s definition could not depend on the path `a`. Allowing interleaved type parameters for class definitions is therefore restricted for now. It could be allowed with a follow-up proposal.
+
+Note: As `apply` is a normal method, it is totally possible to define a method `def apply[A](a: A)[B](b: B)` on `Pair`'s companion object, allowing to create instances with `Pair[Int](4)[Char]('c')`.
+
+The left hand side of extension methods remains unchanged, since they only have one explicit term clause, and since the type parameters are very rarely passed explicitly, it is not as necessary to have multiple type clauses there.
 
 ### Compatibility
 The proposal is expected to be backward source compatible. New signatures currently do not parse, and typing rules are unchanged for existing signatures.
