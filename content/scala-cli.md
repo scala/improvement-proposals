@@ -31,6 +31,17 @@ We observe that the current state of tooling in Scala is limiting creativity, wi
 
 With this proposal our main goal is to turn Scala into a language with "batteries included" that will also respect the community-first aspect of our ecosystem.
 
+### Why decided to work on Scala CLI rather then improve existing tools like sbt or Mill?
+
+Firstly, Scala CLI is in no way an actual replacement for SBT or Mill - nor was it ever meant to be. We do not call it a build tool, even though it does share some similarities with build tools. It doesn't aim at supporting multi-module
+projects, nor to be extended via a task system. The main advantages of SBT and Mill: multi-module support and plugin ecosystem in the use cases for Scala CLI and scala command can often be disadvantages as it affects performance: configuration needs to be compiled, plugins resolved etc. 
+
+Mill and SBT uses turing complete configuration for build so the complexity of build scripts in theory is unlimited. Scala CLI is configuration-only and that limits the complexity what put a hard cap how complex Scala CLI builds can be.
+
+ In our opinion, `scala` command should be first and foremost a command line tool. Requirements for a certain project structure or presence configuration files limit SBT and Mill usability certain use cases related to command line. 
+
+One of the main requirements for the new `scala` commands was speed, flexibility and focus on command-line use cases. Initially, we were considering improving SBT or Mill as well as building Scala CLI on top one. We have quickly realized that getting Mill or SBT to reply within Milliseconds (for cases where no hard work like compilation is require) would be pretty much out of reach. Mill and SBT's codebases are too big to compile them to native image using GraalVM, not to mention problems with dynamic loading and reflection. Adding flexibility when in comes to input sources (e.g. support for Gists) and making the tool that can accept most of the configuration using simple command-line parameters would involve writhing a lot of glue code. That is why we decided to build the tool from scratch based on existing components like coursier, bloop or scalafmt. 
+
 ## Proposed solution
 
 We propose to gradually replace the current `scala`, `scalac` and `scaladoc` commands by single `scala` command that under the hood will be `scala-cli`. We could also add wrapper scripts for `scalac` and `scaladoc` that will mimic the functionality that will use `scala-cli` under the hood. 
