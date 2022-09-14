@@ -188,6 +188,8 @@ Note: As `apply` is a normal method, it is totally possible to define a method `
 
 The left hand side of extension methods remains unchanged, since they only have one explicit term clause, and since the type parameters are very rarely passed explicitly, it is not as necessary to have multiple type clauses there.
 
+Currently, Scala 2 can only call/override methods with at most one leading type parameter clause, which already forbids calling extension methods like `extension (x: Int) def bar[A](y: A)`, which desugars to `def bar(x: Int)[A](y: A)`. This proposal does not change this, so methods like `def foo[A](x: A)[B]` will not be callable from Scala 2.
+
 ### Compatibility
 The proposal is expected to be backward source compatible. New signatures currently do not parse, and typing rules are unchanged for existing signatures.
 
