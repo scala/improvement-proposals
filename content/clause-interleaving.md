@@ -1,8 +1,9 @@
 ---
 layout: sip
-title: SIP-NN Clause Interleaving
-stage: design
-permalink: /sips/:title.html
+title: SIP-47 Clause Interleaving
+stage: implementation
+status: waiting-for-implementation
+permalink: /sips/clause-interleaving.html
 ---
 
 **By: Quentin Bernet and Guillaume Martres and Sébastien Doeraene**
