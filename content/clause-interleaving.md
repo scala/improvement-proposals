@@ -10,10 +10,11 @@ permalink: /sips/clause-interleaving.html
 
 ## History
 
-| Date          | Version            |
-|---------------|--------------------|
-| May 5th 2022  | Initial Draft      |
-| Aug 17th 2022 | Formatting         |
+| Date          | Version               |
+|---------------|-----------------------|
+| May 5th 2022  | Initial Draft         |
+| Aug 17th 2022 | Formatting            |
+| Sep 22th 2022 | Type Currying removed |
 
 ## Summary
 
@@ -23,7 +24,7 @@ def pair[A](a: A)[B](b: B): (A, B) = (a, b)
 ~~~
 Here is also a more complicated and contrived example that highlights all the possible interactions:
 ~~~ scala
-def foo[A][B <: A](using a: A)(b: B)[C <: a.type, D](cd: (C, D))[E]: Foo[A, B, C, D, E]
+def foo[A](using a: A)(b: List[A])[C <: a.type, D](cd: (C, D))[E]: Foo[A, B, C, D, E]
 ~~~
 
 
@@ -32,8 +33,6 @@ def foo[A][B <: A](using a: A)(b: B)[C <: a.type, D](cd: (C, D))[E]: Foo[A, B, C
 We motivate the feature with two use cases:
 
 * a `getOrElse` method for a heterogeneous key-value store, which is an occurrence of wanting a type parameter whose bounds are path-dependent on a term parameter, and
-
-* a `fill` method for a statically sized collection, where we want to explicitly pass one type parameter, but leave the other one to be inferred.
 
 ### Heterogeneous key-value store
 Consider an API for a heterogenous key-value store, where keys know what type of value they must be associated to:
@@ -88,42 +87,10 @@ While again, this provides the expected API at call site, it also has issues:
 * It is inefficient, as many closures must be created for each call to `getOrElse` (one per term clause to the right of the first non-initial type clause).
 * Same problem as above with overloading
 
-### Statically sized collection
-Let us suppose we have defined a statically sized collection `Vec[N <: Int, +A]`, which contains exactly `N` elements of type `A`. Its API could look like the following:
-~~~ scala
-final class Vec[N <: Int, +A] private (...):
-  def dot(that: Vec[N, A])(using Numeric[A]): Vec[N, A] = …
-~~~
-We would like to define a `fill` method for its companion object, as follows:
-~~~ scala
-object Vec:
-  def fill[N <: Int, A](value: A)(using ValueOf[N]): Vec[N, A] = …
-~~~
-The implicit `ValueOf[N]` parameter would allow the implementation of `fill` to get hold of the run-time representation of `N` as an `Int` value, which is required to actually create a `Vec` of the right length.
-
-We would like to use `fill` as follows:
-~~~ scala
-val v = Vec.fill[3]("hello")
-~~~
-We want to explicitly specify the `N` parameter as `3`, since there is no way for the compiler to infer it for us. However, we would like it to infer `A` as `String`. This is unfortunately not possible in current Scala, as either all or none of the type parameters for any given method must be provided.
-
-The typical workaround would be to explicitly provide both type parameters:
-~~~ scala
-val v = Vec.fill[3, String]("hello")
-~~~
-If we feel strongly about inferring `A`, we can use a similar indirection with an intermediate class, as follows:
-~~~ scala
-object Vec:
-  final class Fill[N <: Int]()(using ValueOf[N]):
-    def apply[A](value: A): Vec[N, A] = …
-  def fill[N <: Int](using ValueOf[N]): Fill[N] = Fill[N]()
-~~~
-which enables the desired call site API, with the same drawbacks that we already saw with the heterogeneous key-value store.
-
 ## Proposed solution
 ### High-level overview
 
-To solve the above problems, we propose to generalize method signatures so that they can have multiple type parameter lists, interleaved with term parameter lists and using parameter lists. There can be multiple consecutive type parameter lists.
+To solve the above problems, we propose to generalize method signatures so that they can have multiple type parameter lists, interleaved with term parameter lists and using parameter lists.
 
 For the heterogeneous key-value store example, this allows to define `getOrElse` as follows:
 ~~~ scala
@@ -134,39 +101,28 @@ It provides the best of all worlds:
 * A single point of documentation
 * Efficiency, since the method erases to a single JVM method with signature `getOrElse(Object,Object)Object`
 
-The `Vec.fill` method can be defined as follows:
-~~~ scala
-def fill[N <: Int][A](value: A)(using ValueOf[N]): Vec[N, A] = …
-~~~
-Since `N` and `A` are in two separate type parameter lists, it is possible to call it as
-~~~ scala
-val v = Vec.fill[3][String]("hello")
-~~~
-or, letting the second type parameter list be inferred by the compiler, as
-~~~ scala
-val c = Vec.fill[3]("hello")
-~~~
-
 ### Specification
 We amend the syntax of def parameter clauses as follows:
+
 ~~~
-DefDcl            ::=  DefSig ‘:’ Type
-DefDef            ::=  DefSig [‘:’ Type] ‘=’ Expr
-DefSig            ::=  id [DefParamClauses] [DefImplicitClause]
-DefParamClauses   ::=  DefParamClause { DefParamClause }
-DefParamClause    ::=  DefTypeParamClause
-                    |  DefTermParamClause
-                    |  UsingParamClause
-DefTypeParamClause::=  [nl] ‘[’ DefTypeParam {‘,’ DefTypeParam} ‘]’
-DefTypeParam      ::=  {Annotation} id [HkTypeParamClause] TypeParamBounds
-DefTermParamClause::=  [nl] ‘(’ [DefTermParams] ‘)’
-UsingParamClause  ::=  [nl] ‘(’ ‘using’ (DefTermParams | FunArgTypes) ‘)’
-DefImplicitClause ::=  [nl] ‘(’ ‘implicit’ DefTermParams ‘)’
-DefTermParams     ::=  DefTermParam {‘,’ DefTermParam}
-DefTermParam      ::=  {Annotation} [‘inline’] Param
-Param             ::=  id ‘:’ ParamType [‘=’ Expr]
+DefDcl                 ::=  DefSig ‘:’ Type
+DefDef                 ::=  DefSig [‘:’ Type] ‘=’ Expr
+DefSig                 ::=  id [DefParamClauses] [DefImplicitClause]
+DefParamClauses        ::=  DefParamClauseChunk {DefParamClauseChunk}
+DefParamClauseChunk    ::=  [DefTypeParamClause] TermOrUsingParamClause {TermOrUsingParamClause}
+TermOrUsingParamClause ::=  DefTermParamClause
+                         |  UsingParamClause
+DefTypeParamClause     ::=  [nl] ‘[’ DefTypeParam {‘,’ DefTypeParam} ‘]’
+DefTypeParam           ::=  {Annotation} id [HkTypeParamClause] TypeParamBounds
+DefTermParamClause     ::=  [nl] ‘(’ [DefTermParams] ‘)’
+UsingParamClause       ::=  [nl] ‘(’ ‘using’ (DefTermParams | FunArgTypes) ‘)’
+DefImplicitClause      ::=  [nl] ‘(’ ‘implicit’ DefTermParams ‘)’
+DefTermParams          ::=  DefTermParam {‘,’ DefTermParam}
+DefTermParam           ::=  {Annotation} [‘inline’] Param
+Param                  ::=  id ‘:’ ParamType [‘=’ Expr]
 ~~~
-The main rules of interest are `DefParamClauses` and `DefParamClause`, which now allow any number of type parameter clauses, term parameter clauses and using parameter clauses, in any order.
+
+The main rules of interest are `DefParamClauses` and `DefParamClauseChunk`, which now allow any number of type parameter clauses, term parameter clauses and using parameter clauses, in any order as long as there are no two adjacent type clauses.
 
 Note that these are also used for the right-hand side of extension methods, clause interleaving thus also applies to them.
 
@@ -174,9 +130,15 @@ It is worth pointing out that there can still only be at most one implicit param
 
 The type system and semantics naturally generalize to these new method signatures.
 
-When a method poly type consists of _n_ consecutive type parameter lists, and _m < n_ lists are specified at call site, they always correspond to the left-most _m_ type parameter lists of the signature. The right-most _(n-m)_ type parameter lists are then inferred.
-
 ### Restrictions
+
+#### Type Currying
+Type parameters cannot be curried (having two type clauses next to each other), as this would allow partial type inference, there is a big concern it would become a recommended norm to _always_ curry type parameters.
+
+Note however that, if absolutely necessary, it is still possible to curry type parameters as such: `def foo[A](using A =:= A)[B]`, since the implicit search for `A =:= A` should always succeed.
+This is sufficiently unwieldy that it is unlikely the above becomes the norm.
+
+#### Class Signatures
 Class signatures are unchanged. Classes can still only have at most one type parameter list, which must come first. For example, the following definition is still invalid:
 ~~~ scala
 class Pair[+A](val a: A)[+B](val b: B)
@@ -187,6 +149,7 @@ The rationale for this restriction is that classes also define associated types.
 
 Note: As `apply` is a normal method, it is totally possible to define a method `def apply[A](a: A)[B](b: B)` on `Pair`'s companion object, allowing to create instances with `Pair[Int](4)[Char]('c')`.
 
+#### LHS of extension methods
 The left hand side of extension methods remains unchanged, since they only have one explicit term clause, and since the type parameters are very rarely passed explicitly, it is not as necessary to have multiple type clauses there.
 
 Currently, Scala 2 can only call/override methods with at most one leading type parameter clause, which already forbids calling extension methods like `extension (x: Int) def bar[A](y: A)`, which desugars to `def bar(x: Int)[A](y: A)`. This proposal does not change this, so methods like `def foo[A](x: A)[B]` will not be callable from Scala 2.
@@ -201,11 +164,11 @@ Backward TASTy compatibility should be straightforward. The TASTy format is such
 Of course, libraries that choose to evolve their public API to take advantage of the new signatures may expose incompatibilities.
 
 ## Alternatives
-The proposal is a natural generalization of method signatures. We could have decomposed the proposal in two: a) multiple type parameter lists (allowing partial type inference) and b) interleaved-but-single type parameter lists (allowing path dependencies). However, specifying those independently would not be simpler than the combined, generalized proposal.
+The proposal is a natural generalization of method signatures.
+We could have extended the proposal to type currying (allowing partial type inference), but have not due to the concerns mentionned in [Restrictions](#restrictions).
+This might be the subject of a follow up proposal, if the concerns can be addressed.
 
 As discussed above, we may want to consider generalizing class parameter lists as well. However, we feel it is better to leave that extension to a follow-up proposal, if required.
-
-The second use case (partial type inference) was also the topic of a previous proposal for Named Type Arguments, which was rejected before the release of Scala 3. Even if accepted, it would have required writing `Vec.fill[N = 3]` instead of the shorter form `Vec.fill[3]`.
 
 ## Related work
 * Pre-SIP: https://contributors.scala-lang.org/t/clause-interweaving-allowing-def-f-t-x-t-u-y-u/5525
