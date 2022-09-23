@@ -1,6 +1,6 @@
 ---
 layout: sip
-title: SIP-NN Polymorphic Eta Expansion
+title: SIP-49 - Polymorphic Eta-Expansion
 stage: implementation
 permalink: /sips/:title.html
 ---
