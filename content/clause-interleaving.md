@@ -133,9 +133,11 @@ The type system and semantics naturally generalize to these new method signature
 ### Restrictions
 
 #### Type Currying
-Type parameters cannot be curried (having two type clauses next to each other), as this would allow partial type inference, there is a big concern it would become a recommended norm to _always_ curry type parameters.
+Currying type clauses enables partial type inference, as the left clause can be specified while the right one is not.
+As this is a very useful feature, we expect people would use it liberally, and recommending the curried form.
+We are uncertain about the readability of the resulting methods, we have therefore decided to not include type currying as part of this proposal.
 
-Note however that, if absolutely necessary, it is still possible to curry type parameters as such: `def foo[A](using A =:= A)[B]`, since the implicit search for `A =:= A` should always succeed.
+Note however that, if absolutely necessary, it is still possible to curry type parameters as such: `def foo[A](using DummyImplicit)[B]`, since the implicit search for `DummyImplicit` will always succeed.
 This is sufficiently unwieldy that it is unlikely the above becomes the norm.
 
 #### Class Signatures
