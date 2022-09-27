@@ -1,9 +1,9 @@
 ---
 layout: sip
-title: SIP-47 Clause Interleaving
+title: SIP-47 - Clause Interleaving
 stage: implementation
 status: waiting-for-implementation
-permalink: /sips/clause-interleaving.html
+permalink: /sips/:title.html
 ---
 
 **By: Quentin Bernet and Guillaume Martres and Sébastien Doeraene**
