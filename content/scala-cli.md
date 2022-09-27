@@ -1,6 +1,6 @@
 ---
 layout: sip
-permalink: /sips/scala-cli.html
+permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
 title: SIP-46 - Scala CLI as default Scala command
