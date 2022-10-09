@@ -20,11 +20,11 @@ This SIP proposes new syntactic sugar for context bounds in the case where type 
 
 ```scala
 // new sugar from this SIP
-def showAll(xs: List[? : Showable]): Unit
+def showAll(xs: Set[? : Showable]): Unit
 // existing sugar
-def showAll[S: Showable](xs: List[S]): Unit
+def showAll[A: Showable](xs: Set[A]): Unit
 // unsugared
-def showAll[S](xs: List[S])(using Showable[S]): Unit
+def showAll[A](xs: Set[A])(using Showable[A]): Unit
 ```
 ## Motivation
 
@@ -38,33 +38,21 @@ trait Showable[A]:
 Using [context bound syntax](https://docs.scala-lang.org/scala3/book/ca-context-bounds.html), one can define a method that accepts a variable with any type for which a `Showable` `given` instance is defined:
 
 ~~~ scala
-def showAll[A: Showable](as: Set[A]): String = as.map(_.show).join("\n")
+def showAll[A: Showable](xs: Set[A]): String = xs.map(_.show).join("\n")
 ~~~
 
 Note that the type parameter name `A` is a nuisance: it only needs a name because the context bound must be defined on the type parameter and not on the parameter type declaration. In contrast, if `Showable` were a simple (non-typeclass) trait with a `def show: String` member, then `showAll` does need this nuisance name:
 
 ~~~ scala
-def showAll(as: Set[? <: Showable]): String = as.map(_.show).join("\n")
+def showAll(xs: Set[? <: Showable]): String = xs.map(_.show).join("\n")
 ~~~
 
-## Proposed Solution
+Rust, which has only typeclasses and no inheritance, already has a solution for this use case: `impl` [parameters](Rust's existing `impl` [parameters](https://doc.rust-lang.org/reference/types/impl-trait.html).
 
-This SIP aims to bring typeclass-defined methods closer to ergonomic parity withtraditional member methods by permitting parameter type declarations to use context-bounded wildcard types (`?`) as well:
-
-~~~ scala
-def showAll(as: Set[? : Showable]): String = as.map(_.show).join("\n")
-// sugar for
-def showAll[T: Showable](as: Set[T]): String = as.map(_.show).join("\n")
-// which is in turn sugar for
-def showAll[T](as: Set[T])(using Showable[T]): String = as.map(_.show).join("\n")
-~~~
-
-### High-level overview
-
-One motivating use case for this feature is possibility to mimic Rust's [Into](xxx) typeclass, which provides for a more narrowly scoped implicit conversion mechanism than Scala's existing implicit conversions. Rust uses a (mostly non-privileged) `Into` typeclass to declare that a parameter can take any type convertible to a particular type:
+One motivating use case for this feature is possibility to mimic Rust's [Into](https://doc.rust-lang.org/std/convert/trait.Into.html) typeclass, which provides for a more narrowly scoped implicit conversion mechanism than Scala's existing implicit conversions. Rust uses a (mostly non-privileged) `Into` typeclass to declare that a parameter can take any type convertible to a particular type:
 
 ~~~ rust
-fn foo<T: Into<Int>>(arg: T): Int {
+fn foo<T: Into<Int>>(arg: T) {
   return arg.into();
 }
 ~~~
@@ -72,25 +60,41 @@ fn foo<T: Into<Int>>(arg: T): Int {
 Rust's existing `impl` [parameters](https://doc.rust-lang.org/reference/types/impl-trait.html) allow for this declaration to be sugared to 
 
 ~~~ rust
-fn foo(arg: impl Into[Int]): Int {
+fn foo(arg: impl Int<Int>) {
   return arg.into();
 }
 ~~~
 
 Scala 3 can already do a good job of mimicking the first declaration:
 ~~~ scala
-type Into[-T, +U] = Conversion[T, U]
-extension(t: T) def into()(using conv: Conversion[T, U]): U = conv(t)
+abstract class Conversion[-T, +U] extends (T => U):
+  def apply (x: T): U
+type Into[+U] = [T] =>> Conversion[T, U]
+extension [T](t: T)
+  def into[U]()(using conv: Conversion[T, U]): U = conv(t)
 
-def foo[T: Into[Int])(arg: T): Int = arg.into()
+def foo[T: Into[Int]](t: T): Int = t.into()
 ~~~
 
-With the feature in this SIP, one could write
+This SIP would allow
 ~~~ scala
 def foo(arg: ? : Into[Int]): Int = arg.into()
 ~~~
 
 There is [active discussion](xxx) about limiting the scope of implicit conversions using a language-level `into` keyword in a similar way. The fact that this prposal can accomplish much of that discussed feature, while also benefitting other typeclass use cases, is an indicator of the general applicability of this feature. Note that this proposal does not attempt to replace the `into` mechanism ununder discussion; it is only mentioned here for motivation. 
+
+
+## Proposed Solution
+
+This SIP aims to bring typeclass-defined methods closer to ergonomic parity withtraditional member methods by permitting parameter type declarations to use context-bounded wildcard types (`?`) as well:
+
+~~~ scala
+def showAll(xs: Set[? : Showable]): String = xs.map(_.show).join("\n")
+// sugar for
+def showAll[A: Showable](as: Set[A]): String = xs.map(_.show).join("\n")
+// which is in turn sugar for
+def showAll[A](as: Set[A])(using Showable[T]): String = xs.map(_.show).join("\n")
+~~~
 
 ### Specification
 
@@ -100,7 +104,7 @@ It is easy to modify the parser to permit context bound syntax for all types, bu
 
 This feature also requires modifying the context bound desugaring to handle the new wildcard context bounds. The natural thing to do would be to follow the existing implementation for `using` parameters, which prepends the desugared synthetic parameters to the last `using` parameter list of the function, or creates a new `using` parameter list if none exists. 
 
-However, as discussed in the *Open Questions* section, the synthetic type parameters are likely to be a bigger surprise to callers of the fuction than the synthetic `using` parameters. If [multiple type parameter lists](xxx) are implemented, it would be better to always append a new type parameter list when desugaring wildcard type parameters. 
+However, as discussed in the *Open Questions* section, the synthetic type parameters are likely to be a bigger surprise to callers of the fuction than the synthetic `using` parameters. If [multiple type parameter lists](https://github.com/scala/improvement-proposals/pull/47) are implemented, it would be better to always append a new type parameter list when desugaring wildcard type parameters. 
 
 
 ### Compatibility
@@ -113,15 +117,22 @@ In the common case where type variables are a single character, this new sugar w
 
 ### Open questions
 
-The proposal interacts with [multiple parameter lists](xxx): if that feature is not implemented, this SIP would still be implemented by appending (or prepending) synthetic type parameters to an existing type parameter list, but that would significantly increase the leakiness of the syntactic abstraction. In cases where explicit type parameters are mixed with wildcard context bounds, specifying an explicit type argument list would need to (surprisingly) specify the wildcard type:
+An important consideration in this proposal is where to place the desugared additional type parameters introduced by wildcard context bounds. In cases where explicit type parameters are mixed with wildcard context bounds, specifying an explicit type argument list would need to (surprisingly) specify the wildcard type:
 
 ~~~ scala
-def foo[T](t: T, x: ? : Showable): Unit
-foo[Int](1, "x") // wouldn't compile with error indicating missing type argument
-foo[String, Int](1, "x") // compiles
+def foo[T](x: ? : Showable): T
+foo[Int]("x") // wouldn't compile with error indicating missing type argument
+foo[Int, String]]("x") // compiles
 ~~~
 
-Of course, this invocation wouldn't compile without the sugar either, but it would be more obvious that a type argument was missing becuase the declaration of `foo` would explicitly list the type parameters. This is less of an issue with the synthetic `using` parameters generated from existing context bounds because, in the cases where one must specify an explicit `using` argument list, the programmer can fill in inferrable arguments with `summon`/`implicitly` without having to think about their correct values. 
+Of course, this invocation wouldn't compile without the sugar either, but it would be more obvious that a type argument was missing because the declaration of `foo` would explicitly list the type parameters. This is less of an issue with the synthetic `using` parameters generated from existing context bounds because, in the cases where one must specify an explicit `using` argument list, the programmer can fill in inferrable arguments with `summon`/`implicitly` without having to think about their correct values. 
+
+Several possibilities are under consideration that would reduce these headaches.
+-[This SIP](https://github.com/scala/improvement-proposals/pull/47) originally proposed multiple consecutive type parameter lists, which would be ideal for the additional type parameters in this SIP because they would be transparent to the user at the callsite (assuming they can be inferred, which is the common case).  At present, it looks likely that that SIP will be accepted, but with the explicit restriction that consecutive type parameter lists will be disallowed. 
+-[Named type arguments](https://dotty.epfl.ch/docs/reference/experimental/named-typeargs.html) can partially reduce ethe annoyances with additional desugared type parameters, but will still require call sites to changed to named invocation in order for the desugared type parameters to be transparent. In the above example, `foo[T = Int]("x")` would compile but `foo[Int]("x")` wouldn't.
+-[Partially applied type arguments](https://contributors.scala-lang.org/t/allow-specification-of-a-subset-of-type-parameters/5455/23) would also still require modification to the callsite, but where named type arguments would require the callsite to be aware of the names of type arguments, partially applied type arguments would only require knowledge of the number of type arguments -- `foo[Int, _]("x")` would compile 
+
+Fortunately, only multiple consecutive type parameter lists interact with this SIP, but unfortunately, without knowing whether they will be implemented, this SIP must either go forward with appending type parameters to the existing list (making the change to using additional type parameter lists if they become available a breaking change), or it must patiently wait for a decision to be made.
 
 ## Alternatives
 
@@ -130,7 +141,7 @@ An [earlier version](https://contributors.scala-lang.org/t/pre-sip-additional-sy
 def showAll(as: Set[Showable[_]]): String
 ~~~
 
-Allowing type lambdas in parameter types is not well-typed. The only reason for this proposal was my ignorance of the fact thatthat the right-hand side of a context bound could already be a type lambda, so it is already natural to allow
+Allowing type lambdas in parameter types is not well-typed. The only reason for this proposal was the author's ignorance of the fact that that the right-hand side of a context bound could already be a type lambda, so it is already natural to allow
 ~~~ scala
 def foo(as: Set[SomeTwoArgTypeclass[_, Int]): Unit
 // as sugar for
