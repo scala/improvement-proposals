@@ -28,7 +28,8 @@ def showAll[A](xs: Set[A])(using Showable[A]): Unit
 ```
 ## Motivation
 
-Scala 3 has reduced cases where names must be provided even if they are never used, as with `using` and `given` clauses. Separately, Scala 3 has significantly reduced the boilerplate required to dot-call methods defined on a type class with `extension` methods. However, there is still a common case where type parameters must be named, even when that name is never referenced (outside the signature). Consider the simple `Showable` typeclass:
+Scala 3 has reduced cases where parameter names must be provided even if they are never used with [anonymous context parameters](https://docs.scala-lang.org/scala3/reference/contextual/using-clauses.html#anonymous-context-parameters)
+However, there is still a common case where type parameters must be named, even when that name is never referenced (outside the signature). Consider the simple `Showable` typeclass:
 
 ~~~ scala
 trait Showable[A]:
@@ -101,6 +102,8 @@ def showAll[A](as: Set[A])(using Showable[T]): String = xs.map(_.show).join("\n"
 The feature requires a change to the parser to permit context bound syntax for parameter types. Currently, context bound syntax is only allowed for type parameter declarations. 
 
 It is easy to modify the parser to permit context bound syntax for all types, but this change is too permissive, since many contexts should not allow context bounds (e.g. `type T : Showable`). It is a much larger change to restrict the parser to only allow context bound syntax for function parameters, but it is entirely mechanical if the committee prefers it. Otherwise, it is a relatively small change to check for inappropriate context bounds in the typer phase. This proposal does not take a strong position on this implementation detail, but recommends checking in the typer phases to make the size of the change smaller. 
+
+This SIP proposes forbidding wildcard context bounds in return position (`def foo: ? : Showable`) because it is not possible to write such a function that will compile.
 
 This feature also requires modifying the context bound desugaring to handle the new wildcard context bounds. The natural thing to do would be to follow the existing implementation for `using` parameters, which prepends the desugared synthetic parameters to the last `using` parameter list of the function, or creates a new `using` parameter list if none exists. 
 
