@@ -388,18 +388,29 @@ If it doesn't do so "by construction", this section should present the ideas of 
 
 This section should also argue to what extent backward source compatibility is preserved. In particular, it should show that it doesn't alter the semantics of existing valid programs. -->
 
-There are two cases:
+#### Binary and TASTy
 
-#### There is a (potentially partially applied) method taking type parameters used without an expected type
+As this proposal never generates code that couldn't have been written before, these changes are binary and TASTy compatible.
 
-In this case we are not sure about compatibility, and help is welcome
+#### Source
 
+This proposal conserves source compatibility when an expected type is present, since either the behaviour is the same, or the code did not compile before.
 
-#### Otherwise
+This proposal breaks source compatibility only when there is no expected type, in this regard it is essentially a change in type inference, and therefore has all the usual repercussions of changing type inference, for example:
 
-As long as (potentially partially applied) methods taking type arguments are not used in places without an expected type, these changes are source, binary and TASTy compatible.
+```scala
+def foo[T](x: T): T = x
+val voo = foo // was Any => Any is now [T] => T => T
+val y = voo(5) // was Any is now Int
 
-This is a consequence of this feature not changing current behaviour for cases that did compile before, and adding new behaviour for cases that did not compile before.
+def lookFor[T](x: T)(using u: T): T = u
+lookFor(foo) // was searching for Any => Any, is now searching for [T] => T => T
+// This change in search can find different instances, and thus potentially wildly different behaviour !
+```
+
+While these examples might seem damming, this is the case every time we change type inference.
+
+**Note:** All of this disappears if we change `val voo` to `val voo: Any => Any`, this is the reason it is recommended for library authors to always provide explicit types for all public members.
 
 ### Restrictions
 
