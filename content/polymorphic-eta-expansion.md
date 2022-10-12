@@ -342,8 +342,8 @@ If `ms` contains exactly one variant, then it is expanded as follows:
 `m` has to contain at least one explicit term clause before the return type or the next type clause.
 <details>
   <summary>Note</summary>
-  Since the only way to create multiple type clause is with extention methods, and since they force an explicit clause, this condition is currently equivalent to "`m` contains explicit term parameters".
-  The stricter wording was chosen to already accomodate [SIP-47 - Clause Interleaving](https://github.com/scala/improvement-proposals/pull/47).
+  Since the only way to create multiple type clause is with extension methods, and since they force an explicit clause, this condition is currently equivalent to "`m` contains explicit term parameters".
+  The stricter wording was chosen to already accommodate [SIP-47 - Clause Interleaving](https://github.com/scala/improvement-proposals/pull/47).
 </details>
 
 If `m` doesn't satisfy the above condition, go to [Default](#Default), otherwise:
@@ -417,8 +417,8 @@ While these examples might seem damming, this is the case every time we change t
 Not included in this proposal are:
 
 * Expanding `[T] => T => T` to `[T] => T => Id[T]` to make `tuple.map(identity)` work (might work out of the box anyways, but not guaranteed)
-* Expanding `x => x` to `[T] => (x: T) => x` if necessary (and generalisations)
-* Expanding `_` to `[T] => (x: T) => x` if necessary (and generalisations)
+* Expanding `x => x` to `[T] => (x: T) => x` if necessary (and generalizations)
+* Expanding `_` to `[T] => (x: T) => x` if necessary (and generalizations)
 * Polymorphic SAM conversion
 * Polymorphic functions from wildcard: `foo[_](_)`
 
@@ -475,7 +475,7 @@ No other alternatives have been imagined, the similarity between this proposal a
 
 * Pre-SIP: https://contributors.scala-lang.org/t/polymorphic-eta-expansion/5516
 * A naive implementation can be found at https://github.com/lampepfl/dotty/pull/14015 (it is more general than this proposal and thus breaks compatibility)
-* A compatibility-preserving implementation is in developement.
+* A compatibility-preserving implementation is in development.
 
 
 ## FAQ
