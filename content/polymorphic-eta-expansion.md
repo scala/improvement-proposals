@@ -390,27 +390,39 @@ This section should also argue to what extent backward source compatibility is p
 
 #### Binary and TASTy
 
-As this proposal never generates code that couldn't have been written before, these changes are binary and TASTy compatible.
+As this proposal never generates code that couldn't have been written by hand before, these changes are binary and TASTy compatible.
 
 #### Source
 
-This proposal conserves source compatibility when an expected type is present, since either the behaviour is the same, or the code did not compile before.
+This proposal conserves source compatibility when a non-polymorphic type is present, since by definition the behaviour is the same.
 
-This proposal breaks source compatibility only when there is no expected type, in this regard it is essentially a change in type inference, and therefore has all the usual repercussions of changing type inference, for example:
+In the case the expected type is polymorphic, either the code did not compile before, or there was an implicit conversion from the inferred monomorphic function to the expected polymorphic function. In the latter case, source compatibility is broken, since polymorphic eta-expansion will apply before search for implicit conversions, for example:
 
 ```scala
-def foo[T](x: T): T = x
-val voo = foo // was Any => Any is now [T] => T => T
-val y = voo(5) // was Any is now Int
+import scala.language.implicitConversions
+
+given conv: Conversion[Any => Any, [T] => T => T] = f => ([T] => (x: T) => x)
+
+def method[T](x: T): T = x
+
+val function: [T] => T => T = method
+// before: method is eta-expanded to Any => Any, and then converted using conv to [T] => T => T
+// now: method is eta-expanded to [T] => T => T (conv is not called)
+```
+
+When there is no expected type, this proposal breaks source compatibility, in this regard it is essentially a change in type inference, and therefore has all the usual repercussions of changing type inference, for example:
+
+```scala
+def method[T](x: T): T = x
+val function = method // was Any => Any is now [T] => T => T
+val y = function(5) // was Any is now Int
 
 def lookFor[T](x: T)(using u: T): T = u
-lookFor(foo) // was searching for Any => Any, is now searching for [T] => T => T
+lookFor(method) // was searching for Any => Any, is now searching for [T] => T => T
 // This change in search can find different instances, and thus potentially wildly different behaviour !
 ```
 
-While these examples might seem damming, this is the case every time we change type inference.
-
-**Note:** All of this disappears if we change `val voo` to `val voo: Any => Any`, this is the reason it is recommended for library authors to always provide explicit types for all public members.
+While these examples might seem damming, this is no different than any other change to type inference.
 
 ### Restrictions
 
