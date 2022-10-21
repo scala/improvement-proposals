@@ -16,7 +16,7 @@ title: SIP-50 - Struct Classes
 
 ## Summary
 
-Introduce “struct classes”, a new flavour of class definitions that is a middle
+We introduce “struct classes”, a new flavour of class definitions that is a middle
 ground between regular classes and case classes. Like case classes, struct classes
 structurally implement `equals`, `hashCode`, and `toString`. However, unlike with
 case classes, the companions of struct classes don't have `apply` and `unapply`
@@ -135,7 +135,7 @@ With this definition of `User`, our example program would look as follows:
 
 ~~~ scala
 val alice = User("Alice", 42)
-val updatedAlice = alice.withAge(age = alice.age + 1)
+val updatedAlice = alice.withAge(alice.age + 1)
 assert(updatedAlice == User("Alice", 43))
 updatedAlice match
   case User(_, age) => println(s"Alice is $age years old")
@@ -238,7 +238,7 @@ This definition can be used by our example program as follows:
 
 ~~~ scala
 val alice = User("Alice", 42)
-val updatedAlice = alice.withAge(age = alice.age + 1)
+val updatedAlice = alice.withAge(alice.age + 1)
 assert(updatedAlice == User("Alice", 43))
 updatedAlice match
   case user: User => println(s"Alice is ${user.age} years old")
@@ -333,7 +333,7 @@ Here is how the type `User` could be used:
 // public constructor
 val alice = User("Alice", 42)
 // constructor parameters are public members
-val updatedAlice = alice.withAge(age = alice.age + 1)
+val updatedAlice = alice.withAge(alice.age + 1)
 // structural equality
 assert(updatedAlice == User("Alice", 43))
 // only typed patterns are supported in match expressions
