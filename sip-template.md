@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
-title: SIP-NN Title of the Proposal
+title: SIP-NN - Title of the Proposal
 ---
 
 **By: Author A and Author B and Author C**
