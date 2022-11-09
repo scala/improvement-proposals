@@ -463,7 +463,10 @@ class different from `AnyRef`. In particular:
   name of the class and its elements.
 
 Finally, mirrors (instances of `scala.deriving.Mirror`) are not synthesized by the
-compiler for struct classes.
+compiler for struct classes. Indeed, mirrors would expose types reflecting the internal
+structure of the class, making it possible to write code that would be compatible only
+with the specific structure of the class definition at one point in time, but may be
+binary incompatible with an evolution of that class.
 
 ### Compatibility
 
