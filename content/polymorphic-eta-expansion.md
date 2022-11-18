@@ -2,6 +2,7 @@
 layout: sip
 title: SIP-49 - Polymorphic Eta-Expansion
 stage: implementation
+status: waiting-for-implementation
 permalink: /sips/:title.html
 ---
 
