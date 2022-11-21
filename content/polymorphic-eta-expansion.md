@@ -221,6 +221,12 @@ extension (x: Int)
 val extv1_1: [B] => B => B = extf1(4) // extf1(4) becomes [B'] => (y: B')  => extf1(4)[B'](y)
 
 val extv1_3: Int => [B] => B => B = extf1 // extf1 becomes (i: Int) => [B'] => (y: B')  => extf1(i)[B'](y)
+
+// See https://docs.scala-lang.org/sips/clause-interleaving.html
+def interleaved(key: Key)[V >: key.Value](default: V): V = ???
+val someKey: Key = ???
+val interleaved_1: [A >: someKey.Value] => A => A = interleaved(someKey)
+// interleaved(someKey) becomes [A' >: someKey.Value] => (default: A') => interleaved(someKey)[A'](default)
 ~~~
 
 #### Implicit parameters:
