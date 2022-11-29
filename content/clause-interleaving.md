@@ -103,14 +103,13 @@ It provides the best of all worlds:
 
 ### Specification
 We amend the syntax of def parameter clauses as follows:
-
 ~~~
 DefDcl                 ::=  DefSig ‘:’ Type
 DefDef                 ::=  DefSig [‘:’ Type] ‘=’ Expr
-DefSig                 ::=  id [DefParamClauses] [DefImplicitClause]
-DefParamClauses        ::=  DefParamClauseChunk {DefParamClauseChunk}
-DefParamClauseChunk    ::=  [DefTypeParamClause] TermOrUsingParamClause {TermOrUsingParamClause}
-TermOrUsingParamClause ::=  DefTermParamClause
+DefSig                 ::=  id [DefParamClauses] [DefImplicitClause]    -- and two DefTypeParamClause cannot be adjacent
+DefParamClauses        ::=  DefParamClause { DefParamClause }
+DefParamClause         ::=  DefTypeParamClause
+                         |  DefTermParamClause
                          |  UsingParamClause
 DefTypeParamClause     ::=  [nl] ‘[’ DefTypeParam {‘,’ DefTypeParam} ‘]’
 DefTypeParam           ::=  {Annotation} id [HkTypeParamClause] TypeParamBounds
