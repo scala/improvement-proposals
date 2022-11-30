@@ -480,6 +480,32 @@ Source compatibility is preserved, and the semantics of existing valid programs 
 changed because the proposal does not change the existing language features, it only
 adds a new keyword, `struct`.
 
+### Open questions
+
+#### Choice of keyword `struct`
+
+The keyword `struct` stands for “structural”, which relates directly to the semantics
+of `struct class` definitions: class definitions that automatically implement
+structural equality (as opposed to the default object reference equality).
+
+However, `struct` has historically also been used in C and C++ to define “data structures”,
+with no relation with structural equality. The keyword `struct` is also used in Swift and
+Rust with a similar meaning (“data structure”).
+
+Other languages implementing a similar feature use the following keywords:
+- `record` (Java), a restricted variant of `struct class` (Java records can’t
+  extend parent classes, can’t be extended, and can’t have mutable fields --- even
+  private ones),
+- `data class` (Kotlin), which are equivalent to `case classes` in Scala and have
+  the same issues regarding binary compatibility.
+
+We think that using the keyword `record` or `data` instead of `struct` would bring
+confusion because the feature these keywords relate to in other programming languages
+is closer to Scala `case classes` than `struct classes`. On the other hand, we agree
+that in other programming languages the keyword `struct` may have an established
+meaning that is different from the one we give here, so we are open to using a
+different keyword, such as `structural`.
+
 ## Alternatives
 
 Besides the two solutions shown in the Motivation section (based on regular classes
@@ -502,4 +528,8 @@ or a collection.
 
 ## FAQ
 
-N/A.
+**Should we synthesize a `Mirror` for a `struct class` definition?**
+
+No. [Mirrors](https://docs.scala-lang.org/scala3/reference/contextual/derivation.html#mirror)
+would publicly expose a type “mirroring” the shape of the class definitions (`MirroredElemTypes`),
+but that type may not match the run-time type of a newer version of the class definition.
