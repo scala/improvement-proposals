@@ -291,10 +291,17 @@ drawbacks:
 The last type of solutions are based on meta-programming facilities.
 [data-class](https://github.com/alexarchambault/data-class) and
 [scalameta](https://github.com/scalameta/scalameta/blob/01cb1137cac89d1453846ef1e7acb8f4a8833e6c/scalameta/common/shared/src/main/scala/org/scalameta/data/data.scala)
-are two examples of such solutions. They seem to be hard to maintain(see e.g.
+are two examples of such solutions. They define an annotation `@data` that
+can be attached to a class definition. When such code is compiled, the
+class definition is expanded with additional methods or with overridden
+methods. These approaches have the following drawbacks:
+- they can't work in Scala 3 because annotations can't change the type checking
+  (which would be necessary here if we want to introduce new methods to the
+  class, such as `copy`),
+- they seem to be hard to maintain(see e.g.
 [data-class#120](https://github.com/alexarchambault/data-class/issues/120) and
-[scalameta#2485](https://github.com/scalameta/scalameta/issues/2485)). Also, IDE
-support of meta-programming-based approaches is not always good.
+[scalameta#2485](https://github.com/scalameta/scalameta/issues/2485)),
+- also, IDE support of meta-programming-based approaches is not always good.
 
 ### Scope of the Proposal
 
@@ -508,6 +515,8 @@ different keyword, such as `structural`.
 
 ## Alternatives
 
+### Automatic generation of transformation methods
+
 Besides the two solutions shown in the Motivation section (based on regular classes
 or case classes), we also considered a more powerful variant of `struct class` that
 would also automatically generate the transformation methods (`withName`, `withAge`, 
@@ -519,6 +528,89 @@ be named `withHttpHeaders` or `withHTTPHeaders`?). Furthermore, it would be extr
 complicated to specify rules to handle "smarter" transformation methods, such as
 `withoutEmail` in our example, to specifically handle fields whose type is `Option`,
 or a collection.
+
+### Leverage `Product`
+
+We could introduce a new trait, say `Structural`, to the standard library,
+which would implement the methods `toString`, `hashCode`, and `equals` in 
+terms of methods provided by the trait `Product`:
+
+~~~ scala
+trait Structural extends Product:
+  override def hashCode: Int =
+    productIterator.foldLeft(17)((hash, field) => 37 * (hash + field.##))
+  override def equals(other: Any): Boolean =
+    other match
+      case that: Structural if that.canEqual(this) =>
+        this.productIterator
+          .zip(that.productIterator)
+          .forall((x, y) => x == y)
+      case _ => false
+  override def toString: String =
+    productIterator.mkString(
+      s"${productPrefix}${this.getClass.getName}(",
+      ",",
+      ")"
+    )
+~~~
+
+Then, the class `User` used as an example could be implemented as follows:
+
+~~~ scala
+class User(val name: String, val age: Int) extends Structural:
+  def canEqual(other: Any): Boolean = other.isInstanceOf[User]
+  def productArity: Int = 2
+  def productElement(n: Int): Any = n match
+    case 0 => name
+    case 1 => age
+  private def copy(name: String = this.name, age: Int = this.age): User =
+    User(name, age)
+  def withName(newName: String): User = copy(name = newName)
+  def withAge(newAge: Int): User = copy(age = newAge)
+~~~
+
+And adding a new field `email` would be achieved as follows:
+
+~~~ scala
+class User(val name: String, val age: Int, val email: Option[String]) extends Structural:
+  def this(name: String, age: Int): User = this(name, age, email = None)
+  def canEqual(other: Any): Boolean = other.isInstanceOf[User]
+  def productArity: Int = 3
+  def productElement(n: Int): Any = n match
+    case 0 => name
+    case 1 => age
+    case 2 => email
+  private def copy(name: String = this.name, age: Int = this.age, email: Option[String] = this.email): User =
+    User(name, age, email)
+  def withName(newName: String): User = copy(name = newName)
+  def withAge(newAge: Int): User = copy(age = newAge)
+  def withEmail(newEmail: Option[String]): User = copy(email = newEmail)
+~~~
+
+This solution requires significantly more work for developers since they need
+to:
+- provide an implementation for the abstract methods `canEqual`, 
+  `productArity`, and `productElement`, which are all inherited from `Product`,
+- manually define and maintain a `copy` method,
+- explicitly mark the constructor parameters as `val` parameters.
+
+To alleviate these problems, we could change the language to automatically 
+synthesize (if not already defined in the program):
+- an implementation for `productArity` and `productElement` from
+  the class constructor parameters,
+- an implementation of `canEqual`.
+
+With these changes, the code to define the `User` type would be the following:
+
+~~~ scala
+class User(val name: String, val age: Int) extends Structural:
+  private def copy(name: String = this.name, age: Int = this.age): User =
+    User(name, age)
+  def withName(newName: String): User = copy(name = newName)
+  def withAge(newAge: Int): User = copy(age = newAge)
+~~~
+
+Developers would still have to manually define and maintain the `copy` method.
 
 ## Related work
 
