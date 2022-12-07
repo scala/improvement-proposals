@@ -106,8 +106,8 @@ We amend the syntax of def parameter clauses as follows:
 ~~~
 DefDcl                 ::=  DefSig ‘:’ Type
 DefDef                 ::=  DefSig [‘:’ Type] ‘=’ Expr
-DefSig                 ::=  id [DefParamClauses] [DefImplicitClause]    -- and two DefTypeParamClause cannot be adjacent
-DefParamClauses        ::=  DefParamClause { DefParamClause }
+DefSig                 ::=  id [DefParamClauses] [DefImplicitClause]
+DefParamClauses        ::=  DefParamClause { DefParamClause }    -- and two DefTypeParamClause cannot be adjacent
 DefParamClause         ::=  DefTypeParamClause
                          |  DefTermParamClause
                          |  UsingParamClause
