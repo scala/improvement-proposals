@@ -12,7 +12,7 @@ title: SIP-NN Wildcard Context Bounds
 
 | Date          | Version            |
 |---------------|--------------------|
-| Sep 30th 2022 | Initial Draft      |
+| Dec 30th 2022 | Initial Draft      |
 
 ## Summary
 
