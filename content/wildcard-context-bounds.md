@@ -134,7 +134,7 @@ Several possibilities are under consideration that would reduce these headaches.
 
 - [This SIP](https://github.com/scala/improvement-proposals/pull/47) originally proposed multiple consecutive type parameter lists, which would be ideal for the additional type parameters in this SIP because they would be transparent to the user at the callsite (assuming they can be inferred, which is the common case).  At present, it looks likely that that SIP will be accepted, but with the explicit restriction that consecutive type parameter lists will be disallowed, rendering that SIP unhelpful for this headache.
 - [Named type arguments](https://dotty.epfl.ch/docs/reference/experimental/named-typeargs.html) can partially reduce the annoyances with additional desugared type parameters, but will still require call sites to changed to named invocation in order for the desugared type parameters to be transparent. In the above example, `foo[T = Int]("x")` would compile but `foo[Int]("x")` wouldn't.
-- [Partially applied type arguments](https://contributors.scala-lang.org/t/allow-specification-of-a-subset-of-type-parameters/5455/23) would also still require modification to the callsite, but where named type arguments would require the callsite to be aware of the names of type arguments, partially applied type arguments would only require knowledge of the number of type arguments -- `foo[Int, _]("x")` would compile 
+- [Partially applied type arguments](https://contributors.scala-lang.org/t/allow-specification-of-a-subset-of-type-parameters/5455/23) would also still require modification to the callsite, but where named type arguments would require the callsite to be aware of the names of type arguments, partially applied type arguments would only require knowledge of the number of type arguments -- `foo[Int, _]("x")` would compile. 
 
 Fortunately, only multiple consecutive type parameter lists interact with this SIP, but unfortunately, without knowing whether they will be implemented without the restriction on consecutive type parameter lists, this SIP must either go forward with appending type parameters to the existing list (making the change to using additional type parameter lists if they become available a breaking change), or it must patiently wait for a decision to be made.
 
@@ -162,11 +162,11 @@ Although the searchability of keywords is a big win, this proposal argues that:
 - this alternative syntax makes `Showable` appear to be an unparamerized type as in `def foo(using Showable)`, while the proposed syntax clearly evokes context bounds
 - existing (soft) keywords would naturally lead to an expected alternative syntax for context bounds:
 
-~~~ scala
-def showAll[T using Showable](as: Set[T]): String
-~~~
+  ~~~ scala
+  def showAll[T using Showable](as: Set[T]): String
+  ~~~
 
-Unfortunately, this syntax would not be backwards compatible because of infix type syntax: `T using Showable` is infix syntax for `using[T, Showable]`. 
+  Unfortunately, this syntax would not be backwards compatible because of infix type syntax: `T using Showable` is infix syntax for `using[T, Showable]`. 
 
 ## Related work
 
