@@ -48,7 +48,7 @@ Note that the type parameter name `A` is a nuisance: it only needs a name becaus
 def showAll(xs: Set[? <: Showable]): String = xs.map(_.show).join("\n")
 ~~~
 
-Rust, which has only typeclasses and no inheritance, already has a solution for this use case: `impl` [parameters](Rust's existing `impl` [parameters](https://doc.rust-lang.org/reference/types/impl-trait.html).
+Rust, which has only typeclasses and no inheritance, already has a solution for this use case: `impl` [parameters](https://doc.rust-lang.org/reference/types/impl-trait.html).
 
 One motivating use case for this feature is possibility to mimic Rust's [Into](https://doc.rust-lang.org/std/convert/trait.Into.html) typeclass, which provides for a more narrowly scoped implicit conversion mechanism than Scala's existing implicit conversions. Rust uses a (mostly) non-privileged `Into` typeclass to declare that a parameter can take any type convertible to a particular type:
 
