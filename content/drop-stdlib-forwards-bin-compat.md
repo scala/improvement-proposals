@@ -88,6 +88,11 @@ Dropping forwards binary compatiblity allows adding new methods to existing clas
 While this opens a big door in principle, I am certain that stability, consistency and caution will remain core considerations when discussing additions to the standard library.
 However, I believe that allowing to (carefully) evolve the standard library is greatly beneficial for the Scala community.
 
+Examples that came up in the past
+  - various proposals for new operations are here: https://github.com/scala/scala-library-next/issues and https://github.com/scala/scala-library-next/pulls
+  - addition of `ExecutionContext.opportunistic` in 2.13.4, which could not be made public: https://github.com/scala/scala/pull/9270
+  - adding `ByteString`: https://contributors.scala-lang.org/t/adding-akkas-bytestring-as-a-scala-module-and-or-stdlib/5967
+  - new string interpolators: https://github.com/scala/scala/pull/8654
 
 ## Alternatives and Related Work
 
@@ -117,6 +122,16 @@ Concretely, a project might update one of its dependencies to a new version whic
 If the project continues using an old version of sbt, the build tool will keep the Scala library pinned.
 The new library might reference definitions that don't exist in the older Scala library, leading to linkage errors.
 
+### Scala.js and Scala Native
+
+Scala.js distributes a JavaScript version of the Scala library.
+This artifact is currently released once per Scala.js version.
+When a new Scala version comes out, a new Scala.js compiler is released, but the Scala library artifact continues to be used until the next Scala.js version.
+This scheme does not work if the new Scala version has new definitions, so it needs to be adjusted.
+Finding a solution for this problem is necessary and part of the implementation phase.
+
+A similar situation might exist for Scala Native.
+
 ### Compiler and Library Version Mismatch
 
 Defining the `scalaVersion` in a project would no longer pin the standard library to that exact version.
@@ -134,6 +149,11 @@ Because the build tool can update the Scala library version, a project might acc
 This is safe, as the project's POM file will have a dependency on the newer version of the Scala library.
 The same situation can appear with any other dependency of a project.
 
+### Applications with Plugin Systems
+
+In applications where plugins are dynamically loaded, plugins compiled with a new Scala library could fail to work correctly if the application is running with an older Scala library.
+
+This is however not a new issue, the proposed change would just extend the existing problem to the Scala library.
 
 ## Limitations
 
