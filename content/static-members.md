@@ -1,13 +1,15 @@
 ---
 layout: sip
 title: SIP-30 - @static fields and methods in Scala objects (SI-4581)
-vote-status: "under-review"
-vote-text: Authors need to update the proposal before the next review.
+stage: completed
+status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/static-members.html
 ---
 
-__Dmitry Petrashko, Sébastien Doeraene and Martin Odersky__
+> This proposal has been implemented in Scala 3.0.0
+
+**Authors: Dmitry Petrashko, Sébastien Doeraene and Martin Odersky**
 
 __first submitted 11 January 2016__
 
