@@ -175,7 +175,7 @@ A definition can be both `@binaryAPI` and `@binaryAPIAccessor`. This would be us
 
 ### Other concerns
 
-* Tools that analyze inlined TASTy code might need to know about `@binaryAPI`. For example TASTy MiMa.
+* Tools that analyze inlined TASTy code might need to know about `@binaryAPI`. For example [MiMa](https://github.com/lightbend/mima/) and [TASTy MiMa](https://github.com/scalacenter/tasty-mima).
 
 ### Open questions
 
