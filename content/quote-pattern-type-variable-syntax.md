@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: pre-sip
 status: submitted
-title: SIP-NN - Quote pattern explicit type variable syntax
+title: SIP-53 - Quote pattern explicit type variable syntax
 ---
 
 **By: Nicolas Stucki**
