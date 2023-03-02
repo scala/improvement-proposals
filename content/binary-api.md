@@ -44,6 +44,7 @@ There is no precise mechanism to remove a deprecated method from a library witho
 + private[C] def myOldAPI: T = ...
 ```
 
+Related to discussion in https://github.com/lightbend/mima/discussions/724
 
 ## Proposed solution
 
