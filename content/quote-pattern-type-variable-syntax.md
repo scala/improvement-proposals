@@ -96,7 +96,7 @@ case '{ type tail <: Tuple; $x: *[Int, tail] } => h[tail](x: Expr[*[Int, tail])
 ```
 ```scala
 case '[ type t; List[t] ] => f[t]
-case '[ type tail <: Tuple <: *[Int, tail] ] => g[tail]
+case '[ type tail <: Tuple; *[Int, tail] ] => g[tail]
 ```
 
 ### Specification
