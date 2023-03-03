@@ -85,7 +85,7 @@ We first want to introduce syntax for explicit type variable definitions in quot
 
 ```scala
 case '[ type t; List[`t`] ] => f[t]
-case '[ type tail <: Tuple <: *[Int, `tail`] ] => g[tail]
+case '[ type tail <: Tuple; *[Int, `tail`] ] => g[tail]
 ```
 
 Second, we want the remove the need for backticks for references to explicit type variable definitions. If we have an explicit type variable definition and a type variable with the same name, we can syntactically assume these are the same and not introduce a new nested type variable.
