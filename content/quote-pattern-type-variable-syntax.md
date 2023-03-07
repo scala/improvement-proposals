@@ -34,7 +34,7 @@ The initial `type` declarations in the pattern with a type variable name (lowerc
 ```scala
 case '{ type t; $x: `t` } => f[t](x: Expr[t])
 case '{ type u; ($ls: List[`u`]).map($f: `u` => Int) } => g[u](ls: Expr[List[u]], f: Expr[u => Int])
-case '{ type tail <: Tuple; $x: *[Int, `tail`] } => h[tail](x: Expr[*[Int, tail])
+case '{ type tail <: Tuple; $x: *:[Int, `tail`] } => h[tail](x: Expr[*:[Int, tail])
 ```
 
 ##### Nested type variable
@@ -85,18 +85,18 @@ We first want to introduce syntax for explicit type variable definitions in quot
 
 ```scala
 case '[ type t; List[`t`] ] => f[t]
-case '[ type tail <: Tuple; *[Int, `tail`] ] => g[tail]
+case '[ type tail <: Tuple; *:[Int, `tail`] ] => g[tail]
 ```
 
 Second, we want the remove the need for backticks for references to explicit type variable definitions. If we have an explicit type variable definition and a type variable with the same name, we can syntactically assume these are the same and not introduce a new nested type variable.
 ```scala
 case '{ type t; $x: t } => f[t](x: Expr[t])
 case '{ type u; ($ls: List[u]).map($f: u => Int) } => g[u](ls: Expr[List[u]], f: Expr[u => Int])
-case '{ type tail <: Tuple; $x: *[Int, tail] } => h[tail](x: Expr[*[Int, tail])
+case '{ type tail <: Tuple; $x: *:[Int, tail] } => h[tail](x: Expr[*:[Int, tail])
 ```
 ```scala
 case '[ type t; List[t] ] => f[t]
-case '[ type tail <: Tuple; *[Int, tail] ] => g[tail]
+case '[ type tail <: Tuple; *:[Int, tail] ] => g[tail]
 ```
 
 ### Specification
