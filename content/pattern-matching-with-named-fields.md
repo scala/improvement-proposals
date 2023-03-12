@@ -153,16 +153,17 @@ To allow case class to become more extensible, all unused parameters should be i
 
 ### Syntax
 
-This SIP proposes to change the syntax of `Patterns` to:
+This SIP proposes to change the syntax of `Patterns` to allow names in patterns and the keyword `match` as a modifier:
 
 ```
 Patterns          ::=  NamedPattern {‘,’ NamedPattern}
 ArgumentPatterns  ::=  ‘(’ [Patterns] ‘)’
                     |  ‘(’ [Patterns ‘,’] PatVar ‘*’ ‘)’
 NamedPattern      ::= [id ‘=’] Pattern
-```
 
-*TODO*: Add new `match` modifier syntax here
+LocalModifier     ::= ...
+                    | ‘match’      
+```
 
 ### Desugaring
 
