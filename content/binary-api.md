@@ -81,6 +81,9 @@ public class C {
 }
 ~~~
 
+In the bytecode, `@binaryAPI` definitions will have the [ACC_PUBLIC](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.1-200-E.1) flag.
+<!-- We can also set the [ACC_SYNTHETIC](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.1-200-E.1) to hide these definitions from javac and java IDEs. -->
+
 #### `@binaryAPIAccessor` annotation
 
 A binary API with accessor is a definition that is annotated with `@binaryAPIAccessor`.
@@ -109,6 +112,8 @@ public class C {
 
 Note that the change from `private[this]` to package private, protected or public is a binary compatible change.
 Removing this annotation is a binary incompatible change.
+
+In the bytecode, `@binaryAPIAccessor` generated accessors will have the [ACC_PUBLIC | ACC_SYNTHETIC](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.1-200-E.1) flag.
 
 #### Binary API and inlining
 
