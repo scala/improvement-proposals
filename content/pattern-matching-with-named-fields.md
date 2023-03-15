@@ -58,18 +58,22 @@ My personal motivation comes from using [`matchPattern` in ScalaTest](https://ww
 and got bitten by it every time my data model changed slightly. So named pattern matching is also allowed where ever normal pattern matching allowed:
 
 ```scala
-user should matchPattern { case User(name = "Sarah", _*) => } // ScalaTest
+// Partial Function
+def usersInCity(users: List[User], city: String) =
+  users.collect {
+    case User(name = name, _, city = user.city) => name
+  }
 
-val User(age = ageOfUser, _*) = user
+user should matchPattern { 
+  case User(name = "Sarah", _*) => 
+} // Partial function in ScalaTest
 
+// Assignments
 for {
-  User(name = userName, _*) <- db.fetchUser()
+  User(name = userName, _, _) <- db.fetchUser()
 } yield userName
 
-def neighboursNameOfUser(user: User, allUsers: List[User]) =
-  allUsers.collect {
-    case neighbour @ User(city = user.city, name = name, _*) if neighbour != user => name
-  }
+val User(age = ageOfUser, _*) = user
 ```
 
 ## Design
@@ -78,15 +82,18 @@ The goal is to allow named parameter in deconstruction as in construction.
 
 ### Defining names
 
-Definitions can have a new modifier `match`. 
+Definitions can have a new modifier `match`.
 
+*TODO* Desugared example of the User class.
+
+Pseudo Code to match position and name:
 ```
 val matchers = definitions.filter(hasMatchModifier)
 val nth = definitions.filter(startsWithUnderscoreAndHasNumber)
 
 assert(matchers.length == nth.length)
 
-val pairs = matchers zip nth
+val pairs = matchers.zip(nth)
 ```
 
 All fields of a case class are implicitly a `match` field. So writing `case class User(match id: Sting)` is redundant and can be shorten to `case class User(id: String)`.
@@ -95,60 +102,67 @@ All fields of a case class are implicitly a `match` field. So writing `case clas
 
 Mixed patterns, with positional and named patterns are allowed to keep the similarity.
 If a positional pattern comes after a named pattern, all named patterns before it must be at the correct position.
-*TODO*: Look up better description from conversation
 
 ```scala
   case User("Anna", age = 10, "Berlin") => // name the second field to improve readability
-  case User(_, city = c, _*) => // Leading underscore are especially useless
+  case User(_, city = c, _) => // error, because city is at the wrong position
 ```
 
-With this change the `_*` token becomes overloaded for patterns with VarArgs. 
+### Ignoring unused fields
 
-```scala
-case class Country(name: String, population: Long, cites: String*)
+Per default all patterns have to use all fields either by position or name.
+This is to allow save evolution of an API.
+Like in the ScalaTest example above, it not always desired to use all fields of a pattern.
+To ignore all unused fields I propose to use `_*` at the end of the pattern:
 
-  // Ignore nothing
-  case Country(name = _, cities = "Berlin")
-  // Ignore all cities and fields:
-  case Country(name = "Germany", _*)
-  // Ignore all cities, but not fields:
-  case Country(name = "Germany", cities = _*)
-  // Ignore fields:
-  case Country(name = _, cities = _*, _*)
 ```
+  case User(name = "Anna", _*)
+```
+
+Note: If it becomes best practice to always use this token, we can make it the default behavior later on.
 
 ### Case classes with sequences
 
 For the case that the extractor is a mixture of [product and sequence match](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#product-sequence-match) the name of the sequence can only be used at the last position.
+With this SIP the `_*` token becomes overloaded for patterns with VarArgs. 
+
+Following interactions are possible: *TODO*: Clean up
 
 ```
-case class Country(name: String, cities: String*)
+case class Country(name: String, pop: Long, cities: String*)
 
 county match:
-  case Country(cities = "Berlin", "Hamburg") = ???  // ok
-  case Country(cities = "Berlin", _*) = ??? // ok
-  case Country(cities = "Berlin", "Hamburg", name = "Germany") = ??? // not okay
-```
+  // Error, unused fields: name und pop
+  case Country(cities = "Berlin", "Hamburg")
+  
+  // Ignores all other cities and the missing pop field
+  case Country(cities = "Berlin", _*)
 
-*TODO*: Check with section above
+  // Error, name is used after cities
+  case Country(cities = "Berlin", "Hamburg", name = "Germany")
+
+  // Ignores nothing, so the missing population is an error:
+  case Country(name = _, cities = "Berlin")
+
+  // Ignore all cities and unused fields:
+  case Country(name = "Germany", _*)
+  // Positional equivalent
+  case Country("Germany", _*)
+
+  // Ignore all cities, but not fields, so the missing population is an error: 
+  case Country(name = "Germany", cities = _*)
+
+  // Ignore fields:
+  case Country(name = "Germany", cities = _*, _*)
+```
 
 ### Disallow same name twice
 
-```scala
-  case User(city = city1, city = city2, _*) => a // error city is used twice
-  case User(name1, name = name2, _*) => a // error name is used twice
-```
-
-### Ignoring of unused parameters
-
-Per default all patterns have to use all fields either by position or name.
-This is to allow save evolution of an API.
-
-To allow case class to become more extensible, all unused parameters should be ignored. So when a field is added to the cases class old patterns stay source compatible.
+It's not allowed to use the same name twice:
 
 ```scala
-  case User(city = "Paris", _*) => // is the same as
-  case User(_, _, "Paris") =>
+  case User(city = city1, city = city2, age = _, city = _) => a // error city is used twice
+  case User(name1, _, _, name = name2) => a // error name is used twice
 ```
 
 ### Syntax
@@ -169,18 +183,22 @@ LocalModifier     ::= ...
 
 > One important principle of Scala’s pattern matching design is that case classes should be abstractable. I.e. we want to be able to represent the abilities of a case class without exposing the case class itself. That also allows code to evolve from a case class to a regular class or a different case class while maintaining the interface of the old case class. [Martin Odersky](https://contributors.scala-lang.org/t/pattern-matching-with-named-fields/1829/52)
 
-*TODO*: 
+Options:
+* Desugar everything down to positional patterns (like the prototype) Downside binary compatibility: Changing the order of fields in a lib will change the meaning of the binary representation, but not on source code level.
+* Don't desugar, but pass the name through the whole pipeline until the class file. Binary and source code representation are aligned. Downside: way more complex with potential performance impact.
 
 
 ### Compatibility
 
-Older Scala version would just ignore the `match` modifier and would work as before. 
+Source code: The new syntax wan't valid before, so allowing it won't brake any code. That also means older Scala versions won't be able to consume source code which use named patterns or declare directly match definitions.
 
-*TODO*: But how much compatibility do we want here, when a newer version consumes the case class of an older scala version? It should be possible to recover the names of the case classes, but that may leaks internals.
+Libraries: Using a library that declares match definitions from an older Scala version must be okay. The `match` modifier should be ignored. Case class from an older Scala version don't provide match definitions.
 
 ### Implementation
 
 *TODO*:
+
+Current draft can be found here: lampepfl/dotty#15437.
 
 ## Alternatives
 
@@ -217,7 +235,7 @@ As the above described desugaring has its drawbacks. Here are some alternatives 
 
 #### Use underscore methods
 
-In the spirit of [name based pattern matching](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#name-based-match):
+In the spirit of [name based pattern matching](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#name-based-match) instead of using the modifier `match`, we could use an underscore at the beginning of method name:
 
 ```scala
 object User:
@@ -232,21 +250,13 @@ object User:
   def unapply(user: User) = UserMatching(user)
 ```
 
-An alternative would be to prefix methods with a keyword (e.g. `case`) instead of using an underscore.
-
 Pro:
 
-* have more named fields than positional fields
-* allows `@deprecatedName`
-* enabled meaningful names in variadic patterns
-* lazy evaluation patterns where bad field could have type `Nothing` or would throw could, but the pattern would match, as long the bad field isn't mentioned. (This would have many consequences)
-* It's easy to add extractors for maps in another SIP. At least on the encoding side.
+* Option to write n
 
 Con:
 
-* How to detect that a name means the same as a position? Maybe detect simple patterns like the last line in the example?
-* It's long and verbose, without any shortcuts in sight.
-* An underscore at the beginning of a name isn't an unheard of pattern, even in Scala. This could accidentally expose fields, which weren't supposed to become fields.
+* Not as explicit as the current proposal
 
 #### Annotated `unapply` method
 
