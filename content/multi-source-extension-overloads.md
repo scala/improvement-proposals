@@ -111,9 +111,29 @@ The only workarounds that exist are unsatisfactory.
 We can avoid using extensions with the same name in the same scope.
 In the above example, that would be annoying enough to defeat the purpose of the extensions in the first place.
 
-The only other possibility is to *define* all extension methods of the same name in the same `object` (or as top-level definitions in the same file).
+Another possibility is to *define* all extension methods of the same name in the same `object` (or as top-level definitions in the same file).
 This is possible, although cumbersome, if they all come from the same library.
 However, it is impossible to combine extension methods coming from separate libraries in this way.
+
+Finally, there exists a trick with `given`s of empty refinements:
+
+```scala
+object PathExtensions:
+  given pathExtensions: {} with
+    extension (path: Path)
+      def /(child: String): Path = path.resolve(child).nn
+
+object URIExtensions:
+  given uriExtensions: {} with
+    extension (uri: URI)
+      def /(child: String): URI = uri.resolve(child)
+```
+
+The empty refinement `: {}` prevents those `given`s from polluting the actual implicit scope.
+`extension`s defined inside `given`s that are in scope can be used, so this trick allows to use `/` with the imports of `PathExtensions.*` and `URIExtensions.*`.
+The `given`s must still have different names for the trick to work.
+This workaround is however quite obscure.
+It hides intent behind a layer of magic (and an additional indirection at run-time).
 
 ### Problem for migrating off of implicit classes
 
