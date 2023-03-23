@@ -46,6 +46,10 @@ There is no precise mechanism to remove a deprecated method from a library witho
 
 Related to discussion in https://github.com/lightbend/mima/discussions/724
 
+### No way to inline reference to private constructors
+
+It is currently impossible to refer to private constructors in inline methods. If users want to access one of those, they must write an accessor explicitly. This extra indirection is undesirable.
+
 ## Proposed solution
 
 ### High-level overview
@@ -58,7 +62,7 @@ A binary API is a definition that is annotated with `@binaryAPI` or overrides a 
 This annotation can be placed on `def`, `val`, `lazy val`, `var`, `object`, and `given` definitions.
 A binary API will be publicly available in the bytecode.
 
-This annotation cannot be used on `private`/`private[this]` definitions.
+This annotation cannot be used on `private`/`private[this]` definitions. With the exception of class constructors.
 
 Removing this annotation from a non-public definition is a binary incompatible change.
 
