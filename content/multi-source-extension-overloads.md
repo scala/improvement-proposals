@@ -157,7 +157,37 @@ For the same reason, we do not propose to change regular calls of methods that h
 
 ### Specification
 
-From the [specification of extension methods](https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html#translation-of-calls-to-extension-methods), we amend step 1. of "The precise rules for resolving a selection to an extension method are as follows."
+We make two changes to the [specification of extension methods](https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html).
+
+In the section [Translation of Extension Methods](https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html#translation-of-extension-methods), we make it clearer that the "desugared" version of the call site may require an explicit qualifier.
+This is not strictly a novelty of this SIP, since it could already happen with `given`s and implicit scopes, but this SIP adds one more case where this can happen.
+
+Previously:
+
+> So, the definition of circumference above translates to the following method, and can also be invoked as such:
+>
+> `<extension> def circumference(c: Circle): Double = c.radius * math.Pi * 2`
+>
+> `assert(circle.circumference == circumference(circle))`
+
+With this SIP:
+
+> So, the definition of circumference above translates to the following method, and can also be invoked as such:
+>
+> `<extension> def circumference(c: Circle): Double = c.radius * math.Pi * 2`
+>
+> `assert(circle.circumference == circumference(circle))`
+>
+> or
+>
+> `assert(circle.circumference == qualifierPath.circumference(circle))`
+>
+> for some `qualifierPath` in which `circumference` is actually declared.
+> Explicit qualifiers may be required when the extension method is resolved through `given` instances, implicit scopes, or disambiguated from several imports.
+
+---
+
+In the section [Translation of Calls to Extension Methods](https://docs.scala-lang.org/scala3/reference/contextual/extension-methods.html#translation-of-calls-to-extension-methods), we amend step 1. of "The precise rules for resolving a selection to an extension method are as follows."
 
 Previously:
 
@@ -180,15 +210,20 @@ With this SIP:
 The proposal only alters situations where the previous specification would reject the program with an ambiguous import.
 Therefore, we expect it to be backward source compatible.
 
-The resolved calls could previously be spelled out by hand (with fully-qualified names), so binary and TASTy compatibility are not affected.
+The resolved calls could previously be spelled out by hand (with fully-qualified names), so binary compatibility and TASTy compatibility are not affected.
+
+### Other concerns
+
+With this SIP, some calls that would be reported as *ambiguous* in their "normal" form can actually be written without ambiguity if used as extensions.
+That may be confusing to some users.
+Although specific error messages are not specified and therefore outside the SIP scope, we encourage the compiler implementation to enhance the "ambiguous" error message to address this confusion.
+If some or all of the involved ambiguous targets are `extension` methods, the compiler should point out that the call might be resolved unambiguously if used as an extension.
 
 ## Alternatives
 
 A number of alternatives were mentioned in [the Contributors thread](https://contributors.scala-lang.org/t/change-shadowing-mechanism-of-extension-methods-for-on-par-implicit-class-behavior/5831), but none that passed the bar of "we think this is actually implementable".
 
 ## Related work
-
-This section should list prior work related to the proposal, notably:
 
 - [Contributors thread acting as de facto Pre-SIP](https://contributors.scala-lang.org/t/change-shadowing-mechanism-of-extension-methods-for-on-par-implicit-class-behavior/5831)
 - [Pull Request in dotty](https://github.com/lampepfl/dotty/pull/17050) to support it under an experimental import
