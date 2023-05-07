@@ -18,7 +18,7 @@ With the first [first SIP ever named and default arguments](https://docs.scala-l
 
 This SIP introduces a readable, optional extensible, and intuitive way to deconstruct case classes in pattern matching.
 
-A WIP PR can be found here: https://github.com/Jentsch/dotty/tree/pattern-matching-with-named-fields
+A WIP-PR can be found here: https://github.com/Jentsch/dotty/tree/pattern-matching-with-named-fields
 
 This SIP is for now structured in three sections: 
 [Motivation](##Motivation) to visualize the desired outcome. 
@@ -82,18 +82,36 @@ The goal is to allow named parameter in deconstruction as in construction.
 
 ### Defining names
 
-Definitions can have a new modifier `match`.
+Definitions can have a new modifier `match`. 
 
-*TODO* Desugared example of the User class.
+```
+class User extends Product:
+  match val name: String
+  def _1 = name
+
+  match val age: Int
+  def _2 = age
+
+  match val city: String
+  def _3 = city
+
+  ...
+```
 
 Pseudo Code to match position and name:
 ```
 val matchers = definitions.filter(hasMatchModifier)
 val nth = definitions.filter(startsWithUnderscoreAndHasNumber)
 
-assert(matchers.length == nth.length)
-
-val pairs = matchers.zip(nth)
+if matchers.length == 0:
+    normal as before
+else if nth.lenght == 0:
+  inexhaustive only names
+else if matchers.length == nth.length:
+  val pairs = matchers.zip(nth)
+  exhaustive nth and names
+else
+  error
 ```
 
 All fields of a case class are implicitly a `match` field. So writing `case class User(match id: Sting)` is redundant and can be shorten to `case class User(id: String)`.
@@ -126,8 +144,6 @@ Note: If it becomes best practice to always use this token, we can make it the d
 For the case that the extractor is a mixture of [product and sequence match](https://dotty.epfl.ch/docs/reference/changed-features/pattern-matching.html#product-sequence-match) the name of the sequence can only be used at the last position.
 With this SIP the `_*` token becomes overloaded for patterns with VarArgs. 
 
-Following interactions are possible: *TODO*: Clean up
-
 ```
 case class Country(name: String, pop: Long, cities: String*)
 
@@ -135,19 +151,13 @@ county match:
   // Error, unused fields: name und pop
   case Country(cities = "Berlin", "Hamburg")
   
-  // Ignores all other cities and the missing pop field
-  case Country(cities = "Berlin", _*)
-
-  // Error, name is used after cities
-  case Country(cities = "Berlin", "Hamburg", name = "Germany")
-
-  // Ignores nothing, so the missing population is an error:
-  case Country(name = _, cities = "Berlin")
-
   // Ignore all cities and unused fields:
   case Country(name = "Germany", _*)
   // Positional equivalent
   case Country("Germany", _*)
+
+  // Error, name is used after cities
+  case Country(cities = "Berlin", "Hamburg", name = "Germany")
 
   // Ignore all cities, but not fields, so the missing population is an error: 
   case Country(name = "Germany", cities = _*)
@@ -167,7 +177,7 @@ It's not allowed to use the same name twice:
 
 ### Syntax
 
-This SIP proposes to change the syntax of `Patterns` to allow names in patterns and the keyword `match` as a modifier:
+This SIP proposes to change the syntax of `Patterns` to allow names in patterns and the keyword `match` as a modifier for `val`, `def`, and `var`:
 
 ```
 Patterns          ::=  NamedPattern {‘,’ NamedPattern}
@@ -195,8 +205,6 @@ Source code: The new syntax wan't valid before, so allowing it won't brake any c
 Libraries: Using a library that declares match definitions from an older Scala version must be okay. The `match` modifier should be ignored. Case class from an older Scala version don't provide match definitions.
 
 ### Implementation
-
-*TODO*:
 
 Current draft can be found here: lampepfl/dotty#15437.
 
@@ -306,10 +314,6 @@ user match:
 ```
 
 His proposal is strictly more powerful, but arguably less intuitive. Both, pattern matching with named fields and Partial destructuring in guards could be implemented along each other. Named fields for simple patterns and destructuring in guards for complex patterns. However, they offer two ways to do the same thing and could lead to lots of bike shedding, if both got added to the language.
-
-## Open questions
-
-Search for TODO in this file.
 
 ## References
 
