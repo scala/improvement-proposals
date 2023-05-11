@@ -48,7 +48,19 @@ Related to discussion in [https://github.com/lightbend/mima/discussions/724](htt
 
 ### No way to inline reference to private constructors
 
-It is currently impossible to refer to private constructors in inline methods. If users want to access one of those, they must write an accessor explicitly. This extra indirection is undesirable.
+It is currently impossible to refer to private constructors in inline methods.
+```scala
+class C private()
+object C:
+  inline def newC: C = new C() // Implementation restriction: cannot use private constructors in inline methods
+```
+If users want to access one of those, they must write an accessor explicitly. This extra indirection is undesirable.
+```scala
+class C private()
+object C:
+  private def newCInternal: C = new C()
+  inline def newC: C = newCInternal
+```
 
 ## Proposed solution
 
