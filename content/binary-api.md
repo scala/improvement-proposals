@@ -1,8 +1,8 @@
 ---
 layout: sip
 permalink: /sips/:title.html
-stage: pre-sip
-status: submitted
+stage: implementation
+status: waiting-for-implementation
 title: SIP-52 - Binary APIs
 ---
 
