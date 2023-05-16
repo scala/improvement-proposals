@@ -184,6 +184,7 @@ final class binaryAPIAccessor extends scala.annotation.StaticAnnotation
 
 * Only valid on `def`, `val`, `lazy val`, `var`, `object`, and `given`.
 * A public accessor will be generated for the annotated definition. This accessor will be named `<fullClassName>$$inline$<definitionName>`.
+* If the public accessor is in an object, the accessor will be named `inline$<definitionName>`.
 
 #### Inline
 
@@ -223,7 +224,7 @@ class B extends A:
 
 ## Alternatives
 
-Having alternatives is not a strict requirement for a proposal, but having at least one with carefully exposed pros and cons gives much more weight to the proposal as a whole. -->
+Having alternatives is not a strict requirement for a proposal, but having at least one with carefully exposed pros and cons gives much more weight to the proposal as a whole.
 
 ### Only add `@binaryAPI`
 This would simplify the system and the user interaction with this feature. The drawback is that we could not access `private[this]` definitions in inline code. Users would need to use `private[C]` instead, which could cause name clashes.
