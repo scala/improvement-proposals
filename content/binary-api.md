@@ -182,9 +182,9 @@ final class binaryAPIAccessor extends scala.annotation.StaticAnnotation
 
 #### `@binaryAPIAccessor` annotation
 
-* Only valid on `def`, `val`, `lazy val`, `var`, `object`, and `given`.
-* A public accessor will be generated for the annotated definition. This accessor will be named `<fullClassName>$$inline$<definitionName>`.
-* If the public accessor is in an object, the accessor will be named `inline$<definitionName>`.
+This annotation is only valid on `def`, `val`, `lazy val`, `var`, `object`, and `given`.
+
+A public accessor will be generated for the annotated definition. This accessor will be named `<fullClassName>$$inline$<definitionName>`. If the public accessor is in an object, the accessor will be named `inline$<definitionName>`. These names where chosen to minimize the complexity of migrating from automatically generates accessors in inline methods to `@binaryAPIAccessor` (see [Gist](https://gist.github.com/nicolasstucki/003f7293941836b08a0d53dbcb913e3c)).
 
 #### Inline
 
@@ -236,5 +236,6 @@ This would simplify the system and the user interaction with this feature. The d
 
 * Proof of concept: [https://github.com/lampepfl/dotty/pull/16992](https://github.com/lampepfl/dotty/pull/16992)
 * Initial discussions: [https://github.com/lampepfl/dotty/issues/16983](https://github.com/lampepfl/dotty/issues/16983)
+* Community migration analysis: [Gist](https://gist.github.com/nicolasstucki/003f7293941836b08a0d53dbcb913e3c)
 
 <!-- ## FAQ -->
