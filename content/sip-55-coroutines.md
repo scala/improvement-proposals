@@ -113,7 +113,7 @@ def gcd(a: Int, b: Int): Int =
 extension [Y] (list: List[Y]) 
   def map[Z](fili: Y => Z): List[Z] = list match 
     case Nil =>  Nil
-    case y :: ys => fili(y) :: ys.map(fun)
+    case y :: ys => fili(y) :: ys.map(fili)
 
 def pipe[X, Y, Z](tick: X => Y, tock: Y => Z): X => Z =
   (x: X) => tock(tick(x))
@@ -219,7 +219,7 @@ extension [Y] (list: List[Y])
     case y :: ys =>
       for
         z <- fili(y)
-        zs <- ys.mapT(fun)
+        zs <- ys.mapT(fili)
       yield z :: zs
 ```
 
