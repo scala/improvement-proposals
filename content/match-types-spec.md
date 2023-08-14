@@ -270,10 +270,13 @@ At the top level, `variance = 1` and `scrutIsWidenedAbstract = false`.
   * If `T` is a refined type of the form `Base { type Y = ti }`:
     * Let `q` be `X` if `X` is a stable type, or the skolem type `∃α:X` otherwise.
     * If `q` does not have a type member `Y`, fail as not matching (that implies that `X <:< Base` is false, because `Base` must have a type member `Y` for the pattern to be legal).
-    * If `q.Y` is abstract or is a class definition, fail as not specific.
-    * Otherwise, the underlying type definition of `q.Y` is of the form `= U`.
-    * If `q` is a skolem type `∃α:X` and `U` refers to `α`, fail as not specific.
-    * Compute `matchPattern(t, U, 0, scrutIsWidenedAbstract)`.
+    * If `q.Y` is abstract, fail as not specific.
+    * If `q.Y` is a class member:
+      * If `q` is a skolem type `∃α:X`, fail as not specific.
+      * Otherwise, compute `matchPattern(ti, q.Y, 0, scrutIsWidenedAbstract)`.
+    * Otherwise, the underlying type definition of `q.Y` is of the form `= U`:
+      * If `q` is a skolem type `∃α:X` and `U` refers to `α`, fail as not specific.
+      * Otherwise, compute `matchPattern(ti, U, 0, scrutIsWidenedAbstract)`.
   * If `T` is a concrete type alias to a type lambda:
     * Let `P'` be the beta-reduction of `P`.
     * Compute `matchPattern(P', X, variance, scrutIsWidenedAbstract)`.
@@ -303,6 +306,7 @@ These can be categorized as follows:
 * 2 libraries with 1 type member extractor each where the `Base` does not contain `Y`; they are both to extract `SomeEnumClass#Value` (from Scala 2 `scala.Enumeration`-based "enums").
   * https://github.com/iheartradio/ficus/blob/dcf39d6cd2dcde49b093ba5d1507ca478ec28dac/src/main/scala-3/net/ceedubs/ficus/util/EnumerationUtil.scala#L4-L8
   * https://github.com/json4s/json4s/blob/5e0b92a0ca59769f3130e081d0f53089a4785130/ext/src/main/scala-3/org/json4s/ext/package.scala#L4-L8
+    * the maintainers of `json4s` already accepted a PR with a workaround at https://github.com/json4s/json4s/pull/1347
 * 1 library used to have 2 cases of the form `case HKExtractor[f] =>` with `type KHExtractor[f[_, _]] = Base { type Y[a, b] = f[a, b] }`.
   * Those used to be at https://github.com/7mind/idealingua-v1/blob/48d35d53ce1c517f9f0d5341871e48749644c105/idealingua-v1/idealingua-v1-runtime-rpc-http4s/src/main/scala-3/izumi/idealingua/runtime/rpc/http4s/package.scala#L10-L15 but they do not exist in the latest version of the library.
 * 1 library used to have 1 `&`-type extractor (which "worked" who knows how?):
@@ -314,7 +318,7 @@ These can be categorized as follows:
   defined at https://github.com/kory33/s2mc-test/blob/d27c6e85ad292f8a96d7d51af7ddc87518915149/protocol-core/src/main/scala/io/github/kory33/s2mctest/core/generic/compiletime/Generic.scala#L12
   It could be replaced by a concrete `class Lock[A](phantom: A)` instead.
 
-The only case for which there exists no workaround that we know of is the extractor for `scala.Enumeration`-based `Value` classes.
+All the existing use cases therefore have either already disappeared or have a workaround.
 
 ### Other concerns
 
