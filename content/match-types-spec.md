@@ -30,10 +30,12 @@ Illegal match types are rejected, which is a breaking change, and can be recover
 ## Motivation
 
 Currently, match type reduction is implementation-defined.
-Matching a scrutinee type `X` against a pattern `P` with captures `ts` works as follows:
+The core of the logic is matching a scrutinee type `X` against a pattern `P` with captures `ts`.
+Captures are similar to captures in term-level pattern matching: in the type-level `case List[t] =>`, `t` is a (type) capture, just like in the term-level `case List(x) =>`, `x` is a (term) capture.
+Matching works as follows:
 
 1. we create new type variables for the captures `ts'` giving a pattern `P'`,
-2. we ask the compiler's `TypeComparer` (the type inference black blox) to "try and make it so" that `X <:< P'`,
+2. we ask the compiler's `TypeComparer` (the type inference black box) to "try and make it so" that `X <:< P'`,
 3. if it manages to do so, we get constraints for `ts'`; we then have a match, and we instantiate the body of the pattern with the received constraints for `ts`.
 
 The problem with this approach is that, by essence, type inference is an unspecified black box.
@@ -42,30 +44,55 @@ This is fine everywhere else in the language, because what type inference comes 
 When we read TASTy files, we do not have to perform the work of type inference again; we reuse what was already computed.
 When a new version of the compiler changes type inference, it does not change what was computed and stored in TASTy files by previous versions of the compiler.
 
-For match types, this is a problem, because reduction spans across TASTy file.
+For match types, this is a problem, because reduction spans across TASTy files.
+Given some match type `type M[X] = X match { ... }`, two codebases may refer to `M[SomeType]`, and they must reduce it in the same way.
+If they don't, hard incompatibilities can appear, such as broken subtyping, broken overriding relationships, or `AbstractMethodError`s due to inconsistent erasure.
+
 In order to guarantee compatibility, we must ensure that, for any given match type:
 
-* if it reduces in a given way in verion 1 of the compiler, it still reduces in the same way in version 2, and
-* if it decides disjointness in version 1, it still decides disjointness in version 2.
+* if it reduces in a given way in version 1 of the compiler, it still reduces in the same way in version 2, and
+* if it does not reduce in version 1 of the compiler, it still does not reduce in version 2.
+* (it is possible for version 1 to produce an *error* while version 2 successfully reduces or does not reduce)
 
-By delegating reduction to the `TypeComparer` black box, it is in practice impossible to guarantee the former.
+Reduction depends on two decision produces:
+
+* *matching* a scrutinee `X` against a pattern `P` (which we mentioned above), and
+* deciding that a scrutinee `X` is *provably disjoint* from a pattern `P` (disjointness is not affected by this SIP; see below).
+
+When a scrutinee does not match a given pattern and cannot be proven disjoint from it either, the match type is "stuck" and does not reduce.
+
+If matching is delegated to the `TypeComparer` black box, then it is impossible in practice to guarantee the first compatibility property.
 
 In order to solve this problem, this SIP provides a specification for match type reduction that is independent of the `TypeComparer` black box.
 It defines a subset of match type cases that are considered legal.
 Legal cases get a specification for when and how they should reduce for any scrutinee.
 Illegal cases are rejected as being outside of the language.
-For compatibility reasons, they can still be accepted with `-source:3.3`; in that case, they reduce using the existing, unspecified (and prone to breakage) implementation.
 
-For legal cases, the proposed reduction specification should reduce in the same way as the current implementation for the majority of cases.
-That is however not possible to guarantee, since the existing implementation is not specified in the first place.
+For compatibility reasons, such now-illegal cases will still be accepted under `-source:3.3`; in that case, they reduce using the existing, unspecified (and prone to breakage) implementation.
+Due to practical reasons (see "Other concerns"), doing so does *not* emit any warning.
+Eventually, support for this fallback may be removed if the compiler team decides that its maintenance burden is too high.
+As usual, this SIP does not by itself provide any specific timeline.
+In particular, there is no relationship with 3.3 being an "LTS"; it just happens to be the latest "Next" as well at the time of this writing (the changes in this SIP will only ever apply to 3.4 onwards, so the LTS is not affected in any way).
+
+For legal cases, the proposed reduction specification should reduce in the same way as the current implementation for all but the most obscure cases.
+Our tests, including the entire dotty CI and its community build, did not surface any such incompatibility.
+It is however not possible to guarantee that property for *all* cases, since the existing implementation is not specified in the first place.
 
 ## Proposed solution
 
-### High-level overview
-
-By its nature, this proposal only contains a specification, without any high level overview.
-
 ### Specification
+
+#### Preamble
+
+Some of the concepts mentioned here are defined in the existing Scala 3 specification draft.
+That draft can be found in the dotty repository at https://github.com/lampepfl/dotty/tree/main/docs/_spec.
+It is not rendered anywhere yet, though.
+
+Here are some of the relevant concepts that are perhaps lesser-known:
+
+* Chapter 3, section "Internal types": concrete v abstract syntax of types.
+* Chapter 3, section "Base Type": the `baseType` function.
+* Chapter 3, section "Definitions": whether a type is concrete or abstract (unrelated to the concrete or abstract *syntax*).
 
 #### Syntax
 
@@ -75,18 +102,30 @@ The way that a pattern is parsed and type captures identified is kept as is.
 Once type captures are identified, we can represent the *abstract* syntax of a pattern as follows:
 
 ```
+// Top-level pattern
 MatchTypePattern ::= TypeWithoutCapture
                    | MatchTypeAppliedPattern
 
+// A type that does not contain any capture, such as `Int` or `List[String]`
+TypeWithoutCapture ::= Type // `Type` is from the "Internal types" section of the spec
+
+// Applied type pattern with at least one capture, such as `List[Seq[t]]` or `*:[Int, t]`
 MatchTypeAppliedPattern ::= TyconWithoutCapture ‘[‘ MatchTypeSubPattern { ‘,‘ MatchTypeSubPattern } ‘]‘
 
+// The type constructor of a MatchTypeAppliedPattern never contains any captures
+TyconWithoutCapture ::= Type
+
+// Type arguments can be captures, types without captures, or nested applied patterns
 MatchTypeSubPattern ::= TypeCapture
                       | TypeWithoutCapture
                       | MatchTypeAppliedPattern
 
-TypeCapture ::= NamedTypeCapture
-              | WildcardTypeCapture
+TypeCapture ::= NamedTypeCapture    // e.g., `t`
+              | WildcardTypeCapture // `_` (with inferred bounds)
 ```
+
+In the concrete syntax, `MatchTypeAppliedPattern`s can take the form of `InfixType`s.
+A common example is `case h *: t =>`, which is desugared into `case *:[h, t] =>`.
 
 The cases `MatchTypeAppliedPattern` are only chosen if they contain at least one `TypeCapture`.
 Otherwise, they are considered `TypeWithoutCapture` instead.
@@ -134,7 +173,7 @@ type ZExtractor[t] = Base { type Z = t }
 type IsSeq[t <: Seq[Any]] = t
 ```
 
-Here are example of legal patterns:
+Here are examples of legal patterns:
 
 ```scala
 // TypeWithoutCapture's
@@ -255,7 +294,7 @@ In exchange, it promises that all the patterns that are considered legal will ke
 In order to evaluate the practical impact of this proposal, we conducted a quantitative analysis of *all* the match types found in Scala 3 libraries published on Maven Central.
 We used [Scaladex](https://index.scala-lang.org/) to list all Scala 3 libraries, [coursier](https://get-coursier.io/docs/api) to resolve their classpaths, and [tasty-query](https://github.com/scalacenter/tasty-query) to semantically analyze the patterns of all the match types they contain.
 
-Out of 4,783 libraries that were found and analyzed, 49 contained at least one match type definition.
+Out of 4,783 libraries, 49 contained at least one match type definition.
 These 49 libraries contained a total of 779 match type `case`s.
 Of those, there were 8 `case`s that would be flagged as not legal by the current proposal.
 
@@ -327,15 +366,17 @@ At the beginning, we were hoping that we could restrict match cases to class typ
 The quantitative study however revealed that we had to introduce support for abstract type constructors and for type member extractors.
 
 As already mentioned, the standard library itself contains an occurrence of an abstract type constructor in a pattern.
-Making that an error would mean declaring the standard library itself bankrupt, which was not a viable option.
+If we made that an error, we would have a breaking change to the standard library itself.
+Some existing libraries would not be able to retypecheck again.
+Worse, it might not be possible for them to change their code in a way that preserves their own public APIs.
 
-We tried to restrict abstract type constructor to never match on their own.
-Instead, we wanted them to stay *stuck* until they could be instantiated to a concrete type constructor.
+We tried to restrict abstract type constructors to never match on their own.
+Instead, we wanted them to stay "stuck" until they could be instantiated to a concrete type constructor.
 However, that led some existing tests to fail even for match types that were declared legal, because they did not reduce anymore in some places where they reduced before.
 
 Type member extractors are our biggest pain point.
 Their specification is complicated, and the implementation as well.
-Our quantitative study showed that they were however "often" used (10 occurrences spread over 4 libraries).
+Our quantitative study showed that they were however used at least somewhat often (10 occurrences spread over 4 libraries).
 In each case, they seem to be a way to express what Scala 2 type projections (`A#T`) could express.
 While not quite as powerful as type projections (which were shown to be unsound), match types with type member extractors delay things enough for actual use cases to be meaningful.
 
@@ -343,7 +384,7 @@ As far as we know, those use cases have no workaround if we make type member ext
 
 ## Related work
 
-This section should list prior work related to the proposal, notably:
+Notable prior work related to this proposal includes:
 
 - [Current reference page for Scala 3 match types](https://dotty.epfl.ch/docs/reference/new-types/match-types.html)
 - ["Pre-Sip" discussion in the Contributors forum](https://contributors.scala-lang.org/t/pre-sip-proper-specification-for-match-types/6265) (submitted at the same time as this SIP document)
