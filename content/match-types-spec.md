@@ -283,8 +283,128 @@ At the top level, `variance = 1` and `scrutIsWidenedAbstract = false`.
 
 #### Disjointness
 
-This proposal does not affect the check for provably disjoint types in match types.
-If a case is legal and does not match, the existing disjointness check is used to decide whether we can move on to the next case.
+This proposal initially did not include a discussion of disjointness.
+After initial review, it became apparent that it should also provide a specification for the "provably disjoint" test involved in match type reduction.
+Additional study revealed that, while *specifiable*, the current algorithm is very ad hoc and severely lacks desirable properties such as preservation along subtyping (see towards the end of this section).
+
+Therefore, this proposal now also includes a proposed specification for "provably disjoint".
+To the best of our knowledge, it is strictly stronger than what is currently implemented, with one exception.
+
+The current implementation can prove that `{ type A = Int }` is provably disjoint from `{ type A = Boolean }`.
+However, it is not able to prove disjointness between any of the following:
+
+* `{ type A = Int }` and `{ type A = Boolean; type B = String }` (adding another type member)
+* `{ type A = Int; type B = Int }` and `{ type B = String; type A = String }` (switching the order of type members)
+* `{ type A = Int }` and class `C` that defines a member `type A = String`.
+
+Therefore, we drop the very ad hoc case of one-to-one type member refinements.
+
+On to the specification.
+
+A scrutinee `X` is *provably disjoint* from a pattern `P` iff it is probably disjoint from the type `P'` obtained by replacing every type capture in `P` by a wildcard type argument with the same bounds.
+
+We note `X ⋔ Y` to say that `X` and `Y` are provably disjoint.
+Intuitively, that notion is based on the following properties of the Scala language:
+
+* Single inheritance of classes
+* Final classes cannot be extended
+* Sealed traits have a known set of direct children
+* Constant types with distinct values are nonintersecting
+* Singleton paths to distinct `enum` case values are nonintersecting
+
+However, a precise definition of provably-disjoint is complicated and requires some helpers.
+We start with the notion of "simple types", which are a minimal subset of Scala types that capture the concepts mentioned above.
+
+A "simple type" is one of:
+
+* `Nothing`
+* `AnyKind`
+* `p.C[...Xi]` a possibly parameterized class type, where `p` and `...Xi` are arbitrary types (not just simple types)
+* `c` a literal type
+* `p.C.x` where `C` is an `enum` class and `x` is one of its value `case`s
+* `X₁ & X₂` where `X₁` and `X₂` are both simple types
+* `X₁ | X₂` where `X₁` and `X₂` are both simple types
+
+We define `⌈X⌉` a function from a full Scala type to a simple type.
+Intuitively, it returns the "smallest" simple type that is a supertype of `X`.
+It is defined as follows:
+
+* `⌈X⌉ = X` if `X` is a simple type
+* `⌈X⌉ = ⌈U⌉` if `X` is a stable type but not a simple type and its underlying type is `U`
+* `⌈X⌉ = ⌈H⌉` if `X` is a non-class type designator with upper bound `H`
+* `⌈X⌉ = AnyKind` if `X` is a type lambda
+* `⌈X⌉ = ⌈Y⌉` if `X` is a match type that reduces to `Y`
+* `⌈X⌉ = ⌈H⌉` if `X` is a match type that does not reduce and `H` is its upper bound
+* `⌈X[...Ti]⌉ = ⌈Y⌉` where `Y` is the beta-reduction of `X[...Ti]` if `X` is a type lambda
+* `⌈X[...Ti]⌉ = ⌈⌈X⌉[...Ti⌉` if `X` is neither a type lambda nor a class type designator
+* `⌈X @a⌉ = ⌈X⌉`
+* `⌈X { R }⌉ = ⌈X⌉`
+* `⌈{ α => X } = ⌈X⌉⌉`
+* `⌈X₁ & X₂⌉ = ⌈X₁⌉ & ⌈X₂⌉`
+* `⌈X₁ | X₂⌉ = ⌈X₁⌉ | ⌈X₂⌉`
+
+The following properties hold about `⌈X⌉` (we have paper proofs for those):
+
+* `X <: ⌈X⌉` for all type `X`.
+* If `S <: T`, and the subtyping derivation does not use the "lower-bound rule" of `<:` anywhere, then `⌈S⌉ <: ⌈T⌉`.
+
+The "lower-bound rule" states that `S <: T` if `T = q.X `and `q.X` is a non-class type designator and `S <: L` where `L` is the lower bound of the underlying type definition of `q.X`".
+That rule is known to break transitivy of subtyping in Scala already.
+
+Second, we define the relation `⋔` on *classes* (including traits and hidden classes of objects) as:
+
+* `C ⋔ D` if `C ∉ baseClasses(D)` and `D` is `final`
+* `C ⋔ D` if `D ∉ baseClasses(C)` and `C` is `final`
+* `C ⋔ D` if there exists `class`es `C' ∈ baseClasses(C)` and `D' ∈ baseClasses(D)` such that `C' ∉ baseClasses(D')` and `D' ∉ baseClasses(C')`.
+* `C ⋔ D` if `C` is `sealed` without anonymous child and `Ci ⋔ D` for all direct children `Ci` of `C`
+* `C ⋔ D` if `D` is `sealed` without anonymous child and `C ⋔ Di` for all direct children `Di` of `D`
+
+We can now define `⋔` for *types*.
+
+For arbitrary types `X` and `Y`, we define `X ⋔ Y` as `⌈X⌉ ⋔ ⌈Y⌉`.
+
+Two simple types `S` and `T` are provably disjoint if there is a finite derivation tree for `S ⋔ T` using the following rules.
+Most rules go by pair, which makes the whole relation symmetric:
+
+* `Nothing` is disjoint from everything (including itself):
+  * `Nothing ⋔ T`
+  * `S ⋔ Nothing`
+* A union type is disjoint from another type if both of its parts are disjoint from that type:
+  * `S ⋔ T1 | T2` if `S ⋔ T1` and `S ⋔ T2`
+  * `S1 | S2 ⋔ T` if `S1 ⋔ T` and `S2 ⋔ T`
+* An intersection type is disjoint from another type if at least one of its parts is disjoint from that type:
+  * `S ⋔ T1 & T2` if `S ⋔ T1` or `S ⋔ T2`
+  * `S1 & S2 ⋔ T` if `S1 ⋔ T` or `S1 ⋔ T`
+* An `enum` value case is disjoint from any other `enum` value case (identified by either not being in the same `enum` class, or having a different name):
+  * `p.C.x ⋔ q.D.y` if `C != D` or `x != y` (recall: these are enum value cases)
+* Two literal types are disjoint if they are different:
+  * `c ⋔ d` if `c != d` (where they are literal types)
+* An `enum` value case is always disjoint from a literal type:
+  * `c ⋔ q.D.y`
+  * `p.C.x ⋔ d`
+* An `enum` value case or a constant is disjoint from a class type if it does not extend that class (because it's essentially final):
+  * `p.C.x ⋔ q.D[...Ti]` if `baseType(p.C.x, D)` is not defined
+  * `p.C[...Si] ⋔ q.D.y` if `baseType(q.D.y, C)` is not defined
+  * `c ⋔ q.D[...Ti]` if `baseType(c, D)` is not defined
+  * `p.C[...Si] ⋔ d` if `baseType(d, C)` is not defined
+* Two class types are disjoint if the classes themselves are disjoint, or if there exist a common super type with conflicting type arguments.
+  * `p.C[...Si] ⋔ q.D[...Ti]` if `C ⋔ D`
+  * `p.C[...Si] ⋔ q.D[...Ti]` if there exists a class `E` such that `baseType(p.C[...Si], E) = a.E[...Ai]` and `baseType(q.D[...Ti], E) = b.E[...Bi]` and there exists a pair `(Ai, Bi)` such that
+    * `Ai ⋔ Bi` and it is in invariant position, or
+    * `Ai ⋔ Bi` and it is in covariant position and there exists a field of that type parameter in `E`
+
+It is worth noting that this definition disregards prefixes entirely.
+`p.C` and `q.C` are never provably disjoint, even if `p` could be proven disjoint from `q`.
+
+We have a proof sketch of the following property for `⋔`:
+
+* If `S <: T` and `T ⋔ U`, then `S ⋔ U`.
+
+This is a very desirable property, which does not hold at all for the current implementation of match types.
+It means that if we make the scrutinee of a match type more precise (a subtype) through substitution, and the match type previously reduced, then the match type will still reduce to the same case.
+
+Note: if `⋔` were a "true" disjointness relationship, and not a *provably*-disjoint relationship, that property would trivially hold based on elementary set theoretic properties.
+It would amount to proving that if `S ⊆ T` and `T ⋂ U = ∅`, then `S ⋂ U = ∅`.
 
 ### Compatibility
 
