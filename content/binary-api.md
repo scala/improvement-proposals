@@ -239,7 +239,7 @@ Using references to `@publicInBinary` in inline code can cause binary incompatib
 
 ### Other concerns
 
-* Tools that analyze inlined TASTy code might need to know about `@publicInBinary`. For example [MiMa](https://github.com/lightbend/mima/) and [TASTy MiMa](https://github.com/scalacenter/tasty-mima).
+* Tools that analyze inlined TASTy code will need to know about `@publicInBinary`. For example [MiMa](https://github.com/lightbend/mima/) and [TASTy MiMa](https://github.com/scalacenter/tasty-mima).
 
 ## Alternatives
 
@@ -247,6 +247,20 @@ Using references to `@publicInBinary` in inline code can cause binary incompatib
 This annotation would generate an stable accessor. This annotation could be used on `private` definition. It would also mitigate [migration costs](https://gist.github.com/nicolasstucki/003f7293941836b08a0d53dbcb913e3c) for library authors that have published unstable accessors.
 
 * Implementation https://github.com/lampepfl/dotty/pull/16992
+
+
+### Make all `private[C]` part of the binary API
+
+Currently, we already make `private[C]` public in the binary API but do not guarantee but do not have the same guarantees regarding binary compatibility.
+For example, the following change is binary compatible but would remove the existence of the `private[C]` definition in the bytecode.
+```diff
+class C:
+-  private[C] def f: T = ...
+```
+We could change the rules to make all `private[C]` part of binary compatible to flag such a change as binary incompatible. This would imply that all these
+methods can be accessed directly from inline methods without generating an accessor.
+
+The drawback of this approach is that that we would need to force users to keep their `private[C]` methods even if they never used inline methods.
 
 
 ## Related work
