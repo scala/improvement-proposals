@@ -269,5 +269,8 @@ The drawback of this approach is that that we would need to force users to keep 
 * Initial proof of concept (outdated): [https://github.com/lampepfl/dotty/pull/16992](https://github.com/lampepfl/dotty/pull/16992)
 * Single annotation proof of concept: [https://github.com/lampepfl/dotty/pull/18402](https://github.com/lampepfl/dotty/pull/18402)
 * Community migration analysis: [Gist](https://gist.github.com/nicolasstucki/003f7293941836b08a0d53dbcb913e3c)
+* Kotlin: [PublishedApi](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-published-api/) plays the same role as `@publicInBinary`
+  but its interaction with (inline definitions)[https://kotlinlang.org/docs/inline-functions.html#restrictions-for-public-api-inline-functions]
+  is stricter as they do not support automatic accessor generation.
 
 <!-- ## FAQ -->
