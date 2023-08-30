@@ -324,6 +324,7 @@ A "simple type" is one of:
 * `p.C.x` where `C` is an `enum` class and `x` is one of its value `case`s
 * `X₁ & X₂` where `X₁` and `X₂` are both simple types
 * `X₁ | X₂` where `X₁` and `X₂` are both simple types
+* `[...ai] =>> X₁` where `X₁` is a simple type
 
 We define `⌈X⌉` a function from a full Scala type to a simple type.
 Intuitively, it returns the "smallest" simple type that is a supertype of `X`.
@@ -332,7 +333,7 @@ It is defined as follows:
 * `⌈X⌉ = X` if `X` is a simple type
 * `⌈X⌉ = ⌈U⌉` if `X` is a stable type but not a simple type and its underlying type is `U`
 * `⌈X⌉ = ⌈H⌉` if `X` is a non-class type designator with upper bound `H`
-* `⌈X⌉ = AnyKind` if `X` is a type lambda
+* `⌈X⌉ = ⌈η(X)⌉` if `X` is a polymorphic class type designator, where `η(X)` is its eta-expansion
 * `⌈X⌉ = ⌈Y⌉` if `X` is a match type that reduces to `Y`
 * `⌈X⌉ = ⌈H⌉` if `X` is a match type that does not reduce and `H` is its upper bound
 * `⌈X[...Ti]⌉ = ⌈Y⌉` where `Y` is the beta-reduction of `X[...Ti]` if `X` is a type lambda
@@ -342,6 +343,7 @@ It is defined as follows:
 * `⌈{ α => X } = ⌈X⌉⌉`
 * `⌈X₁ & X₂⌉ = ⌈X₁⌉ & ⌈X₂⌉`
 * `⌈X₁ | X₂⌉ = ⌈X₁⌉ | ⌈X₂⌉`
+* `⌈[...ai] =>> X₁⌉ = [...ai] =>> ⌈X₁]⌉`
 
 The following properties hold about `⌈X⌉` (we have paper proofs for those):
 
@@ -375,6 +377,16 @@ Most rules go by pair, which makes the whole relation symmetric:
 * An intersection type is disjoint from another type if at least one of its parts is disjoint from that type:
   * `S ⋔ T1 & T2` if `S ⋔ T1` or `S ⋔ T2`
   * `S1 & S2 ⋔ T` if `S1 ⋔ T` or `S1 ⋔ T`
+* A type lambda is disjoint from any other type that is not a type lambda with the same number of parameters:
+  * `[...ai] =>> S1 ⋔ q.D.y`
+  * `[...ai] =>> S1 ⋔ d`
+  * `[...ai] =>> S1 ⋔ q.D[...Ti]`
+  * `p.C.x ⋔ [...bi] =>> T1`
+  * `c ⋔ [...bi] =>> T1`
+  * `p.C[...Si] ⋔ [...bi] =>> T1`
+  * `[a1, ..., an] =>> S1 ⋔ [b1, ..., bm] =>> T1` if `m != n`
+* Two type lambdas with the same number of type parameters are disjoint if their result types are disjoint:
+  * `[a1, ..., an] =>> S1 ⋔ [b1, ..., bn] =>> T1` if `S1 ⋔ T1`
 * An `enum` value case is disjoint from any other `enum` value case (identified by either not being in the same `enum` class, or having a different name):
   * `p.C.x ⋔ q.D.y` if `C != D` or `x != y` (recall: these are enum value cases)
 * Two literal types are disjoint if they are different:
@@ -395,6 +407,7 @@ Most rules go by pair, which makes the whole relation symmetric:
 
 It is worth noting that this definition disregards prefixes entirely.
 `p.C` and `q.C` are never provably disjoint, even if `p` could be proven disjoint from `q`.
+It also disregards type members.
 
 We have a proof sketch of the following property for `⋔`:
 
