@@ -251,7 +251,7 @@ This annotation would generate an stable accessor. This annotation could be used
 
 ### Make all `private[C]` part of the binary API
 
-Currently, we already make `private[C]` public in the binary API but do not guarantee but do not have the same guarantees regarding binary compatibility.
+Currently, we already make `private[C]` public in the binary API but do not have the same guarantees regarding binary compatibility.
 For example, the following change is binary compatible but would remove the existence of the `private[C]` definition in the bytecode.
 ```diff
 class C:
