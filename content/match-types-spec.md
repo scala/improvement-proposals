@@ -27,6 +27,8 @@ The proposed specification defines a subset of current match types that are cons
 Legal match types use the new, specified reduction rules.
 Illegal match types are rejected, which is a breaking change, and can be recovered under `-source:3.3`.
 
+In addition, the proposal gives a specification for `provablyDisjoint` and for the reduction algorithm.
+
 ## Motivation
 
 Currently, match type reduction is implementation-defined.
@@ -57,13 +59,21 @@ In order to guarantee compatibility, we must ensure that, for any given match ty
 Reduction depends on two decision produces:
 
 * *matching* a scrutinee `X` against a pattern `P` (which we mentioned above), and
-* deciding that a scrutinee `X` is *provably disjoint* from a pattern `P` (disjointness is not affected by this SIP; see below).
+* deciding whether a scrutinee `X` is *provably disjoint* from a pattern `P`.
 
 When a scrutinee does not match a given pattern and cannot be proven disjoint from it either, the match type is "stuck" and does not reduce.
 
 If matching is delegated to the `TypeComparer` black box, then it is impossible in practice to guarantee the first compatibility property.
 
-In order to solve this problem, this SIP provides a specification for match type reduction that is independent of the `TypeComparer` black box.
+In addition to the compatibility properties above, there is also a soundness property that we need to uphold:
+
+* if `X match { ... }` reduces to `R` and `Y <: X`, then `Y match { ... }` also reduces to `R`.
+
+This requires both that *matching* with a tighter scrutinee gives the same result, and that `provablyDisjoint(X, P)` implies `provablyDisjoint(Y, P)`.
+(Those properties must be relaxed when `Y <: Nothing`, in order not to create more problems; see Olivier Blanvillain's thesis section 4.4.2 for details.)
+With the existing implementation for `provablyDisjoint`, there are reasonable, non-contrived examples that violate this property.
+
+In order to solve these problems, this SIP provides a specification for match type reduction that is independent of the `TypeComparer` black box.
 It defines a subset of match type cases that are considered legal.
 Legal cases get a specification for when and how they should reduce for any scrutinee.
 Illegal cases are rejected as being outside of the language.
@@ -290,7 +300,7 @@ Additional study revealed that, while *specifiable*, the current algorithm is ve
 Therefore, this proposal now also includes a proposed specification for "provably disjoint".
 To the best of our knowledge, it is strictly stronger than what is currently implemented, with one exception.
 
-The current implementation can prove that `{ type A = Int }` is provably disjoint from `{ type A = Boolean }`.
+The current implementation considers that `{ type A = Int }` is provably disjoint from `{ type A = Boolean }`.
 However, it is not able to prove disjointness between any of the following:
 
 * `{ type A = Int }` and `{ type A = Boolean; type B = String }` (adding another type member)
@@ -301,7 +311,7 @@ Therefore, we drop the very ad hoc case of one-to-one type member refinements.
 
 On to the specification.
 
-A scrutinee `X` is *provably disjoint* from a pattern `P` iff it is probably disjoint from the type `P'` obtained by replacing every type capture in `P` by a wildcard type argument with the same bounds.
+A scrutinee `X` is *provably disjoint* from a pattern `P` iff it is provably disjoint from the type `P'` obtained by replacing every type capture in `P` by a wildcard type argument with the same bounds.
 
 We note `X ⋔ Y` to say that `X` and `Y` are provably disjoint.
 Intuitively, that notion is based on the following properties of the Scala language:
@@ -343,7 +353,7 @@ It is defined as follows:
 * `⌈{ α => X } = ⌈X⌉⌉`
 * `⌈X₁ & X₂⌉ = ⌈X₁⌉ & ⌈X₂⌉`
 * `⌈X₁ | X₂⌉ = ⌈X₁⌉ | ⌈X₂⌉`
-* `⌈[...ai] =>> X₁⌉ = [...ai] =>> ⌈X₁]⌉`
+* `⌈[...ai] =>> X₁⌉ = [...ai] =>> ⌈X₁⌉`
 
 The following properties hold about `⌈X⌉` (we have paper proofs for those):
 
@@ -388,9 +398,9 @@ Most rules go by pair, which makes the whole relation symmetric:
 * Two type lambdas with the same number of type parameters are disjoint if their result types are disjoint:
   * `[a1, ..., an] =>> S1 ⋔ [b1, ..., bn] =>> T1` if `S1 ⋔ T1`
 * An `enum` value case is disjoint from any other `enum` value case (identified by either not being in the same `enum` class, or having a different name):
-  * `p.C.x ⋔ q.D.y` if `C != D` or `x != y` (recall: these are enum value cases)
+  * `p.C.x ⋔ q.D.y` if `C != D` or `x != y`
 * Two literal types are disjoint if they are different:
-  * `c ⋔ d` if `c != d` (where they are literal types)
+  * `c ⋔ d` if `c != d`
 * An `enum` value case is always disjoint from a literal type:
   * `c ⋔ q.D.y`
   * `p.C.x ⋔ d`
@@ -560,6 +570,7 @@ As far as we know, those use cases have no workaround if we make type member ext
 Notable prior work related to this proposal includes:
 
 - [Current reference page for Scala 3 match types](https://dotty.epfl.ch/docs/reference/new-types/match-types.html)
+- [Abstractions for Type-Level Programming](https://infoscience.epfl.ch/record/294024), Olivier Blanvillain, Chapter 4 (Match Types)
 - ["Pre-Sip" discussion in the Contributors forum](https://contributors.scala-lang.org/t/pre-sip-proper-specification-for-match-types/6265) (submitted at the same time as this SIP document)
 - [PR with the proposed implementation](https://github.com/lampepfl/dotty/pull/18262)
 
