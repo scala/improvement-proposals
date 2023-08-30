@@ -419,6 +419,42 @@ It means that if we make the scrutinee of a match type more precise (a subtype) 
 Note: if `⋔` were a "true" disjointness relationship, and not a *provably*-disjoint relationship, that property would trivially hold based on elementary set theoretic properties.
 It would amount to proving that if `S ⊆ T` and `T ⋂ U = ∅`, then `S ⋂ U = ∅`.
 
+#### Reduction
+
+The final piece of the match types puzzle is to define the reduction as a whole.
+
+In addition to matching and `provablyDisjoint`, the existing algorithm relies on a `provablyEmpty` property for a single type.
+It was added a safeguard against matching an empty (`Nothing`) scrutinee.
+The problem with doing so is that an empty scrutinee will be considered *both* as matching the pattern *and* as provably disjoint from the pattern.
+This can result in the match type reducing to different cases depending on the context.
+To sidestep this issue, the current algorithm refuses to consider a scrutinee that is `provablyEmpty`.
+
+If we wanted to keep that strategy, we would also have to specify `provablyEmpty` and prove some properties about it.
+Instead, we choose a much simpler and safer strategy: we always test both matching *and* `provablyDisjoint`.
+When both apply, we deduce that the scrutinee is empty is refuse to reduce the match type.
+
+Therefore, in summary, the whole reduction algorithm works as follows.
+The result of reducing `X match { case P1 => R1; ...; case Pn => Rn }` can be a type, undefined, or a compile error.
+For `n >= 1`, it is specified as:
+
+* If `X` matches `P1` with type capture instantiations `[...ts => ts']`:
+  * If `X ⋔ P1`, do not reduce.
+  * Otherwise, reduce as `[...ts => ts']R1`.
+* Otherwise,
+  * If `X ⋔ P1`, the result of reducing `X match { case P2 => R2; ...; case Pn => Rn }` (i.e., proceed with subsequent cases).
+  * Otherwise, do not reduce.
+
+The reduction of an "empty" match type `X match { }` (which cannot be written in user programs) is a compile error.
+
+#### Subtyping
+
+As is already the case in the existing system, match types tie into subtyping as follows:
+
+* `X match { ... } <: T` if `X match { ... }` reduces to `S1` and `S1 <: T`
+* `S <: X match { ... }` if `X match { ... }` reduces to `T1` and `S <: T1`
+* `X match { ... }  <: T` if `X match { ... }` has the upper bound `H` and `H <: T`
+* `X match { case P1 => A1; ...; case Pn => An } <: Y match { case Q1 => B1; ...; Qn => Bn }` if `X =:= Y` and `Pi =:= Qi` for each `i` and `Ai <: Bi` for each `i`
+
 ### Compatibility
 
 Compatibility is inherently tricky to evaluate for this proposal, and even to define.
