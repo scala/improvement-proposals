@@ -272,8 +272,8 @@ At the top level, `variance = 1` and `scrutIsWidenedAbstract = false`.
     * Let `innerScrutIsWidenedAbstract` be true if either `scrutIsWidenedAbstract` or `X` is not a concrete type.
     * For each pair of `(Ui, Qi)`, compute `matchPattern(Ui, Qi, vi, innerScrutIsWidenedAbstract)` where `vi` is the variance of the `i`th type parameter of `T`.
   * If `T` is `scala.compiletime.ops.int.S`:
-    * If `n = natValue(X)` is undefined or is `Int.MinValue`, fail as not matching.
-    * Otherwise, compute `matchPattern(n, Q1, 1, scrutIsWidenedAbstract)`.
+    * If `n = natValue(X)` is undefined or `n <= 0`, fail as not matching.
+    * Otherwise, compute `matchPattern(n - 1, Q1, 1, scrutIsWidenedAbstract)`.
   * If `T` is an abstract type constructor:
     * If `X` is not of the form `F[Us]` or `F =:= T` is false, fail as not matching.
     * Otherwise, for each pair of `(Ui, Qi)`, compute `matchPattern(Ui, Qi, vi, scrutIsWidenedAbstract)` where `vi` is the variance of the `i`th type parameter of `T`.
