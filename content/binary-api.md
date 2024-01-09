@@ -12,9 +12,9 @@ title: SIP-52 - Binary APIs
 
 | Date          | Version                |
 |---------------|------------------------|
-| Feb 27 2022   | Initial Draft          |
-| Aug 16 2022   | Single Annotation      |
-| Aug 24 2022   | Change Annotation Name |
+| Feb 27 2023   | Initial Draft          |
+| Aug 16 2023   | Single Annotation      |
+| Aug 24 2023   | Change Annotation Name |
 
 ## Summary
 
