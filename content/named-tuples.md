@@ -226,13 +226,31 @@ Named tuple types and expressions are simply desugared to types and trees alread
 
 Pattern matching with named fields requires some small additions to Typer and the PatternMatcher phase. It does not change the Tasty format, though.
 
-Backward source compatibility is partially preserved since additions to types and patterns come with new syntax that was not expressible before. When looking at tuple expressions, we have one instance of a source incompatibility:
+Backward source compatibility is partially preserved since additions to types and patterns come with new syntax that was not expressible before. When looking at tuple expressions, we have two instances of  a source incompatibility:
 
 ```scala
 var age: Int
 (age = 1)
 ```
-This was an assignment in parentheses before, and is a named tuple of arity one now. It is however not idiomatic Scala code, since assignments are not usually enclosed in parentheses. The problem could also be detected and diagnosed fairly straightforwardly: When faced with a unary named tuple, try to interpret it as an assignment, and if that succeeds, issue a migration error.
+This was an assignment in parentheses before, and is a named tuple of arity one now. It is however not idiomatic Scala code, since assignments are not usually enclosed in parentheses.
+
+Also, if we have
+```scala
+class C:
+  infix def f(age: Int)
+val c: C
+```
+then
+```scala
+c f (age = 1)
+```
+will now construct a tuple as second operand instead of passing a named parameter.
+
+These problems can be detected and diagnosed fairly straightforwardly: When faced with a unary named tuple, try to interpret it as an assignment, and if that succeeds, issue a migration error and suggest a workaround of these kinds:
+```scala
+  {age = 1}     // ok
+  c.f(age = 1)  // ok
+```
 
 ### Open questions
 
