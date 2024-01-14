@@ -254,7 +254,7 @@ By contrast to named tuples, structural types are unordered and have width subty
 
 ### Conformance
 
-A large part of Pre-SIP discussion centered around subtyping rules,. whether ordinary tuples should subtype named-tuples (as in this proposal) or {\em vice versa} or maybe no subtyping at all.
+A large part of Pre-SIP discussion centered around subtyping rules,. whether ordinary tuples should subtype named-tuples (as in this proposal) or _vice versa_ or maybe no subtyping at all.
 
 Looking at precedent in other languages it feels like we we do want some sort of subtyping for easy convertibility and possibly an implicit conversion in the other direction.
 
