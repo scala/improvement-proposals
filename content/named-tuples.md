@@ -4,7 +4,7 @@ permalink: /sips/named-tuples.html
 stage: implementation
 status: waiting-for-implementation
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-named-tuples/6403/164
-title: SIP-NN - Named Tuples
+title: SIP-58 - Named Tuples
 ---
 
 **By: Martin Odersky**
