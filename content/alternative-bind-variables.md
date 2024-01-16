@@ -13,6 +13,7 @@ title: SIP-NN - Bind variables within alternative patterns
 | Date          | Version            |
 |---------------|--------------------|
 | Sep 17th 2023 | Initial Draft      |
+| Jan 16th 2024 | Amendments         |
 
 ## Summary
 
@@ -151,7 +152,7 @@ enum Foo:
 ~~~
 
 For the expression to make sense with the current semantics around pattern matches, `z` must be defined in both branches; otherwise the
-case body would be nonsensical if `z` was referenced within it.
+case body would be nonsensical if `z` was referenced within it (see [missing variables](#missing-variables) for a proposed alternative).
 
 Removing the restriction would also allow recursive alternative patterns:
 
@@ -206,19 +207,88 @@ enum Foo[A]:
     case Baz(x) | Bar(x) => // x: Int | A 
 ~~~
 
+### Given bind variables
+
+It is possible to introduce bindings to the contextual scope within a pattern match branch. 
+
+Since most bindings will be anonymous but be referred to within the branches, we expect the _types_ present in the contextual scope for each branch to be the same rather than the _names_.
+
+~~~ scala
+  case class Context()
+  
+  def run(using ctx: Context): Unit = ???
+  
+  enum Foo:
+    case Bar(ctx: Context)
+    case Baz(i: Int, ctx: Context)
+    
+    def fun = this match
+      case Bar(given Context) | Baz(_, given Context) => run // `Context` appears in both branches
+~~~
+
+This begs the question of what to do in the case of an explicit `@` binding where the user binds a variable to the same _name_ but to different types. We can either expose a `String | Int` within the contextual scope, or simply reject the code as invalid.
+
+~~~ scala
+  enum Foo:
+    case Bar(s: String)
+    case Baz(i: Int)
+    
+    def fun = this match
+      case Bar(x @ given String) | Baz(x @ given Int) => ???
+~~~
+
+To be consistent with the named bindings, we argue that the code should compile and a contextual variable added to the scope with the type of `String | Int`.
+
+### Alternatives
+
+#### Enforcing a single type for a bound variable
+
+We could constrain the type for each bound variable within each alternative branch to be the same type. Notably, this is what languages such as Rust, which do not have sub-typing do.
+
+However, since untagged unions are part of Scala 3 and the fact that both are represented by the `|`, it felt more natural to discard this restriction.
+
+#### Type ascriptions in alternative branches
+
+Another suggestion is that an _explicit_ type ascription by a user ought to be defined for all branches. For example, in the currently proposed rules, the following code would infer the return type to be `Int | A` even though the user has written the statement `id: Int`. 
+
+~~~scala
+enum Foo[A]:
+  case Bar[A](a: A)
+  case Baz[A](a: A)
+  
+  def test = this match
+    case Bar(id: Int) | Baz(id) => id
+~~~
+
+In the author's subjective opinion, it is more natural to view the alternative arms as separate branches — which would be equivalent to the function below.
+
+~~~scala
+def test = this match
+  case Bar(id: Int) => id
+  case Baz(id) => id
+~~~
+
+On the other hand, if it is decided that each bound variable ought to be the same type, then arguably "sharing" explicit type ascriptions across branches would reduce boilerplate.
+
+#### Missing variables
+
+Unlike in other languages, we could assign a type, `A | Null`, to a bind variable which is not present in all of the alternative branches. Rust, for example, is constrained by the fact that the size of a variable must be known and untagged unions do not exist.
+
+Arguably, missing a variable entirely is more likely to be an error — the absence of a requirement for `var` declarations before assigning variables in Python means that beginners can easily assign variables to the wrong variable.
+
+It may be, that the enforcement of having to have the same bind variables within each branch ought to be left to a linter rather thana a hard restriction within the language itself.
+
 ## Specification
 
 We do not believe there are any syntax changes since the current specification already allows the proposed syntax.
 
 We propose that the following clauses be added to the specification:
 
-Let $`p_1 | \ldots | p_n`$ be an alternative pattern at an arbitrary depth within a case pattern 
-and $`\Gamma_n`$ is the scope associated with each alternative.
+Let $`p_1 | \ldots | p_n`$ be an alternative pattern at an arbitrary depth within a case pattern and $`\Gamma_n`$ is the named scope associated with each alternative.
 
-Let the variables introduced within each alternative, $`p_n`$, be $`x_i \in \Gamma_n`$. 
+Let the named variables introduced within each alternative $`p_n`$, be $`x_i \in \Gamma_n`$ and the unnamed contextual variables within each alternative have the type $`T_i \in \Gamma_n`$.
 
-Each $`p_n`$ must introduce the same set of bindings, i.e. for each $`n`$, $`\Gamma_n`$ must have the same members 
-$`\Gamma_{n+1}`$.
+Each $`p_n`$ must introduce the same set of bindings, i.e. for each $`n`$, $`\Gamma_n`$ must have the same **named** members $`\Gamma_{n+1}`$ and the set of $`{T_0, ... T_n}`$ must be the same.
 
 If $`X_{n,i}`$, is the type of the binding $`x_i`$ within an alternative $`p_n`$, then the consequent type, $`X_i`$, of the 
 variable $`x_i`$ within the pattern scope, $`\Gamma`$ is the least upper-bound of all the types $`X_{n, i}`$ associated with
@@ -226,7 +296,7 @@ the variable, $`x_i`$ within each branch.
 
 ## Compatibility
 
-We believe the changes are backwards compatible.
+We believe the changes would be backwards compatible.
 
 # Related Work
 
@@ -234,8 +304,10 @@ The language feature exists in multiple languages. Of the more popular languages
 Python within [PEP 636](https://peps.python.org/pep-0636/#or-patterns), the pattern matching PEP in 2020. Of course, Python is untyped and Rust does not have sub-typing
 but the semantics proposed are similar to this proposal.
 
-Within Scala, the [issue](https://github.com/scala/bug/issues/182) first raised in 2007. The author is also aware of attempts to fix this issue by [Lionel Parreaux](https://github.com/dotty-staging/dotty/compare/main...LPTK:dotty:vars-in-pat-alts) which
-were not submitted to the main dotty repository.
+Within Scala, the [issue](https://github.com/scala/bug/issues/182) first raised in 2007. The author is also aware of attempts to fix this issue by [Lionel Parreaux](https://github.com/dotty-staging/dotty/compare/main...LPTK:dotty:vars-in-pat-alts) and the associated [feature request](https://github.com/lampepfl/dotty-feature-requests/issues/12) which
+was not submitted to the main dotty repository.
+
+The associated [thread](https://contributors.scala-lang.org/t/pre-sip-bind-variables-for-alternative-patterns/6321) has some extra discussion around semantics. Historically, there have been multiple similar suggestions — in [2023](https://contributors.scala-lang.org/t/qol-sound-binding-in-pattern-alternatives/6226) by Quentin Bernet and in [2021](https://contributors.scala-lang.org/t/could-it-be-possible-to-allow-variable-binging-in-patmat-alternatives-for-scala-3-x/5235) by Alexey Shuksto.
 
 ## Implementation
 
