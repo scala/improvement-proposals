@@ -14,6 +14,7 @@ title: SIP-57 - Replace non-sensical @unchecked annotations
 | Date          | Version            |
 |---------------|--------------------|
 | Dec 8th 2023  | Initial Draft      |
+| Jan 19th 2024 | Clarification about current @unchecked behavior |
 
 ## Summary
 
@@ -57,6 +58,7 @@ Having to wrap the `@unchecked` in parentheses requires editing in two places, a
 Nominally, the purpose of the annotation is to silence warnings (_from the [API docs](https://www.scala-lang.org/api/3.3.1/scala/unchecked.html#)_):
 > An annotation to designate that the annotated entity should not be considered for additional compiler checks.
 
+_The exact meaning of this description is open to interpretation, leading to differences between Scala 2.13 and Scala 3.x. See the [misinterpretation](#misinterpretation-of-unchecked) annex for more._
 
 
 In the following code however, the word `unchecked` is a misnomer, so could be confused for another meaning by an inexperienced user:
@@ -158,6 +160,88 @@ The new method elaborates to an annotated expression before the associated patte
 2) Another point, where should the helper method go? In Predef it requires no import, but another possible location was the `compiletime` package. Requiring the extra import could discourage usage without consideration - however if the method remains in `Predef` the name itself (and documentation) should signal danger, like with `asInstanceOf`.
 
 3) Should the `RuntimeCheck` annotation be in the `scala.annotation.internal` package?
+
+### Misinterpretation of unchecked
+
+We would further like to highlight that the `unchecked` annotation is unspecified except for its imprecise API documentation. This leads to a crucial difference in its behavior between Scala 2.13 and the latest Scala 3.3.1 release.
+
+#### Scala 3 semantics
+
+Say you have the following:
+```scala
+val xs = List(1: Any)
+```
+
+The following expression in Scala 3.3.1 yields two warnings:
+```scala
+xs match {
+  case is: ::[Int] => is.head
+}
+```
+
+```scala
+2 warnings found
+-- [E029] Pattern Match Exhaustivity Warning: ----------------------------------
+1 |xs match {
+  |^^
+  |match may not be exhaustive.
+  |
+  |It would fail on pattern case: List(_, _*), Nil
+  |
+  | longer explanation available when compiling with `-explain`
+val res0: Int = 1
+-- Unchecked Warning: ----------------------------------------------------------
+2 |  case is: ::[Int] => is.head
+  |       ^
+  |the type test for ::[Int] cannot be checked at runtime because its type arguments can't be determined from List[Any]
+```
+
+using `@unchecked` on `xs` has the effect of silencing any warnings that depend on checking `xs`, so no warnings will be emitted for the following change:
+
+```scala
+(xs: @unchecked) match {
+  case is: ::[Int] => is.head
+}
+```
+
+#### Scala 2.13 semantics
+
+However, in Scala 2.13, this will only silence the `match may not be exhaustive` warning, and the user will still see the `type test for ::[Int] cannot be checked at runtime` warning:
+
+```scala
+scala> (xs: @unchecked) match {
+     |   case is: ::[Int] => is.head
+     | }          ^
+On line 2: warning: non-variable type argument Int in type pattern scala.collection.immutable.::[Int] (the underlying of ::[Int]) is unchecked since it is eliminated by erasure
+val res2: Int = 1
+```
+
+#### Aligning to Scala 2.13 semantics with runtimeCheck
+
+with `xs.runtimeCheck` we should still produce an unchecked warning for `case is: ::[Int] =>`
+```scala
+scala> xs.runtimeChecked match {
+     |   case is: ::[Int] => is.head
+     | }
+1 warning found
+-- Unchecked Warning: ----------------------------------------------------------
+2 |  case is: ::[Int] => is.head
+  |       ^
+  |the type test for ::[Int] cannot be checked at runtime because its type arguments can't be determined from List[Any]
+val res13: Int = 1
+```
+This is because `xs.runtimeChecked` means trust the user as long as the pattern can be checked at runtime.
+
+To fully avoid warnings, the `@unchecked` will be put on the type argument:
+```scala
+scala> xs.runtimeChecked match {
+     |   case is: ::[Int @unchecked] => is.head
+     | }
+val res14: Int = 1
+```
+This has a small extra migration cost because if the scrutinee changes from `(xs: @unchecked)` to `xs.runtimeCheck` now some individual cases might need to add `@unchecked` on type arguments to avoid creating new warnings - however this cost is offset by perhaps revealing unsafe patterns previously unaccounted for.
+
+Once again `@nowarn` can be used to fully restore any old behavior
 
 ## Alternatives
 
