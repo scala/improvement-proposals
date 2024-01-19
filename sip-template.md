@@ -62,6 +62,14 @@ If it doesn't do so "by construction", this section should present the ideas of 
 
 This section should also argue to what extent backward source compatibility is preserved. In particular, it should show that it doesn't alter the semantics of existing valid programs.
 
+### Feature Interactions
+
+A discussion of how the proposal interacts with other language features. Think about the following questions:
+
+- When envisioning the application of your proposal, what features come to mind as most likely to interact with it?
+- Can you imagine scenarios where such interactions might go wrong?
+- How would you solve such negative scenarios? Any limitations/checks/restrictions on syntax/semantics to prevent them from happening? Include such solutions in your proposal.
+
 ### Other concerns
 
 If you think of anything else that is worth discussing about the proposal, this is where it should go. Examples include interoperability concerns, cross-platform concerns, implementation challenges.
