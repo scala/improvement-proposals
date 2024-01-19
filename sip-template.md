@@ -68,7 +68,7 @@ A discussion of how the proposal interacts with other language features. Think a
 
 - When envisioning the application of your proposal, what features come to mind as most likely to interact with it?
 - Can you imagine scenarios where such interactions might go wrong?
-- How would you solve such negative scenarios? Any limitations/checks/restrictions on syntax/semantics to prevent them from happening?
+- How would you solve such negative scenarios? Any limitations/checks/restrictions on syntax/semantics to prevent them from happening? Include such solutions in your proposal.
 
 ### Other concerns
 
