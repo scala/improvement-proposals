@@ -66,7 +66,7 @@ This section should also argue to what extent backward source compatibility is p
 
 A discussion of how the proposal interacts with other language features. Think about the following questions:
 
-- When envisioning the application of your proposal, what features come to mind as the most likely to be interacting with it?
+- When envisioning the application of your proposal, what features come to mind as most likely to interact with it?
 - Can you imagine scenarios where such interactions might go wrong?
 - How would you prevent such negative scenarios?
 
