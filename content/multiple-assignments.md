@@ -3,8 +3,8 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-foo-bar/9999
-title: SIP-NN - Title of the Proposal
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-multiple-assignments/6425
+title: SIP-59 - Multiple Assignments
 ---
 
 **By: Dimi Racordon**
