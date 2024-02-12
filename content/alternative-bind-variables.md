@@ -102,9 +102,9 @@ We can, of course, work around it by hoisting the logic to a helper function to 
 ~~~ scala
 def loop(cmd: Cmd): Unit =
   def pickUp(item: String): Unit = // Code for picking up item
-  cmd match
-    case Command(Pick :: Up :: Item(name)) => pickUp(name)
-    case Command(Get :: Item(name)) => pickUp(name)
+    cmd match
+      case Command(Pick :: Up :: Item(name)) => pickUp(name)
+      case Command(Get :: Item(name)) => pickUp(name)
 ~~~
 
 Or any number of different encodings. However, all of them are less intuitive and less obvious than the code we tried to write. 
@@ -240,6 +240,10 @@ This begs the question of what to do in the case of an explicit `@` binding wher
 
 To be consistent with the named bindings, we argue that the code should compile and a contextual variable added to the scope with the type of `String | Int`.
 
+### Quoted patterns
+
+[Quoted patterns](https://docs.scala-lang.org/scala3/guides/macros/quotes.html#quoted-patterns) will not be supported in this SIP and the behaviour of quoted patterns will remain the same as currently i.e. any quoted pattern appearing in an alternative pattern binding a variable or type variable will be rejected as illegal.
+
 ### Alternatives
 
 #### Enforcing a single type for a bound variable
@@ -287,7 +291,7 @@ We propose that the following clauses be added to the specification:
 
 Let $`p_1 | \ldots | p_n`$ be an alternative pattern at an arbitrary depth within a case pattern and $`\Gamma_n`$ is the named scope associated with each alternative.
 
-Let the named variables introduced within each alternative $`p_n`$, be $`x_i \in \Gamma_n`$ and the unnamed contextual variables within each alternative have the type $`T_i \in \Gamma_n`$.
+If `p_i` is a quoted pattern binding a variable or type variable, the alternative pattern is considered invalid. Otherwise, let the named variables introduced within each alternative $`p_n`$, be $`x_i \in \Gamma_n`$ and the unnamed contextual variables within each alternative have the type $`T_i \in \Gamma_n`$.
 
 Each $`p_n`$ must introduce the same set of bindings, i.e. for each $`n`$, $`\Gamma_n`$ must have the same **named** members $`\Gamma_{n+1}`$ and the set of $`{T_0, ... T_n}`$ must be the same.
 
@@ -314,6 +318,12 @@ The associated [thread](https://contributors.scala-lang.org/t/pre-sip-bind-varia
 
 The author has a current in-progress implementation focused on the typer which compiles the examples with the expected types. Interested
  parties are welcome to see the WIP [here](https://github.com/lampepfl/dotty/compare/main...yilinwei:dotty:main).
+
+### Further work
+
+#### Quoted patterns
+
+More investigation is needed to see how quoted patterns with bind variables in alternative patterns.
 
 ## Acknowledgements
 
