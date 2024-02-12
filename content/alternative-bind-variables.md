@@ -323,7 +323,7 @@ The author has a current in-progress implementation focused on the typer which c
 
 #### Quoted patterns
 
-More investigation is needed to see how quoted patterns with bind variables in alternative patterns.
+More investigation is needed to see how quoted patterns with bind variables in alternative patterns could be supported.
 
 ## Acknowledgements
 
