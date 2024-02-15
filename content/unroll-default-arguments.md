@@ -380,7 +380,7 @@ case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 
 }
 object Unrolled{
    def apply(s: String, n: Int) = apply(s, n, true, 0L)
-   def apply(s: String, n: Int, b: Boolean) = apply(s, n, b, , 0L)
+   def apply(s: String, n: Int, b: Boolean) = apply(s, n, b, 0L)
 }
 ```
 
