@@ -373,8 +373,8 @@ case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 
    def this(s: String, n: Int) = this(s, n, true, 0L)
    def this(s: String, n: Int, b: Boolean) = this(s, n, b, 0L)
    
-   def copy(s: String, n: Int) = copy(s, n, true, 0L)
-   def copy(s: String, n: Int, b: Boolean) = copy(s, n, b, 0L)
+   def copy(s: String, n: Int) = copy(s, n, this.b, this.l)
+   def copy(s: String, n: Int, b: Boolean) = copy(s, n, b, this.l)
    
    def foo = s + n + b
 }
