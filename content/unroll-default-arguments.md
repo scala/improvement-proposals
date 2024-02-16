@@ -185,7 +185,7 @@ can be applied to methods `def`s, `class` constructors, or `case class`es to gen
       customName: String = null,
       customDoc: String = null,
       @unroll sorted: Boolean = true,
-      nameMapper: String => Option[String] = Util.kebabCaseNameMapper
+      @unroll nameMapper: String => Option[String] = Util.kebabCaseNameMapper
   ): Either[String, T] = ???
 ```
 
@@ -238,7 +238,7 @@ parameter that was added (in this case, `b: Boolean = true`)
 import scala.annotation.unroll
 
 object Unrolled{
-   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
 }
 ```
 
@@ -248,10 +248,8 @@ These forwarders do nothing but forward the call to the current implementation, 
 given default parameter values:
 
 ```scala
-import scala.annotation.unroll
-
 object Unrolled{
-   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
 
    def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
    def foo(s: String, n: Int) = foo(s, n, true, 0)
@@ -262,6 +260,18 @@ As a result, old callers who expect `def foo(String, Int, Boolean)` or `def foo(
 can continue to work, even as new parameters are added to `def foo`. The only restriction is that 
 new parameters can only be added on the right, and they must be provided with a default value.
 
+If multiple default parameters are added at once (e.g. `b` and `l` below) you can also
+choose to only `@unroll` the first default parameter of each batch, to avoid generating 
+unnecessary forwarders:
+
+```scala
+object Unrolled{
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+
+   def foo(s: String, n: Int) = foo(s, n, true, 0)
+}
+```
+
 If there are multiple parameter lists (e.g. for curried methods or methods taking implicits) only one
 parameter list can be unrolled (though it does not need to be the first one). e.g. this works:
 
@@ -269,8 +279,8 @@ parameter list can be unrolled (though it does not need to be the first one). e.
 object Unrolled{
    def foo(s: String, 
            n: Int = 1, 
-           @unroll b: Boolean = true, 
-           l: Long = 0)
+           @unroll b: Boolean = true,
+           @unroll l: Long = 0)
           (implicit blah: Blah) = s + n + b + l
 }
 ```
@@ -282,8 +292,8 @@ object Unrolled{
    def foo(blah: Blah)
           (s: String, 
            n: Int = 1, 
-           @unroll b: Boolean = true, 
-           l: Long = 0) = s + n + b + l
+           @unroll b: Boolean = true,
+           @unroll l: Long = 0) = s + n + b + l
 }
 ```
 
@@ -295,9 +305,7 @@ Class constructors and secondary constructors are treated by `@unroll` just like
 other method:
 
 ```scala
-import scala.annotation.unroll
-
-class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0){
+class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0){
    def foo = s + n + b + l
 }
 ```
@@ -305,9 +313,7 @@ class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0){
 Unrolls to:
 
 ```scala
-import scala.annotation.unroll
-
-class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0){
+class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0){
    def foo = s + n + b + l
 
    def this(s: String, n: Int, b: Boolean) = this(s, n, b, 0)
@@ -318,12 +324,10 @@ class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0){
 ### Unrolling `class` secondary constructors
 
 ```scala
-import scala.annotation.unroll
-
 class Unrolled() {
    var foo = ""
 
-   def this(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = {
+   def this(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = {
       this()
       foo = s + n + b + l
    }
@@ -333,12 +337,10 @@ class Unrolled() {
 Unrolls to:
 
 ```scala
-import scala.annotation.unroll
-
 class Unrolled() {
    var foo = ""
 
-   def this(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = {
+   def this(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = {
       this()
       foo = s + n + b + l
    }
@@ -357,8 +359,6 @@ generates forwarders for those methods as well, based on the presence of the
 `@unroll` annotation in the primary constructor:
 
 ```scala
-import scala.annotation.unroll
-
 case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true){
   def foo = s + n + b
 }
@@ -367,9 +367,7 @@ case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true){
 Unrolls to:
 
 ```scala
-import scala.annotation.unroll
-
-case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0L){
+case class Unrolled(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0L){
    def this(s: String, n: Int) = this(s, n, true, 0L)
    def this(s: String, n: Int, b: Boolean) = this(s, n, b, 0L)
    
@@ -490,7 +488,7 @@ against different versions of each other (hence the varying number of parameters
 
 ```scala
 class Upstream{ // V2
-   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
 }
 ```
 
@@ -624,47 +622,28 @@ using the same implementation and same user-facing semantics.
 ## Minor Alternatives:
 
 
-### `@unrollOnly`
+### `@unrollAll`
 
-Currently, `@unroll` generates forwarders for every default parameter to the right of the one
-annotated. This is not always necessary, e.g. if multiple parameters are added at once, we 
-should only need a single forwarder for the entire set. This can be supported by requiring
-supporting an `@unrollOnly` is provided for every default parameter that needs a forwarder generated. That
-would mean generating two forwarders would look like this:
+Currently, `@unroll` generates a forwarder only for the annotated default parameter;
+if you want to generate multiple forwarders, you need to `@unroll` each one. In the
+vast majority of scenarios, we want to unroll every default parameters we add, and in 
+many cases default parameters are added one at a time. In this case, an `@unrollAll`
+annotation may be useful, a shorthand for applying `@unroll` to the annotated default
+parameter and every parameter to the right of it:
 
 ```scala
 object Unrolled{
-   def foo(s: String, n: Int = 1, @unrollOnly b: Boolean = true, @unrollOnly l: Long = 0) = s + n + b + l
+   def foo(s: String, n: Int = 1, @unrollAll b: Boolean = true, l: Long = 0) = s + n + b + l
 }
 ```
 ```scala
 object Unrolled{
-   def foo(s: String, n: Int = 1, @unrollOnly b: Boolean = true, @unrollOnly l: Long = 0) = s + n + b + l
+   def foo(s: String, n: Int = 1, b: Boolean = true, l: Long = 0) = s + n + b + l
 
    def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
    def foo(s: String, n: Int) = foo(s, n, true, 0)
 }
 ```
-
-And generating one forwarder would look like this:
-
-```scala
-object Unrolled{
-   def foo(s: String, n: Int = 1, @unrollOnly b: Boolean = true, l: Long = 0) = s + n + b + l
-}
-```
-```scala
-object Unrolled{
-   def foo(s: String, n: Int = 1, @unrollOnly b: Boolean = true, l: Long = 0) = s + n + b + l
-
-   def foo(s: String, n: Int) = foo(s, n, true, 0)
-}
-```
-
-`@unrollOnly` would provide a more granular replacement for `@unroll`. This probably does not
-make a huge difference in most cases, but it could be useful in scenarios where there
-are a large number of default parameters being added every version, as it would minimize the
-amount of generated code.
 
 
 ### Abstract Methods
