@@ -231,7 +231,8 @@ who upgrading the versions of their dependencies. Similar concerns are present w
 Scala-Native, albeit the failure happens at link-time rather than run-time
 
 `@unroll` is an annotation that can be applied as follows, to the first "additional" default
-parameter that was added (in this case, `b: Boolean = true`)
+parameter that was added in each published version of the library (in this case, 
+`b: Boolean = true` and `l: Long = 0`)
 
 
 ```scala
