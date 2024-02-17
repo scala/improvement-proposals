@@ -65,29 +65,46 @@ Example:
   println(x)
 ~~~
 
-### Conformance
+### Conformance and Convertibility
 
 The order of names in a named tuple matters. For instance, the type `Person` above and the type `(age: Int, name: String)` would be different, incompatible types.
 
 Values of named tuple types can also be be defined using regular tuples. For instance:
 ```scala
-val x: Person = ("Laura", 25)
+val Laura: Person = ("Laura", 25)
 
 def register(person: Person) = ...
 register(person = ("Silvain", 16))
 register(("Silvain", 16))
 ```
-This follows since a regular tuple `(T_1, ..., T_n)` is treated as a subtype of a named tuple `(N_1 = T_1, ..., N_n = T_n)` with the same element types. On the other hand, named tuples do not conform to unnamed tuples, so the following is an error:
-```scala
-val x: (String, Int) = Bob           // error: type mismatch
-```
-One can convert a named tuple to an unnamed tuple with the `toTuple` method, so the following works:
+This follows since a regular tuple `(T_1, ..., T_n)` is treated as a subtype of a named tuple `(N_1 = T_1, ..., N_n = T_n)` with the same element types.
+
+In the other direction, one can convert a named tuple to an unnamed tuple with the `toTuple` method. Example:
 ```scala
 val x: (String, Int) = Bob.toTuple // ok
 ```
+`toTuple` is defined as an extension method in the `NamedTuple` object.
+It returns the given tuple unchanged and simply "forgets" the names.
 
-_Question:_ Should we define an implicit conversion, either in place of this method or in addition to it?
-
+A `.toTuple` selection is inserted implicitly by the compiler if it encounters a named tuple but the expected type is a regular tuple. So the following works as well:
+```scala
+val x: (String, Int) = Bob  // works, expanded to Bob.toTuple
+```
+The difference between subtyping in one direction and automatic `.toTuple` conversions in the other is relatively minor. The main difference is that `.toTuple` conversions don't work inside type constructors. So the following is OK:
+```scala
+  val names = List("Laura", "Silvain")
+  val ages = List(25, 16)
+  val persons: List[Person] = names.zip(ages)
+```
+But the following would be illegal.
+```scala
+  val persons: List[Person] = List(Bob, Laura)
+  val pairs: List[(String, Int)] = persons // error
+```
+We would need an explicit `_.toTuple` selection to express this:
+```scala
+  val pairs: List[(String, Int)] = persons.map(_.toTuple)
+```
 Note that conformance rules for named tuples are analogous to the rules for named parameters. One can assign parameters by position to a named parameter list.
 ```scala
   def f(param: Int) = ...
@@ -100,8 +117,7 @@ But one cannot use a name to pass an argument to an unnamed parameter:
     f(2)         // OK
     f(param = 2) // Not OK
 ```
-The rules for tuples are analogous. Unnamed tuples conform to named tuple types, but the opposite does not hold.
-
+The rules for tuples are analogous. Unnamed tuples conform to named tuple types, but the opposite requires a conversion.
 
 ### Pattern Matching
 
@@ -327,11 +343,28 @@ By contrast to named tuples, structural types are unordered and have width subty
 
 ### Conformance
 
-A large part of Pre-SIP discussion centered around subtyping rules,. whether ordinary tuples should subtype named-tuples (as in this proposal) or _vice versa_ or maybe no subtyping at all.
+A large part of Pre-SIP discussion centered around subtyping rules, whether ordinary tuples should subtype named-tuples (as in this proposal) or _vice versa_ or maybe no subtyping at all.
 
-Looking at precedent in other languages it feels like we we do want some sort of subtyping for easy convertibility and possibly an implicit conversion in the other direction.
+Looking at precedent in other languages it feels like we we do want some sort of subtyping for easy convertibility and an implicit conversion in the other direction. This proposal picks _unnamed_ <: _named_ for the subtyping and _named_ -> _unnamed_ for the conversion.
 
 The discussion established that both forms of subtyping are sound. My personal opinion is that the subtyping of this proposal is both more useful and safer than the one in the other direction. There is also the problem that changing the subtyping direction would be incompatible with the current structure of `Tuple` and `NamedTuple` since for instance `zip` is already an inline method on `Tuple` so it could not be overridden in `NamedTuple`. To make this work requires a refactoring of `Tuple` to use more extension methods, and the questions whether this is feasible and whether it can be made binary backwards compatible are unknown. I personally will not work on this, if others are willing to make the effort we can discuss the alternative subtyping as well.
+
+_Addendum:_ Turning things around, adopting  _named_ <: _unnamed_ for the subtyping and `_unnamed_ -> _named_ for the conversion leads to weaker typing with undetected errors. Consider:
+```scala
+type Person = (name: String, age: Int)
+val bob: Person
+bob.zip((firstName: String, agee: Int))
+```
+This should report a type error.
+But in the alternative scheme, we'd have `(firstName: String, agee: Int) <: (String, Int)` by subtyping and then
+`(String, Int) -> (name: String, age: Int)` by implicit naming conversion. This is clearly not what we want.
+
+By contrast, in the implemented scheme, we will not convert `(firstName: String, agee: Int)` to `(String, Int)` since a conversion is only attempted if the expected type is a regular tuple, and in our scenario it is a named tuple instead.
+
+My takeaway is that these designs have rather subtle consequences and any alterations would need a full implementation before they can be judged. For instance, the situation with `zip` was a surprise to me, which came up since I first implemented `_.toTuple` as a regular implicit conversion instead of a compiler adaptation.
+
+A possibly simpler design would be to drop all conformance and conversion rules. The problem with this approach is worse usability and problems with smooth migration. Migration will be an issue since right now everything is a regular tuple. If we make it hard to go from there to named tuples, everything will tend to stay a regular tuple and named tuples will be much less used than we would hope for.
+
 
 ### Spread Operator
 
