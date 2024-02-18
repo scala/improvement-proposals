@@ -221,7 +221,7 @@ then `NamedTuple.From[City]` is the named tuple
 (zip: Int, name: String, population: Int)
 ```
 The same works for enum cases expanding to case classes, abstract types with case classes as upper bound, alias types expanding to case classes
-and singleton type with case classes as underlying type (in terms of the implementation, the `classSymbol` of a type must be a case class.
+and singleton types with case classes as underlying type (in terms of the implementation, the `classSymbol` of a type must be a case class).
 
 `From` is also defined on named tuples. If `NT` is a named tuple type, then `From[NT] = NT`.
 
