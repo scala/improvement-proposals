@@ -225,9 +225,9 @@ can be applied to methods `def`s, `class` constructors, or `case class`es to gen
 
 This allows the developer to write the minimal amount of code they _want_ to write,
 and add a single annotation to allow binary compatibility to old versions. In this
-case, we annotated `sorted` with `@unroll`, which generates forwarders that make
+case, we annotated `sorted` and `nameMapper` with `@unroll`, which generates forwarders that make
 `def constructEither` binary compatible with older versions that have fewer parameters,
-up to a version before `sorted` was added. Any existing method `def`, `class`, or
+up to a version before `sorted` or `nameMapper` was added. Any existing method `def`, `class`, or
 `case class` can be evolved in this way, by addition of `@unroll` the first time
 a default argument is added to their signature after its initial definition.
 
