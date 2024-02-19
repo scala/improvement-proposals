@@ -569,8 +569,8 @@ If we did not have the reverse forwarder from `foo(String, Int, Boolean, Long)` 
 It also will get caught by MiMa as a `ReversedMissingMethodProblem`.
 
 This configuration of version is not allowed given our definition of backwards compatibility:
-that definition assumes that `Unrolled` must be of a greater version than `UnrolledObj`, 
-which itself must be of a greater version than the final call to `UnrolledObj.foo`. However,
+that definition assumes that `Unrolled` must be of a greater or equal version than `UnrolledObj`, 
+which itself must be of a greater or equal version than the final call to `UnrolledObj.foo`. However,
 the reverse forwarders are to fulfill our requirement 
 [All Overrides Are Equivalent](#all-overrides-are-equivalent):
 looking at `trait Unrolled // version 3` and `object UnrolledObj // version 2` in isolation,
