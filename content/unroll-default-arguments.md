@@ -419,11 +419,13 @@ object Unrolled{
 
 Notes:
 
-1. `.unapply` does not need to be duplicated in Scala 3.x, as its signature
+1. `@unroll`ed `case class`es are fully binary and backwards compatible in Scala 3, but not in Scala 2 
+
+2. `.unapply` does not need to be duplicated in Scala 3.x, as its signature
    `def unapply(x: Unrolled): Unrolled` does not change when new `case class` fields are
    added.
 
-2. Even in Scala 2.x, where `def unapply(x: Unrolled): Option[TupleN]` is not
+3. Even in Scala 2.x, where `def unapply(x: Unrolled): Option[TupleN]` is not
    binary compatible, pattern matching on `case class`es is already binary compatible 
    to addition of new fields due to 
    [Option-less Pattern Matching](https://docs.scala-lang.org/scala3/reference/changed-features/pattern-matching.html).
