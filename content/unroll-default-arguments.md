@@ -636,7 +636,7 @@ the `O(n^2)` asymptotic complexity becoming a problem if a method accumulates hu
 default parameters over time. In such extreme scenarios, some kind of builder pattern
 (such as those listed in [Major Alternatives](#major-alternatives)) may be preferable.
 
-###`@unroll` only supports `final` methods.
+### `@unroll` only supports `final` methods.
 
 `object` methods and constructors are naturally
 final, but `class` or `trait` methods that are `@unroll`ed need to be explicitly marked `final`.
