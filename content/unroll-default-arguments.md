@@ -428,7 +428,8 @@ Notes:
    to addition of new fields due to 
    [Option-less Pattern Matching](https://docs.scala-lang.org/scala3/reference/changed-features/pattern-matching.html).
    Thus, only direct calls to `.unapply` on an unrolled `case class` in Scala 2.x (shown below)
-   will cause a crash if additional fields were added.
+   will cause a crash if additional fields were added, or calls to `.tupled` or `.curried` on the
+   `case class` companion `object.
 
 ```scala
 def foo(t: (String, Int)) = println(t)
