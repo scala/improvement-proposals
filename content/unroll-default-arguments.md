@@ -31,9 +31,9 @@ def foo(s: String, n: Int) = foo(s, n, true, 0)
 
 In contrast to most existing or proposed alternatives that require you to contort your
 code to become binary compatible (see [Major Alternatives](#major-alternatives)),
-`@unroll` allows you to write Scala in the most straightforward way. You add 
-a single annotation, and your `def`/`class`/`case class` will maintain binary 
-compatibility as new default parameters and fields are added over time. 
+`@unroll` allows you to write Scala with vanilla `def`s/`class`es/`case class`es, add 
+a single annotation, and your code will maintain binary compatibility as new default
+parameters and fields are added over time. 
 
 `@unroll`'s only constraints are that: 
 
