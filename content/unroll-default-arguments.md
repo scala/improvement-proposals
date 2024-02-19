@@ -700,10 +700,10 @@ from `Downstream#foo`'s `super.foo` is meant to resolve to `Upstream#foo`. But a
 method implementation cannot know how it was called, and thus it is impossible
 for `def foo` to forward the call to the right place.
 
-This issue only arises in the presence of version skew between `Upstream` and 
-`Downstream` code, but that scenario is precisely where `@unroll` is meant to
-provide benefits. Thus, unless we can find some solution, we cannot properly support
-virtual methods and overrides in `@unroll`.
+Like our treatment of [Abstract Methods](#abstract-methods), this scenario can never
+happen according to what version combinations are supported by our definition of
+[Backwards Compatibility](#backwards-compatibility), but nevertheless is a real
+concern due to the requirement that [All Overrides Are Equivalent](#all-overrides-are-equivalent).
 
 It may be possible to loosen this restriction to also allow abstract methods that
 are implemented only once by a final method. See the section about 
