@@ -166,6 +166,36 @@ spot it!
 Sebastien Doraene's talk [Designing Libraries for Source and Binary Compatibility](https://www.youtube.com/watch?v=2wkEX6MCxJs)
 explores some of the challenges, and discusses the workarounds. 
 
+
+## Requirements
+
+### Backwards Compatibility
+
+Given:
+
+* Two libraries, **Upstream** and **Downstream**, where **Downstream** depends on **Upstream**
+
+* If we use a _newer_ version of **Upstream** which contains an added
+  default parameter together with an _older_ version of **Downstream** compiled
+  against an _older_ version of **Upstream** before that default parameter was added
+
+* The behavior should be binary compatible and semantically indistinguishable from using
+  a verion of **Downstream** compiled against the _newer_ version of **Upstream**
+
+**Note:** we do not aim for _Forwards_ compatibility. Using an _older_ 
+version of **Upstream** with a _newer_ version of **Downstream** compiled against a 
+_newer_ version of **Upstream** is not a use case we want to support. The vast majority
+of OSS software does not promise forwards compatibility, including software such as
+the JVM, so we should just follow suite
+
+### All Overrides Are Equivalent
+
+All versions of an `@unroll`ed method `def foo` should have the same semantics when called 
+with the same parameters. 
+
+**Note:** this includes forwarder methods that may never get called in the scenarios
+required by our [Backwards Compatibility](#backwards-compatibility) requirement.
+
 ## Proposed solution
 
 
@@ -427,59 +457,187 @@ take into account field default values, and this change is necessary to make it
 use them when the given `p: Product` has a smaller `productArity` than the current
 `CaseClass` implementation
 
+### Abstract Methods
+
+Apart from `final` methods, `@unroll` also supports purely abstract methods. Consider 
+the following example with a trait `Unrolled` and an implementation `UnrolledObj`:
+
+```scala
+trait Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b
+}
+```
+
+This unrolls to:
+```scala
+trait Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
+  def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
+  def foo(s: String, n: Int): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
+  def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
+  def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+
+Note that both the abstract methods from `trait Unrolled` and the concrete methods 
+from `object UnrolledObj` generate forwarders when `@unroll`ed, but the forwarders
+are generated _in opposite directions_! Unrolled concrete methods forward from longer
+parameter lists to shorter parameter lists, while unrolled abstract methods forward
+from shorter parameter lists to longer parameter lists. For example, we may have a
+version of `object UnrolledObj` that was compiled against an earlier version of `trait Unrolled`:
+
+
+```scala
+object UnrolledObj extends Unrolled{ // version 2
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
+  def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+
+But further downstream code calling `.foo` on `UnrolledObj` may expect any of the following signatures,
+depending on what version of `Unrolled` and `UnrolledObj` it was compiled against:
+
+```scala
+UnrolledObj.foo(String, Int)
+UnrolledObj.foo(String, Int, Boolean)
+UnrolledObj.foo(String, Int, Boolean, Long)
+```
+
+Because such downstream code cannot know which version of `Unrolled` that `UnrolledObj` 
+was compiled against, we need to ensure all such calls find their way to the correct
+implementation of `def foo`, which may be at any of the above signatures. This "double
+forwarding" strategy ensures that regardless of _which_ version of `.foo` gets called,
+it ends up eventually forwarding to the actual implementation of `foo`, with
+the correct combination of passed arguments and default arguments
+
+```scala
+UnrolledObj.foo(String, Int) // forwards to UnrolledObj.foo(String, Int, Boolean) 
+UnrolledObj.foo(String, Int, Boolean) // actual implementation 
+UnrolledObj.foo(String, Int, Boolean, Long) // forwards to UnrolledObj.foo(String, Int, Boolean)
+```
+
+As is the case for `@unroll`ed methods on `trait`s and `class`es, `@unroll`ed 
+implementations of an abtract method must be final.
+
+#### Are Reverse Forwarders Really Necessary?
+
+This "double forwarding" strategy is not strictly necessary to support 
+[Backwards Compatibility](#backwards-compatibility): the "reverse" forwarders
+generated for abstract methods are only necessary when a downstream callsite
+of `UnrolledObj.foo` is compiled against a newer version of the original 
+`trait Unrolled` than the `object UnrolledObj` was, as shown below:
+
+```scala
+trait Unrolled{ // version 3
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
+   // generated
+   def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
+   def foo(s: String, n: Int): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 2
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
+   // generated
+   def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+```scala
+// version 3
+UnrolledObj.foo("hello", 123, true, 456L)
+```
+
+If we did not have the reverse forwarder from `foo(String, Int, Boolean, Long)` to
+`foo(String, Int, Boolean)`, this call would fail at runtime with an `AbstractMethodError`.
+It also will get caught by MiMa as a `ReversedMissingMethodProblem`.
+
+This configuration of version is not allowed given our definition of backwards compatibility:
+that definition assumes that `Unrolled` must be of a greater version than `UnrolledObj`, 
+which itself must be of a greater version than the final call to `UnrolledObj.foo`. However,
+the reverse forwarders are to fulfill our requirement 
+[All Overrides Are Equivalent](#all-overrides-are-equivalent):
+looking at `trait Unrolled // version 3` and `object UnrolledObj // version 2` in isolation,
+we find that without the reverse forwarders the signature `foo(String, Int, Boolean, Long)`
+is defined but not implemented. Such an un-implemented abstract method is something
+we want to avoid, even if our artifact version constraints mean it should technically 
+never get called.
 
 ## Limitations
 
-1. Only the one parameter list of multi-parameter list methods (i.e. curried or taking
-   implicits) can be `@unroll`ed. Unrolling multiple parameter lists would generate a number
-   of forwarder methods exponential with regard to the number of parameter lists unrolled,
-   and the generated forwarders may begin to conflict with each other. We can choose to spec
-   this out and implement it later if necessary, but for 99% of use cases `@unroll`ing one
-   parameter list should be enough. Typically, only one parameter list in a method has default
-   arguments, with other parameter lists being `implicit`s or a single callback/blocks, neither
-   of which usually has default values.
+### Only the one parameter list of multi-parameter list methods can be `@unroll`ed. 
 
-2. As unrolling generates synthetic forwarder methods for binary compatibility, it is
-   possible for them to collide if your unrolled method has manually-defined overloads
+Unrolling multiple parameter lists would generate a number
+of forwarder methods exponential with regard to the number of parameter lists unrolled,
+and the generated forwarders may begin to conflict with each other. We can choose to spec
+this out and implement it later if necessary, but for 99% of use cases `@unroll`ing one
+parameter list should be enough. Typically, only one parameter list in a method has default
+arguments, with other parameter lists being `implicit`s or a single callback/blocks, neither
+of which usually has default values.
 
-3. As mentioned earlier, `@unroll`ed case classes are only fully binary compatible in Scala 3, 
-   though they are _almost_ binary compatible in Scala 2. Direct calls to `unapply` are binary 
-   incompatible, but most common pattern matching of `case class`es goes through a different 
-   code path that _is_ binary compatible. In practice this should be sufficient for 99% of use 
-   cases, but it does mean that it is possible for code written as below to fail in Scala 2
-   if a new unrolled parameter is added to the case class and `.unapply` is called directly.
+### Unrolled forwarder methods can collide with manually-defined overrides
 
-4. While `@unroll`ed `case class`es are fully binary compatible, they are *not* fully
-   _source_ compatible, due to the fact that pattern matching requires all arguments to
-   be specified. This proposal does not change that. Future improvements related to
-   [Pattern Matching on Named Fields](https://github.com/scala/improvement-proposals/pull/44)
-   may bring improvements here. But as we discussed earlier, binary compatibility is generally
-   more important than source compatibility, and so we do not need to wait for any source
-   compatibility improvements to land before proceeding with these binary compatibility
-   improvements.
+This is similar to any other generated methods. We can raise an error to help users
+debug such scenarios, but such name collisions are inevitably possible given how binary
+compatibility on the JVM works.
 
-5. This proposal does not address how macros will derive typeclasses for `case class`es, and
-   whether or not those will be binary/source/semantically compatible. That is up to the
-   individual macro implementations to decide. e.g., [uPickle](https://github.com/com-lihaoyi/upickle)
-   has a very similar rule about adding `case class` fields, except that field ordering
-   does not matter. Trying to standardize this across all possible macros and all possible
-   typeclasses is out of scope
+### `@unroll`ed case classes are only fully binary compatible in Scala 3
 
-6. `@unroll` generates a quadratic amount of generated bytecode as more default parameters
-   are added: each forwarder has `O(num-params)` size, and there are `O(num-default-params)`
-   forwarders. We do not expect this to be a problem in practice, as the small size of the
-   generated forwarder methods means the constant factor is small, but one could imagine
-   the `O(n^2)` asymptotic complexity becoming a problem if a method accumulates hundreds of
-   default parameters over time. In such extreme scenarios, some kind of builder pattern
-   (such as those listed in [Major Alternatives](#major-alternatives)) may be preferable.
 
-7. `@unroll` only supports `final` methods. `object` methods and constructors are naturally
-   final, but `class` or `trait` methods that are `@unroll`ed need to be explicitly marked `final`.
-   It has proved difficult to implement the semantics of `@unroll` in the presence of downstream 
-   overrides, `super`, etc. where the downstream overrides can be compiled against by different 
-   versions of the upstream code. If we can come up with some implementation that works, we can
-   lift this restriction later, but for now I have not managed to do so and so this restriction
-   stays.
+They are _almost_ binary compatible in Scala 2. Direct calls to `unapply` are binary 
+incompatible, but most common pattern matching of `case class`es goes through a different 
+code path that _is_ binary compatible. There are also the `AbstractFunctionN` traits, from
+which the companion object inherits `.curried` and `.tupled` members. Luckily, `unapply`
+was made binary compatible in Scala 3, and `AbstractFunctionN`, `.curried`, and `.tupled` 
+were removed
+
+### While `@unroll`ed `case class`es are *not* fully _source_ compatible
+
+This is due to the fact that pattern matching requires all arguments to
+be specified. This proposal does not change that. Future improvements related to
+[Pattern Matching on Named Fields](https://github.com/scala/improvement-proposals/pull/44)
+may bring improvements here. But as we discussed earlier, binary compatibility is generally
+more important than source compatibility, and so we do not need to wait for any source
+compatibility improvements to land before proceeding with these binary compatibility
+improvements.
+
+### Binary and semantic compatibility for macro-derived derive typeclasses is out of scope
+
+
+This propsosal does not have any opinion on whether or not macro-derivation is be binary/source/semantically
+compatible. That is up to the
+individual macro implementations to decide. e.g., [uPickle](https://github.com/com-lihaoyi/upickle)
+has a very similar rule about adding `case class` fields, except that field ordering
+does not matter. Trying to standardize this across all possible macros and all possible
+typeclasses is out of scope
+
+### `@unroll` generates a quadratic amount of generated bytecode as more default parameters are added
+
+Each forwarder has `O(num-params)` size, and there are `O(num-default-params)`
+forwarders. We do not expect this to be a problem in practice, as the small size of the
+generated forwarder methods means the constant factor is small, but one could imagine
+the `O(n^2)` asymptotic complexity becoming a problem if a method accumulates hundreds of
+default parameters over time. In such extreme scenarios, some kind of builder pattern
+(such as those listed in [Major Alternatives](#major-alternatives)) may be preferable.
+
+###`@unroll` only supports `final` methods.
+
+`object` methods and constructors are naturally
+final, but `class` or `trait` methods that are `@unroll`ed need to be explicitly marked `final`.
+It has proved difficult to implement the semantics of `@unroll` in the presence of downstream 
+overrides, `super`, etc. where the downstream overrides can be compiled against by different 
+versions of the upstream code. If we can come up with some implementation that works, we can
+lift this restriction later, but for now I have not managed to do so and so this restriction
+stays.
 
 ### Challenges of Non-Final Methods and Overriding
 
@@ -647,52 +805,6 @@ object Unrolled{
 ```
 
 
-### Abstract Methods
-
-In [Limitations](#limitations), I mentioned that `@unroll` only supports `final` methods. 
-It is likely possible for abstract methods which are `@unrolled` to have concrete forwarder
-methods generated on their behalf.
-
-```scala
-import scala.annotation.unroll
-
-trait Unrolled{
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true): String
-}
-
-object Unrolled extends Unrolled{
-  def foo(s: String, n: Int = 1, b: Boolean = true) = s + n + b
-}
-```
-
-Unrolls to:
-
-```scala
-trait Unrolled{
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true): String = foo(s, n)
-  def foo(s: String, n: Int = 1): String = foo(s, n, true)
-}
-
-object Unrolled extends Unrolled{
-  def foo(s: String, n: Int = 1, b: Boolean = true) = s + n + b
-}
-```
-
-As the forwarders are concrete, the implementor of the abstract method does
-not need to `@unroll` the implementation: they only need to provide the implementation
-for the primary method `def` and not the forwarders.
-
-One thing to note is that the `@unroll`ed abstract method needs to _itself_ become a
-forwarder method, despite originally being abstract! That is because downstream code
-compiled against an old version may define classes which `extends Unrolled` and
-define a concrete `def foo(s: String, n: Int = 1): String`, while other downstream code compiled
-against a newer version may define a concrete
-`def foo(s: String, n: Int = 1, b: Boolean = true): String`. Thus, we need both overloads
-of `foo` to be forwarders, so that downstream code can override either version and still work.
-
-This handling for abstract methods is not fully fleshed out or implemented, so I'm
-not sure if it can truly be made to work.
-
 ### Should the Generated Methods be Deprecated or Invisible?
 
 It is not clear to me if we should discourage usage of the generated forwarders 
@@ -743,7 +855,7 @@ This is not currently implemented in `@unroll`, but would be a straightforward a
 Given this:
 
 ```scala
-def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
 ```
 
 There are two ways to do the forwarders. First option, which I used in above, is
@@ -765,7 +877,12 @@ def foo(s: String, n: Int) = foo(s, n, true)
 The first option results in shorter stack traces, while the second option results in
 roughly half as much generated bytecode in the method bodies (though it's still `O(n^2)`).
 
-For now I chose the first option.
+In order to allow `@unroll`ing of [Abstract Methods](#abstract-methods), we had to go with
+the second option. This is because when an abstract method is overriden, it is not necessarily 
+true that the longest override that contains the implementation. Thus we need to forward
+between the different `def foo` overrides one at a time until the override containing the
+implementation is found.
+
 
 
 ## Implementation & Testing
