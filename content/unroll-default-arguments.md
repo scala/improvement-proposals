@@ -192,10 +192,13 @@ the JVM, so we should just follow suite
 ### All Overrides Are Equivalent
 
 All versions of an `@unroll`ed method `def foo` should have the same semantics when called 
-with the same parameters. 
+with the same parameters. We must be careful to ensure:
 
-**Note:** this includes forwarder methods that may never get called in the scenarios
-required by our [Backwards Compatibility](#backwards-compatibility) requirement.
+1. All our different method overrides point at the same underlying implementation
+2. Abstract methods are properly implemented, and no method would fail with an 
+   `AbstractMethodError` when called
+3. We properly forward the necessary argument and default parameter values when
+   calling the respective implementation.
 
 ## Proposed solution
 
