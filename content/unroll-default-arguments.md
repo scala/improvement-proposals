@@ -69,8 +69,8 @@ is exactly the user intent, and works just fine if the downstream code is re-com
 
 Other languages, such as Python, have the same default parameter language feature but face 
 no such compatibility issues with their use. Even Scala codebases compiled from source 
-(e.g. in a mono-repo setup) do not suffer these restrictions: adding a default parameter
-to the right side of a parameter list is for all intents and purposes backwards compatible.
+do not suffer these restrictions: adding a default parameter to the right side of a parameter
+list is for all intents and purposes backwards compatible in a mono-repo setup.
 The fact that such addition is binary incompatible is purely an implementation restriction
 of Scala's binary artifact format and distribution strategy.
 
