@@ -358,9 +358,15 @@ List(1, 2, 3)
 
 ### Compatibility
 
-This change is binary and TASTY compatible since for-comprehensions are desugared in the Typer. Thus, both class and TASTY files only ever use the desugared versions of programs.
+This change may change the semantics of some programs. It may remove some `map` calls in the desugared code, which may change the program semantics (if the `map` implementation was side-effecting).
 
-While this change is forward source compatible, it is not backward compatible, as it accepts more syntax.
+For example the following code will now have only one `map` call, instead of two:
+```scala
+for
+  a <- doSth(arg)
+  b = a
+yield a + b
+```
 
 ### Other concerns
 
