@@ -133,7 +133,7 @@ This SIP suggests the following changes to `for` comprehensions:
     will be desugared to
 
     ```scala
-    Some(1).map { a =>
+    doSth(arg).map { a =>
       val b = a
       (a, b)
     }.withFilter { case (a, b) =>
@@ -234,7 +234,7 @@ yield a + b
 will be desugared to:
 
 ```scala
-Some(1).map { a =>
+doSth(arg).map { a =>
   val b = a
   (a, b)
 }.map { case (a, b) =>
@@ -319,7 +319,7 @@ yield a + b
 will be desugared to
 
 ```scala
-Some(1).map { a =>
+doSth(arg).map { a =>
   val b = a
   (a, b)
 }.withFilter { case (a, b) =>
@@ -372,4 +372,4 @@ As far as I know, there are no widely used Scala 3 libraries that depend on the 
 2. Github issue discussion about for desugaring: https://github.com/lampepfl/dotty/issues/2573
 3. Scala 2 implementation of some of the improvements: https://github.com/oleg-py/better-monadic-for
 4. Implementation of one of the simplifications: https://github.com/lampepfl/dotty/pull/16703
-5. WIP implementation branch: https://github.com/dotty-staging/dotty/tree/improved-fors
+5. Draft implementation branch: https://github.com/dotty-staging/dotty/tree/improved-fors
