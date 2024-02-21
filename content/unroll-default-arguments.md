@@ -775,15 +775,28 @@ you to take _any_ `class` or `case class` and evolve it later in a binary compat
 ### Binary Compatibility for Methods and Classes
 
 Lastly, the above alternatives only solve _half_ the problem: how to evolve `case class`es.
-
-In contrast, `@unroll` allows the evolution of `def`s and normal `class`es, in addition 
-to `case class`es, all using the same approach.
+This is _schema evolution_.
 
 Binary compatility is not just a problem for `case class`es adding new fields: normal
-`class` constructors, instance method `def`s, static method `def`s, etc. have default 
-parameters added all the time as well. `@unroll` solves all these problems at once,
-using the same implementation and same user-facing semantics.
+`class` constructors, instance method `def`s, static method `def`s, etc. have default
+parameters added all the time as well.
 
+In contrast, `@unroll` allows the evolution of `def`s and normal `class`es, in addition 
+to `case class`es, all using the same approach:
+
+1. `@unroll`ing `case class`es is about _schema evolution_
+2. `@unroll`ing concrete method `def`s is about _API evolution_
+3. `@unroll`ing abstract method `def`s is about _protocol evolution_
+
+All three cases above have analogous best practices in the broader software engineering
+world: whether you are adding an optional column to a database table, adding an
+optional flag to a command-line tool, are extending an existing protocol with optional
+fields that may need handling by both clients and servers implementing that protocol. 
+
+`@unroll` solves all three problems at once - schema evolution, API evolution, and protocol
+evolution. It does so with the same Scala-level syntax and semantics, with the same requirements
+and limitations that common schema/API/protocol-evolution best-practices have in the broader
+software engineering community.
 
 ## Minor Alternatives:
 
