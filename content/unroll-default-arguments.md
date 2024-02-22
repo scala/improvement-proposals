@@ -579,6 +579,19 @@ is defined but not implemented. Such an un-implemented abstract method is someth
 we want to avoid, even if our artifact version constraints mean it should technically 
 never get called.
 
+### Hiding Generated Forwarder Methods
+
+As the generated forwarder methods are intended only for binary compatibility purposes,
+we should generally hide them: IDEs, downstream compilers, ScalaDoc, etc. should behave as
+if the generated methods do not exist.
+
+This is done in two different ways:
+
+1. In Scala 2, we generate the methods in a post-`pickler` phase. This ensures they do
+   not appear in the scala signature, and thus are not exposed to downstream tooling
+
+2. In Scala 3, the generated methods are flagged as `Invisible`
+
 ## Limitations
 
 ### Only the one parameter list of multi-parameter list methods can be `@unroll`ed. 
@@ -825,25 +838,6 @@ object Unrolled{
 ```
 
 
-### Should the Generated Methods be Deprecated or Invisible?
-
-It is not clear to me if we should discourage usage of the generated forwarders 
-methods, or hide them:
-
-1. On one hand, downstream code should not be compiling against these methods: they are 
-   purely for binary compatibility
-
-2. On the other hand, downstream code does not control which overload of the method is 
-   selected: that is up to the Scala compiler and how overloading interacts with default
-   parameter values. I have encountered scenarios with manually-written forwarders where
-   selected over the "primary" implementation
-
-3. The forwarders are meant to have the exact same semantics as the "primary" implementation.
-   Thus it _does not matter_ whether you call the primary and pass it a default value,
-   or you call a forwarder which then calls the primary and passes it the same default value.
-
-For now, I have left the generated methods "as is", though choosing to hide them or deprecate
-them or something else is definitely an option
 
 ### Generating Forwarders For Parameter Type Widening or Result Type Narrowing
 
