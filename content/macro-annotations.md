@@ -4,7 +4,7 @@ permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-foo-bar/9999
-title: SIP-NN - Scala 3 Macro Annotations
+title: SIP-63 - Scala 3 Macro Annotations
 ---
 
 **By: Nicolas Stucki**
