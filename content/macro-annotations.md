@@ -67,8 +67,8 @@ in the modified definition of `fib`.
 
 
 ```scala
-private val fibCache$1: scala.collection.mutable.Map[Int, Int] =
-  scala.collection.mutable.Map.empty[Int, Int]
+private val fibCache$1: scala.collection.concurrent.Map[Int, Int] =
+  scala.collection.concurrent.TrieMap.empty[Int, Int]
 
 def fib(n: Int): Int =
   val cache = fibCache$1
