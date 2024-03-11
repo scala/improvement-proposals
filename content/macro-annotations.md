@@ -339,6 +339,11 @@ This would defeat the purpose of adding transparent macro annotation.
 
 ## FAQ
 
+### Why a special case for annotated top-level `def`, `val`, `var`, `lazy val`?
+
+Top-level `def`, `val`, `var`, `lazy val` can are encoded into a package object.
+This implies that by default the additional definitions that the macro annotation will generate will be added to the package object.
+To support the generation of `@main`-like annotations on `def`s, we need to be able to generate a class that is directly in the package that contains the package object.
 
 [Zhendong]: https://infoscience.epfl.ch/record/294615?ln=en
 [Stucki]: https://infoscience.epfl.ch/record/299370?ln=en
