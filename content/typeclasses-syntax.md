@@ -3,7 +3,7 @@ layout: sip
 stage: implementation
 status: implemented
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-improve-syntax-for-context-bounds-and-givens/6576/97
-title: Improve Syntax for Context Bounds and Givens
+title: SIP-64 - Improve Syntax for Context Bounds and Givens
 ---
 
 **By: Martin Odersky**
