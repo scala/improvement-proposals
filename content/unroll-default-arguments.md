@@ -922,6 +922,7 @@ and the 100s of lines of boilerplate reduction can be seen in the links below:
 - https://github.com/com-lihaoyi/mainargs/pull/113/files
 - https://github.com/com-lihaoyi/mill/pull/3008/files
 - https://github.com/com-lihaoyi/upickle/pull/555/files
+- https://github.com/com-lihaoyi/os-lib/pull/254
 
 These pull requests all pass both the test suite as well as the MIMA
 `check-binary-compatibility` job, demonstrating that this approach does work
