@@ -925,4 +925,8 @@ and the 100s of lines of boilerplate reduction can be seen in the links below:
 
 These pull requests all pass both the test suite as well as the MIMA
 `check-binary-compatibility` job, demonstrating that this approach does work
-in real-world codebases. 
+in real-world codebases. At time of writing, these are published under the following
+artifacts and can be used in your own projects already:
+
+- Compiler Plugin: `ivy"com.lihaoyi::unroll-plugin:0.1.12"`
+- Annotation: `ivy"com.lihaoyi::unroll-annotation:0.1.12"`
