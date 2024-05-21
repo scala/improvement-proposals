@@ -356,6 +356,256 @@ I believe that a default naming convention for witnesses will be very beneficial
 
 Since it is at present not clear what the best solution would be, I decided to defer the question of default names to a later SIP.
 
+In the next section I explore one syntactic alternative: Use the new style of givens in general, but keep the current convention of naming them.
+
+## Comparison
+
+This section gives a systematic comparison of the current given syntax and the new proposed one. We show the following use cases:
+
+ 1. A simple typeclass instance, such as `Ord[Int]`.
+ 2. A parameterized type class instance, such as `Ord` for lists.
+ 3. A type class instance with a using clause.
+ 4. A simple given alias.
+ 5. A parameterized given alias
+ 6. A given alias with a using clause
+ 7. A simple given value, i.e. making a given from a concrete class instance
+ 8. An abstract or deferred given
+ 9. A by-name given, e.g. if we have a given alias of a mutable variable, and we
+    want to make sure that it gets re-evaluated on each access.
+
+**Why anonymous should be the default**
+
+We show first the anonymous versions that implement these use cases, followed by the named versions. Arguably anonymous is the more important case. In general there should be
+no need to name a given. Givens are like extends clauses. We state a fact, that a
+type implements a type class, or that a value can be used implicitly. We don't need a name for that fact. It's analogous to extends clauses, where we state that a class is a subclass of some other class or trait. We would not think it useful to name an extends clause, it's simply a fact that is stated.
+
+Even for contextual givens, where we do define a value or a function, I tend to prefer to split the definition from the given part. I.e.
+```scala
+  val foo: Foo = ...
+  given Foo = foo
+```
+The given syntax is kind of unwieldy as a way to define values or functions. That was a complaint often voiced when coming from the Scala 2 implicits where this just requires an `implicit` modifier. So my reaction to that is, let's define entities as regular values or functions and inject them as givens separately. But then again, we don't need _another_ name for the given.
+
+Two other arguments for anonymous:
+
+ - Every other language that defines type classes uses anonymous syntax. Somehow, no other language found it necessary to name these instances.
+ - When I define a regular val or def my first concern is: By which name should the defined entity be referenced? That's why the name comes first. For givens this is my least concern. In most cases I don't need a name at all. That's also a reason for the
+ optional suffix names with `as`. Writer as well as readers of given clauses should focus
+on the type that's implemented. That's why the type comes first, and if there is an additional name, we add it at the end with an `as` clause.
+
+The possible variations are presented in the following.
+
+**Current, Anonymous**
+
+```scala
+  // Simple typeclass
+  given Ord[Int] with
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord]: Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]): Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord]: Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]): Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context with {}
+
+  // Abstract or deferred given
+  // given Context   // can't be expressed
+
+  // By-name given
+  given [DummySoItsADef]: Context = curCtx
+```
+**Notes:**
+
+ - The `with` is an irregularity with relative to the rest of the language.
+ - The infix `:` also feels strange. To a newcomer, it's not clear what it signifies.
+ - Abstract anonymous givens are not supported.
+ - Concrete class instances need an empty block `with {}`, which is also irregular and might come as a surprise.
+ - By-name givens need an artificial dummy type parameter.
+
+**Proposal, Anonymous**
+
+```scala
+  // Simple typeclass
+  given Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]) => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]) => Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context
+
+  // Abstract or deferred given
+  given Context = deferred
+
+  // By-name given
+  given => Context = curCtx
+```
+
+**Notes:**
+
+ - The `=>` is consistent with its other uses in Scala 3. It's very similar to the `=>` in case clauses. E.g. `[A: Ord] => Ord[List[A]]` reads as follows: _Assuming_ we have an `A: Ord` parameter, we can construct an instance of type `Ord[List[A]]`.
+ - `=>` is also consistent with the use of `=>` for functions. We can read it as constructing a function from arguments to result type in the figurative sense: If we can construct a given instance of type `[A: Ord] => Ord[List[A]]` then, given an `A: Ord` we can construct a given instance of type `Ord[List[A]]`. This is really just _modus ponens_.
+ - Of course,  one usually does not construct given instances for function types in the literal sense. But if one did,
+one would have to put the function in parentheses, in both current and proposed new syntax.
+ - Concrete class instances, deferred givens, and by-name givens are all naturally supported.
+
+
+**Current, Named**
+
+```scala
+  // Simple typeclass
+  given intOrd: Ord[Int] with
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given listOrd: [A: Ord]: Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]): Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given intOrd: Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given listOrd[A: Ord]: Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given listOrd[A](using Ord[A]): Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given context: Context with {}
+
+  // Abstract or deferred given
+  given context: Context
+
+  // By-name given
+  given context[DummySoItsADef]: Context = curCtx
+```
+**Notes:**
+
+ - The interior `:` looks less out of place with names. One can clearly see the lineage where it came from.
+
+**Proposal, Named**
+
+```scala
+  // Simple typeclass
+  given Ord[Int] as intOrd:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord] => Ord[List[A]] as listOrd:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]) => Ord[List[A]] as listOrd:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] as intOrd = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord] => Ord[List[A]] as listOrd =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]) => Ord[List[A]] as listOrd =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context as context
+
+  // Abstract or deferred given
+  given Context as context = deferred
+
+  // By-name given
+  given => Context as context = ctx
+```
+**Notes:**
+
+ - The `as` takes some getting used to. However, it is in line with the concept that names
+   should come last since the important thing here is the type hat's implemented.
+
+**Proposal, Named in Current Style**
+
+As an alternative, here is a version of new style given, but using the current `id:` for syntax for optional names.
+
+```scala
+  // Simple typeclass
+  given intOrd: Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given listOrd: [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given listOrd: [A](using Ord[A]) => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given intOrd: Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given listOrd: [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given listOrd: [A](using Ord[A]) => Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given context: Context // this would be a change of meaning from abstract given
+
+  // Abstract or deferred given
+  given context: Context = deferred
+
+  // By-name given
+  given context: => Context = ctx
+```
+**Notes:**
+
+ - It's more conventional than with `as`.
+ - The double `:` in the first two examples is a bit jarring.
+ - There would be a migration headache for concrete class instances, which currently mean abstract givens.
+ - Overall, I find this version a bit more cumbersome to the one with `as`, but i could live with it (since I don't usually recommend to write named givens anyway).
+
 ## Summary
 
 The proposed set of changes removes awkward syntax and makes dealing with context bounds and givens a lot more regular and pleasant. In summary, the proposed changes are:
@@ -371,3 +621,184 @@ which also covers the other prospective changes slated to be proposed in two fut
 existing implementation techniques for type classes.
 
 The changes proposed in this SIP are time-sensitive since we would like to correct some awkward syntax choices in Scala 3 before more code migrates to the new constructs (so far, it seems most code still uses Scala 2 style implicits, which will eventually be phased out). It is easy to migrate to the new syntax and to support both old and new for a transition period.
+
+## Comparison
+
+**Current, Anonymous**
+
+```scala
+  // Simple typeclass
+  given Ord[Int] with
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord]: Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]): Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord]: Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]): Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context with {}
+
+  // Abstract or deferred given
+  // given Context   // can't be expressed
+
+  // By-name given
+  given [DummySoItsADef]: Context = curCtx
+```
+
+**Proposal, Anonymous**
+
+```scala
+  // Simple typeclass
+  given Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]) => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]) => Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context
+
+  // Abstract or deferred given
+  given Context = deferred
+
+  // By-name given
+  given => Context = curCtx
+```
+**Current, Named**
+
+```scala
+  // Simple typeclass
+  given intOrd: Ord[Int] with
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given listOrd: [A: Ord]: Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]): Ord[List[A]] with
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given intOrd: Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given listOrd[A: Ord]: Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given listOrd[A](using Ord[A]): Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given context: Context with {}
+
+  // Abstract or deferred given
+  given context: Context
+
+  // By-name given
+  given context[DummySoItsADef]: Context = curCtx
+```
+
+**Proposal, Named**
+
+```scala
+  // Simple typeclass
+  given Ord[Int] as intOrd:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given [A: Ord] => Ord[List[A]] as listOrd:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given [A](using Ord[A]) => Ord[List[A]] as listOrd:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] as intOrd = IntOrd()
+
+  // Parameterized alias
+  given [A: Ord] => Ord[List[A]] as listOrd =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given [A](using Ord[A]) => Ord[List[A]] as listOrd =
+    ListOrd[A]
+
+  // Concrete class instance
+  given Context as context
+
+  // Abstract or deferred given
+  given Context as context = deferred
+
+  // By-name given
+  given => Context as context = ctx
+```
+
+**Proposal, Named in Current Style**
+
+```scala
+  // Simple typeclass
+  given intOrd: Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass
+  given listOrd: [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with using clause
+  given listOrd: [A](using Ord[A]) => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given intOrd: Ord[Int] = IntOrd()
+
+  // Parameterized alias
+  given listOrd: [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Alias with using clause
+  given listOrd: [A](using Ord[A]) => Ord[List[A]] =
+    ListOrd[A]
+
+  // Concrete class instance
+  given context: Context // this would be a change of meaning from abstract given
+
+  // Abstract or deferred given
+  given context: Context = deferred
+
+  // By-name given
+  given context: => Context = ctx
+```
