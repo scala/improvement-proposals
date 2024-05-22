@@ -419,7 +419,7 @@ The possible variations are presented in the following.
 
   // Alias with using clause
   given [A](using Ord[A]): Ord[List[A]] =
-    ListOrd[A]
+    ListOrd[A]()
 
   // Concrete class instance
   given Context with {}
@@ -462,7 +462,7 @@ The possible variations are presented in the following.
 
   // Alias with using clause
   given [A](using Ord[A]) => Ord[List[A]] =
-    ListOrd[A]
+    ListOrd[A]()
 
   // Concrete class instance
   given Context
@@ -491,11 +491,11 @@ one would have to put the function in parentheses, in both current and proposed 
     def compare(x: Int, y: Int) = ...
 
   // Parameterized typeclass
-  given listOrd: [A: Ord]: Ord[List[A]] with
+  given listOrd[A: Ord]: Ord[List[A]] with
     def compare(x: List[A], y: List[A]) = ...
 
   // Typeclass with using clause
-  given [A](using Ord[A]): Ord[List[A]] with
+  given listOrd[A](using Ord[A]): Ord[List[A]] with
     def compare(x: List[A], y: List[A]) = ...
 
   // Simple alias
@@ -507,7 +507,7 @@ one would have to put the function in parentheses, in both current and proposed 
 
   // Alias with using clause
   given listOrd[A](using Ord[A]): Ord[List[A]] =
-    ListOrd[A]
+    ListOrd[A]()
 
   // Concrete class instance
   given context: Context with {}
@@ -546,7 +546,7 @@ one would have to put the function in parentheses, in both current and proposed 
 
   // Alias with using clause
   given [A](using Ord[A]) => Ord[List[A]] as listOrd =
-    ListOrd[A]
+    ListOrd[A]()
 
   // Concrete class instance
   given Context as context
@@ -588,7 +588,7 @@ As an alternative, here is a version of new style given, but using the current `
 
   // Alias with using clause
   given listOrd: [A](using Ord[A]) => Ord[List[A]] =
-    ListOrd[A]
+    ListOrd[A]()
 
   // Concrete class instance
   given context: Context // this would be a change of meaning from abstract given
