@@ -464,120 +464,6 @@ take into account field default values, and this change is necessary to make it
 use them when the given `p: Product` has a smaller `productArity` than the current
 `CaseClass` implementation
 
-### Abstract Methods
-
-Apart from `final` methods, `@unroll` also supports purely abstract methods. Consider 
-the following example with a trait `Unrolled` and an implementation `UnrolledObj`:
-
-```scala
-trait Unrolled{ // version 3
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String
-}
-```
-```scala
-object UnrolledObj extends Unrolled{ // version 3
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b
-}
-```
-
-This unrolls to:
-```scala
-trait Unrolled{ // version 3
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
-  def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
-  def foo(s: String, n: Int): String
-}
-```
-```scala
-object UnrolledObj extends Unrolled{ // version 3
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
-  def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
-  def foo(s: String, n: Int) = foo(s, n, true)
-}
-```
-
-Note that both the abstract methods from `trait Unrolled` and the concrete methods 
-from `object UnrolledObj` generate forwarders when `@unroll`ed, but the forwarders
-are generated _in opposite directions_! Unrolled concrete methods forward from longer
-parameter lists to shorter parameter lists, while unrolled abstract methods forward
-from shorter parameter lists to longer parameter lists. For example, we may have a
-version of `object UnrolledObj` that was compiled against an earlier version of `trait Unrolled`:
-
-
-```scala
-object UnrolledObj extends Unrolled{ // version 2
-  def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
-  def foo(s: String, n: Int) = foo(s, n, true)
-}
-```
-
-But further downstream code calling `.foo` on `UnrolledObj` may expect any of the following signatures,
-depending on what version of `Unrolled` and `UnrolledObj` it was compiled against:
-
-```scala
-UnrolledObj.foo(String, Int)
-UnrolledObj.foo(String, Int, Boolean)
-UnrolledObj.foo(String, Int, Boolean, Long)
-```
-
-Because such downstream code cannot know which version of `Unrolled` that `UnrolledObj` 
-was compiled against, we need to ensure all such calls find their way to the correct
-implementation of `def foo`, which may be at any of the above signatures. This "double
-forwarding" strategy ensures that regardless of _which_ version of `.foo` gets called,
-it ends up eventually forwarding to the actual implementation of `foo`, with
-the correct combination of passed arguments and default arguments
-
-```scala
-UnrolledObj.foo(String, Int) // forwards to UnrolledObj.foo(String, Int, Boolean) 
-UnrolledObj.foo(String, Int, Boolean) // actual implementation 
-UnrolledObj.foo(String, Int, Boolean, Long) // forwards to UnrolledObj.foo(String, Int, Boolean)
-```
-
-As is the case for `@unroll`ed methods on `trait`s and `class`es, `@unroll`ed 
-implementations of an abtract method must be final.
-
-#### Are Reverse Forwarders Really Necessary?
-
-This "double forwarding" strategy is not strictly necessary to support 
-[Backwards Compatibility](#backwards-compatibility): the "reverse" forwarders
-generated for abstract methods are only necessary when a downstream callsite
-of `UnrolledObj.foo` is compiled against a newer version of the original 
-`trait Unrolled` than the `object UnrolledObj` was, as shown below:
-
-```scala
-trait Unrolled{ // version 3
-   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
-   // generated
-   def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
-   def foo(s: String, n: Int): String
-}
-```
-```scala
-object UnrolledObj extends Unrolled{ // version 2
-   def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
-   // generated
-   def foo(s: String, n: Int) = foo(s, n, true)
-}
-```
-```scala
-// version 3
-UnrolledObj.foo("hello", 123, true, 456L)
-```
-
-If we did not have the reverse forwarder from `foo(String, Int, Boolean, Long)` to
-`foo(String, Int, Boolean)`, this call would fail at runtime with an `AbstractMethodError`.
-It also will get caught by MiMa as a `ReversedMissingMethodProblem`.
-
-This configuration of version is not allowed given our definition of backwards compatibility:
-that definition assumes that `Unrolled` must be of a greater or equal version than `UnrolledObj`, 
-which itself must be of a greater or equal version than the final call to `UnrolledObj.foo`. However,
-the reverse forwarders are needed to fulfill our requirement 
-[All Overrides Are Equivalent](#all-overrides-are-equivalent):
-looking at `trait Unrolled // version 3` and `object UnrolledObj // version 2` in isolation,
-we find that without the reverse forwarders the signature `foo(String, Int, Boolean, Long)`
-is defined but not implemented. Such an un-implemented abstract method is something
-we want to avoid, even if our artifact version constraints mean it should technically 
-never get called.
 
 ### Hiding Generated Forwarder Methods
 
@@ -810,6 +696,121 @@ fields that may need handling by both clients and servers implementing that prot
 evolution. It does so with the same Scala-level syntax and semantics, with the same requirements
 and limitations that common schema/API/protocol-evolution best-practices have in the broader
 software engineering community.
+
+### Abstract Methods
+
+Apart from `final` methods, `@unroll` also supports purely abstract methods. Consider 
+the following example with a trait `Unrolled` and an implementation `UnrolledObj`:
+
+```scala
+trait Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b
+}
+```
+
+This unrolls to:
+```scala
+trait Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
+  def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
+  def foo(s: String, n: Int): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 3
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
+  def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
+  def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+
+Note that both the abstract methods from `trait Unrolled` and the concrete methods 
+from `object UnrolledObj` generate forwarders when `@unroll`ed, but the forwarders
+are generated _in opposite directions_! Unrolled concrete methods forward from longer
+parameter lists to shorter parameter lists, while unrolled abstract methods forward
+from shorter parameter lists to longer parameter lists. For example, we may have a
+version of `object UnrolledObj` that was compiled against an earlier version of `trait Unrolled`:
+
+
+```scala
+object UnrolledObj extends Unrolled{ // version 2
+  def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
+  def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+
+But further downstream code calling `.foo` on `UnrolledObj` may expect any of the following signatures,
+depending on what version of `Unrolled` and `UnrolledObj` it was compiled against:
+
+```scala
+UnrolledObj.foo(String, Int)
+UnrolledObj.foo(String, Int, Boolean)
+UnrolledObj.foo(String, Int, Boolean, Long)
+```
+
+Because such downstream code cannot know which version of `Unrolled` that `UnrolledObj` 
+was compiled against, we need to ensure all such calls find their way to the correct
+implementation of `def foo`, which may be at any of the above signatures. This "double
+forwarding" strategy ensures that regardless of _which_ version of `.foo` gets called,
+it ends up eventually forwarding to the actual implementation of `foo`, with
+the correct combination of passed arguments and default arguments
+
+```scala
+UnrolledObj.foo(String, Int) // forwards to UnrolledObj.foo(String, Int, Boolean) 
+UnrolledObj.foo(String, Int, Boolean) // actual implementation 
+UnrolledObj.foo(String, Int, Boolean, Long) // forwards to UnrolledObj.foo(String, Int, Boolean)
+```
+
+As is the case for `@unroll`ed methods on `trait`s and `class`es, `@unroll`ed 
+implementations of an abtract method must be final.
+
+#### Are Reverse Forwarders Really Necessary?
+
+This "double forwarding" strategy is not strictly necessary to support 
+[Backwards Compatibility](#backwards-compatibility): the "reverse" forwarders
+generated for abstract methods are only necessary when a downstream callsite
+of `UnrolledObj.foo` is compiled against a newer version of the original 
+`trait Unrolled` than the `object UnrolledObj` was, as shown below:
+
+```scala
+trait Unrolled{ // version 3
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0): String = foo(s, n, b)
+   // generated
+   def foo(s: String, n: Int, b: Boolean): String = foo(s, n)
+   def foo(s: String, n: Int): String
+}
+```
+```scala
+object UnrolledObj extends Unrolled{ // version 2
+   def foo(s: String, n: Int = 1, @unroll b: Boolean = true) = s + n + b
+   // generated
+   def foo(s: String, n: Int) = foo(s, n, true)
+}
+```
+```scala
+// version 3
+UnrolledObj.foo("hello", 123, true, 456L)
+```
+
+If we did not have the reverse forwarder from `foo(String, Int, Boolean, Long)` to
+`foo(String, Int, Boolean)`, this call would fail at runtime with an `AbstractMethodError`.
+It also will get caught by MiMa as a `ReversedMissingMethodProblem`.
+
+This configuration of version is not allowed given our definition of backwards compatibility:
+that definition assumes that `Unrolled` must be of a greater or equal version than `UnrolledObj`, 
+which itself must be of a greater or equal version than the final call to `UnrolledObj.foo`. However,
+the reverse forwarders are needed to fulfill our requirement 
+[All Overrides Are Equivalent](#all-overrides-are-equivalent):
+looking at `trait Unrolled // version 3` and `object UnrolledObj // version 2` in isolation,
+we find that without the reverse forwarders the signature `foo(String, Int, Boolean, Long)`
+is defined but not implemented. Such an un-implemented abstract method is something
+we want to avoid, even if our artifact version constraints mean it should technically 
+never get called.
 
 ## Minor Alternatives:
 
