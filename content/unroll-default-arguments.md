@@ -22,7 +22,7 @@ compatibility. `@unroll` works by generating "unrolled" or "telescoping" forward
 
 ```scala
 // Original
-def foo(s: String, n: Int = 1, @unroll b: Boolean = true, l: Long = 0) = s + n + b + l
+def foo(s: String, n: Int = 1, @unroll b: Boolean = true, @unroll l: Long = 0) = s + n + b + l
 
 // Generated
 def foo(s: String, n: Int, b: Boolean) = foo(s, n, b, 0)
