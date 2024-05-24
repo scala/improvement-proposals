@@ -213,6 +213,14 @@ val less: Comparer = [X] => (x: X, y: X) => (ord: Ord[X]) ?=>
   ord.compare(x, y) < 0
 ```
 
+The expansion of using clauses does look inside alias types. For instance,
+here is a variation of the previous example that uses a parameterized type alias:
+```scala
+type Cmp[X] = (x: X, y: X) => Ord[X] ?=> Boolean
+type Comparer2 = [X: Ord] => Cmp[X]
+```
+The expansion of the right hand side of `Comparer2` expands the `Cmp[X]` alias
+and then inserts the context function at the same place as what's done for `Comparer`.
 
 ### 6. Cleanup of Given Syntax
 
