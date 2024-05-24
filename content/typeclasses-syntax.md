@@ -194,7 +194,27 @@ The using clause in class `SortedSet` provides an implementation for the deferre
 **Alternative:** It was suggested that we use a modifier for a deferred given instead of a `= deferred`. Something like `deferred given C[T]`. But a modifier does not suggest the concept that a deferred given will be implemented automatically in subclasses unless an explicit definition is written. In a sense, we can see `= deferred` as the invocation of a magic macro that is provided by the compiler. So from a user's point of view a given with `deferred` right hand side is not abstract.
 It is a concrete definition where the compiler will provide the correct implementation.
 
-### 5. Cleanup of Given Syntax
+### 5. Context Bounds for Polymorphic Functions
+
+Currently, context bounds can be used in methods, but not in function types or function literals. It would be nice  propose to drop this irregularity and allow context bounds also in these places. Example:
+
+```scala
+type Comparer = [X: Ord] => (x: X, y: X) => Boolean
+val less: Comparer = [X: Ord as ord] => (x: X, y: X) =>
+  ord.compare(x, y) < 0
+```
+
+The expansion of such context bounds is analogous to the expansion in method types, except that instead of adding a using clause in a method, we insert a context function type.
+
+For instance, type and val above would expand to
+```scala
+type Comparer = [X] => (x: X, y: X) => Ord[X] ?=> Boolean
+val less: Comparer = [X] => (x: X, y: X) => (ord: Ord[X]) ?=>
+  ord.compare(x, y) < 0
+```
+
+
+### 6. Cleanup of Given Syntax
 
 A good language syntax is like a Bach fugue: A small set of motifs is combined in a multitude of harmonic ways. Dissonances and irregularities should be avoided.
 
@@ -325,7 +345,13 @@ TypeParamBounds   ::=  TypeAndCtxBounds
 TypeAndCtxBounds  ::=  TypeBounds [‘:’ ContextBounds]
 ContextBounds     ::=  ContextBound | '{' ContextBound {',' ContextBound} '}'
 ContextBound      ::=  Type ['as' id]
+
+FunType           ::=  FunTypeArgs (‘=>’ | ‘?=>’) Type
+                    |  DefTypeParamClause '=>' Type
+FunExpr           ::=  FunParams (‘=>’ | ‘?=>’) Expr
+                    |  DefTypeParamClause ‘=>’ Expr
 ```
+The syntax for function types `FunType` and function expressions `FunExpr` also gets simpler. We can now use a regular `DefTypeParamClause` that is also used for `def` definitions and allow context bounds in type parameters.
 
 ## Compatibility
 
