@@ -4,7 +4,7 @@ permalink: /sips/:title.html
 stage: pre-sip
 status: submitted
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-equivalent-of-inline-implicit-def/6590
-title: SIP-65 - Implicit macro conversions
+title: SIP-66 - Implicit macro conversions
 ---
 
 **By: Raphaël FROMENTIN**
