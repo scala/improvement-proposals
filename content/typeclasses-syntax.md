@@ -499,7 +499,7 @@ The possible variations are presented in the following.
     ListOrd[A]()
 
   // Concrete class instance
-  given Context
+  given Context()
 
   // Abstract or deferred given
   given Context = deferred
@@ -625,7 +625,7 @@ As an alternative, here is a version of new style given, but using the current `
     ListOrd[A]()
 
   // Concrete class instance
-  given context: Context // this would be a change of meaning from abstract given
+  given context: Context()
 
   // Abstract or deferred given
   given context: Context = deferred
@@ -637,8 +637,170 @@ As an alternative, here is a version of new style given, but using the current `
 
  - It's more conventional than with `as`.
  - The double `:` in the first two examples is a bit jarring.
- - There would be a migration headache for concrete class instances, which currently mean abstract givens.
+ - The concrete class instance needs explicit parentheses `()` to distinguish it
+   from an abstract given. Once abstract givens are deprecated the compiler can give a hint that `()` is missing.
  - Overall, I find this version a bit more cumbersome to the one with `as`, but i could live with it (since I don't usually recommend to write named givens anyway).
+
+### Alternative: Reinforce Similarity with Function Types
+
+A reservation against the new syntax that is sometimes brought up is that the `=>` feels strange. I personally find the `=>` quite natural since it means implication, which is exactly what we want to express when we write a conditional given. This also corresponds to the meaning of arrow in functions since by the Curry-Howard isomorphism function types correspond to implications in logic.
+Besides `=>` is also used in other languages that support type classes (e.g.: Haskell).
+
+As an example, the most natural reading of
+```scala
+given [A: Ord] => List[Ord[A]]
+```
+is _if `A` is `Ord` then `List[A]` is `Ord`_, or, equivalently, `A` is `Ord` _implies_ `List[A]` is `Ord`, hence the `=>`. Another way to see this is that
+the given clause establishes a _context function_ of type `[A: Ord] ?=> List[Ord[A]]` that is automatically applied to evidence arguments of type `Ord[A]` and that yields instances of type `List[Ord[A]]`. Since givens are in any case applied automatically to all their arguments, we don't need to specify that separately with `?=>`, a simple `=>` arrow is sufficiently clear and is easier to read.
+
+Once one has internalized the analogy with implications and functions, one
+could argue the opposite, namely that the `=>` in a given clause is not sufficiently function-like. For instance, `given [A] => F[A]` looks like it implements a function type, but `given[A](using B[A]) => F[A]` looks like a mixture between a function type and a method signature.
+
+A more radical and in some sense cleaner alternative is to decree that a given should always look like it implements a type. Conditional givens should look
+like they implement function types. Examples:
+```scala
+  // Typeclass with context bound, as before
+  given [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Typeclass with context parameter, instead of using clause
+  given [A] => Ord[A] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Alias with context bound, as before
+  given [A: Ord] => Ord[List[A]] =
+    ListOrd[A]
+
+  // Alias with with context parameter, instead of using clause
+  given [A] => Ord[A] => Ord[List[A]] =
+    ListOrd[A]()
+```
+For completeness I also show two cases where the given clause uses names for
+both arguments and the clause as a whole (in the prefix style)
+
+```scala
+  // Named typeclass with named context parameter
+  given listOrd: [A] => (ord: Ord[A]) => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Named alias with named context parameter
+  given listOrd: [A] => (ord: Ord[A]) => Ord[List[A]] =
+    ListOrd[A]()
+```
+The new syntax fits exactly the approach of seeing conditional givens as implications: For instance,
+```scala
+[A] => Ord[A] => Ord[List[A]]
+```
+can be read as:
+
+> If A is a type, then if `A` is `Ord`, then `List[A]` is `Ord`.
+
+I think this is overall the cleanest proposal. For completeness here is the delta
+in the syntax description:
+```
+GivenDef          ::=  [id ':'] GivenSig
+GivenSig          ::=  GivenType ([‘=’ Expr] | TemplateBody)
+                   |   ConstrApps TemplateBody
+                   |   GivenConditional '=>' GivenSig
+GivenConditional  ::=  DefTypeParamClause | DefTermParamClause | '(' FunArgTypes ')'
+GivenType         ::=  AnnotType {id [nl] AnnotType}
+```
+This would also give a more regular and familiar syntax to by-name givens:
+```scala
+var ctx = ...
+given () => Context = ctx
+```
+Indeed, since we know `=>` means `?=>` in givens, this defines a value
+of type `() ?=> Context`, which is exactly the same as a by-name parameter type.
+
+
+**Possible ambiguities**
+
+ - If one wants to define a given for an a actual function type (which is probably not advisable in practice), one needs to enclose the function type in parentheses, i.e. `given ([A] => F[A])`. This is true in the currently implemented syntax and stays true for all discussed change proposals.
+
+ - The double meaning of `:` with optional prefix names is resolved as usual. A `:` at the end of a line starts a nested definition block. If for some obscure reason one wants to define
+ a named given on multiple lines, one has to format it as follows:
+   ```scala
+     given intOrd
+       : Ord = ...
+
+     given intOrd
+       : Ord:
+       def concat(x: Int, y: Int) = ...
+   ```
+
+Finally, for systematic comparison, here is the listing of all 9x2 cases discussed previously with the proposed alternative syntax. Only the 3rd, 6th, and 9th case are different from what was shown before.
+
+Unnamed:
+
+```scala
+  // Simple typeclass
+  given Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass with context bound
+  given [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Parameterized typeclass with context parameter
+  given [A] => Ord[A] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given Ord[Int] = IntOrd()
+
+  // Parameterized alias with context bound
+  given [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Parameterized alias with context parameter
+  given [A] => Ord[A] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Concrete class instance
+  given Context()
+
+  // Abstract or deferred given
+  given Context = deferred
+
+  // By-name given
+  given () => Context = curCtx
+```
+Named:
+
+```scala
+  // Simple typeclass
+  given intOrd: Ord[Int]:
+    def compare(x: Int, y: Int) = ...
+
+  // Parameterized typeclass with context bound
+  given listOrd: [A: Ord] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Parameterized typeclass with context parameter
+  given listOrd: [A] => Ord[A] => Ord[List[A]]:
+    def compare(x: List[A], y: List[A]) = ...
+
+  // Simple alias
+  given intOrd: Ord[Int] = IntOrd()
+
+  // Parameterized alias with context bound
+  given listOrd: [A: Ord] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Parameterized alias with context parameter
+  given listOrd: [A] => Ord[A] => Ord[List[A]] =
+    ListOrd[A]()
+
+  // Concrete class instance
+  given context: Context()
+
+  // Abstract or deferred given
+  given context: Context = deferred
+
+  // By-name given
+  given context: () => Context = curCtx
+```
 
 ## Summary
 
