@@ -648,7 +648,7 @@ Besides `=>` is also used in other languages that support type classes (e.g.: Ha
 
 As an example, the most natural reading of
 ```scala
-given [A: Ord] => List[Ord[A]]
+given [A: Ord] => Ord[List[A]]
 ```
 is _if `A` is `Ord` then `List[A]` is `Ord`_, or, equivalently, `A` is `Ord` _implies_ `List[A]` is `Ord`, hence the `=>`. Another way to see this is that
 the given clause establishes a _context function_ of type `[A: Ord] ?=> List[Ord[A]]` that is automatically applied to evidence arguments of type `Ord[A]` and that yields instances of type `List[Ord[A]]`. Since givens are in any case applied automatically to all their arguments, we don't need to specify that separately with `?=>`, a simple `=>` arrow is sufficiently clear and is easier to read.
