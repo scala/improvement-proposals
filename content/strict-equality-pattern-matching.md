@@ -83,7 +83,7 @@ For these reasons the current state of affairs is unsatisfactory and needs to im
 
 ### Specification
 
-The proposed solution is to perform an equality check without requiring a `CanEqual` instance when pattern matching when:
+The proposed solution is to not require a `CanEqual` instance during  pattern matching when:
  - the scrutinee's type is a `sealed` type and the pattern is a `case object` that extends the scrutinee's type, or
  - the scrutinee's type is an `enum` type and the pattern is one of the enum's cases without a parameter list (e. g. `Nat.Z`)
 
