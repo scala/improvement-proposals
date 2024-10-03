@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-foo-bar/9999
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
 title: SIP-NN - Strict-Equality pattern matching
 ---
 
@@ -98,5 +98,10 @@ It was proposed to instead change the `enum` feature so that it always includes 
  - doesn't work for 3rd party libraries compiled with an older compiler
  - `CanEqual` might be unwanted for that type – just because I want to perform pattern matching against an `enum` type doesn't mean I want to allow usage of `==`
  
+## Related Work
+ - https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
+ - https://contributors.scala-lang.org/t/how-to-improve-strictequality/6722
+ - https://contributors.scala-lang.org/t/enumeration-does-not-derive-canequal-for-strictequality/5280
+
 ## FAQ
 
