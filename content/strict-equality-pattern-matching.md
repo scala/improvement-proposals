@@ -40,10 +40,10 @@ enum Nat:
   case Zero
   case Succ(n: Nat)
 
-extension(l: Nat) def +(r: Nat): Nat =
-  l match
-    case Nat.Zero => r
-    case Nat.Succ(x) => Nat.Succ(x + r)
+  def +(that: Nat): Nat =
+  this match
+    case Nat.Zero => that
+    case Nat.Succ(x) => Nat.Succ(x + that)
 ```
 This fails to compile with the following error message:
 
