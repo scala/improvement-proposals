@@ -72,9 +72,9 @@ This fails to compile with the following error message:
    - pointless overhead: can have more than one `Zero()` object at run-time
  - perform a type check instead:
    ```scala
-    l match
-      case _: Nat.Zero.type => r
-      case Nat.Succ(x) => Nat.Succ(x + r)
+    this match
+      case _: Nat.Zero.type => that
+      case Nat.Succ(x) => Nat.Succ(x + that)
    ```
    But like the previous solutions:
    - hinders adoption in existing code bases by requiring new syntax
