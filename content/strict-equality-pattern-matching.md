@@ -1,8 +1,8 @@
 ---
 layout: sip
 permalink: /sips/:title.html
-stage: implementation
-status: waiting-for-implementation
+stage: pre-sip
+status: submitted
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
 title: SIP-NN - Strict-Equality pattern matching
 ---
