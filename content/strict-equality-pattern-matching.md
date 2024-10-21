@@ -115,6 +115,3 @@ This change creates no new compatibility issues and improves the compatibility o
  - https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
  - https://contributors.scala-lang.org/t/how-to-improve-strictequality/6722
  - https://contributors.scala-lang.org/t/enumeration-does-not-derive-canequal-for-strictequality/5280
-
-## FAQ
-
