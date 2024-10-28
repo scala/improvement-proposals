@@ -41,9 +41,9 @@ enum Nat:
   case Succ(n: Nat)
 
   def +(that: Nat): Nat =
-  this match
-    case Nat.Zero => that
-    case Nat.Succ(x) => Nat.Succ(x + that)
+    this match
+      case Nat.Zero => that
+      case Nat.Succ(x) => Nat.Succ(x + that)
 ```
 This fails to compile with the following error message:
 
