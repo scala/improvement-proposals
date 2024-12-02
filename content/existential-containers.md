@@ -126,15 +126,15 @@ That way, one can simply write `xs.maxByOption(_.area)` in the above example, re
 
 ```scala
 // Version with subtyping:
-trait Polygon:
+trait Polygon1:
   def area: Double
-def largest1(xs: Seq[Polygon]): Option[Polygon] =
-  xs.maxByOption(_.value.area)
+def largest1(xs: Seq[Polygon1]): Option[Polygon1] =
+  xs.maxByOption(_.area)
 
 // Version with existential containers:
-trait Polygon extends TypeClass:
+trait Polygon2 extends TypeClass:
   extension (self: Self) def area: Double
-def largest2(xs: Seq[Containing[Polygon]]): Option[Containing[Polygon]] =
+def largest2(xs: Seq[Containing[Polygon2]]): Option[Containing[Polygon2]] =
   xs.maxByOption(_.area)
 ```
 
@@ -168,7 +168,7 @@ For instance, `largest` can be written as follows in Swift:
 
 ```swift
 func largest(_ xs: [any Polygon]) -> (any Polygon)? {
-  xs.min { (a, b) in a.area < b.area }
+  xs.max { (a, b) in a.area < b.area }
 }
 ```
 
