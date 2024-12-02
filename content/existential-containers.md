@@ -45,7 +45,7 @@ given Hexagon is Polygon: ...
 ```
 
 Defining `Polygon` as a type class rather than an abstract class to be inherited allows us to retroactively state that squares are polygons without modifying the definition of `Square`.
-Sticking to subtyping only would require the definition of an inneficient and verbose wrapper class.
+Sticking to subtyping would require the definition of an inneficient and verbose wrapper class.
 
 Alas, type classes offer limited support for type erasure–the eliding of some type information at compile-time.
 Hence, it is difficult to manipulate heterogeneous collections or write procedures returning arbitrary values known to model a particular concept.
@@ -65,83 +65,138 @@ In other words, it is impossible to call `largest` with an heterogeneous sequenc
 ## Proposed solution
 
 The problems raised above can be worked around if, instead of using generic parameters with a context bound, we use pairs bundling a value with its conformance witness.
-For example, we can rewrite `largest` as follows:
+In broad strokes, our solution generalizes the following possible implementation of `largest`:
 
 ```scala
-def largest(xs: Seq[(Any, PolygonWitness)]): Option[(Any, PolygonWitness)] =
-  xs.maxByOption((a) => a(1).area(a(0)))
+trait AnyPolygon:
+  type Value
+  val value: Value
+  val witness: Polygon { type Self = Value }
+
+def largest(xs: Seq[AnyPolygon]): Option[AnyPolygon] =
+  xs.maxByOption((a) => a.witness.area(a.value))
 ```
 
-A pair `(Any, PolygonWitness)` conceptually represents a type-erased polygon.
-We call this pair an _existential container_ and the remainder of this SIP explains how to express this idea in a single, type-safe abstraction by leveraging Scala 3 features.
+The type `AnyPolygon` conceptually represents a type-erased polygon.
+It consists of a pair containing some arbitrary value as well as a witness of that value's type being a polygon.
+We call this pair an _existential container_, as a nod to a similar feature in Swift, and the remainder of this SIP explains how to express this idea in a single, type-safe abstraction.
 
 ### Specification
 
-As mentioned above, an existential container is merely a pair containing a value and a witness of its conformance to some concept(s).
-Expressing such a value in Scala is easy: just write `(Square(1) : Any, summon[Square is Polygon] : Any)`.
-This encoding, however, does not allow the selection of any method defined by `Polygon` without an unsafe cast due to the widening applied on the witness.
-Fortunately, this issue can be addressed with path dependent types:
+Existential containers are encoded as follows:
 
 ```scala
+import language.experimental.{clauseInterleaving, modularity}
+
+/** A type class. */
+trait TypeClass:
+  type Self
+
 /** A value together with an evidence of its type conforming to some type class. */
-trait Container[Concept <: TypeClass]:
+sealed trait Containing[Concept <: TypeClass]:
   /** The type of the contained value. */
-  type Value : Concept as witness
+  type Value: Concept as witness
   /** The contained value. */
   val value: Value
 
-object Container:
-  /** Wraps a value of type `V` into a `Container[C]` provided a witness that `V is C`. */
+object Containing:
+  /** A `Containing[C]` whose value is known to have type `V`. */
+  type Precisely[C <: TypeClass, V] =
+    Containing[C] { type Value >: V <: V }
+  /** Wraps a value of type `V` into a `Containing[C]` provided a witness that `V is C`. */
   def apply[C <: TypeClass](v: Any)[V >: v.type](using V is C) =
-    new Container[C]:
-      type Value >: V <: V
-      val value: Value = v
+    new Precisely[C, V] { val value: Value = v }
+  /** An implicit constructor for `Containing.Precisely[C, V]` from `V`. */
+  given constructor[C <: TypeClass, V : C]: Conversion[V, Precisely[C, V]] =
+    apply
+```
+
+Given a type class `C`, an instance `Containing[C]` is an existential container, similar to `AnyPolygon` shown before.
+The context bound on the definition of the `Value` member provides a witness of `Value`'s conformance to `C` during implicit resolution when a method of the `value` field is selected.
+The companion object of `Containing` provides basic support to create containers ergonomically.
+For instance:
+
+```scala
+def largest(xs: Seq[Containing[Polygon]]): Option[Containing[Polygon]] =
+  xs.maxByOption(_.value.area)
+```
+
+To further improve usability, we propose to let the compiler inject the selection of the `value` field implicitly when a method of `Containing[C]` is selected.
+That way, one can simply write `xs.maxByOption(_.area)` in the above example, resulting in quite idiomatic scala.
+
+```scala
+// Version with subtyping:
+trait Polygon:
+  def area: Double
+def largest1(xs: Seq[Polygon]): Option[Polygon] =
+  xs.maxByOption(_.value.area)
+
+// Version with existential containers:
+trait Polygon extends TypeClass:
+  extension (self: Self) def area: Double
+def largest2(xs: Seq[Containing[Polygon]]): Option[Containing[Polygon]] =
+  xs.maxByOption(_.area)
 ```
 
 ### Compatibility
 
-A justification of why the proposal will preserve backward binary and TASTy compatibility. Changes are backward binary compatible if the bytecode produced by a newer compiler can link against library bytecode produced by an older compiler. Changes are backward TASTy compatible if the TASTy files produced by older compilers can be read, with equivalent semantics, by the newer compilers.
+The change in the syntax does not affect any existing code and therefore this proposal has no impact on source compatibility.
 
-If it doesn't do so "by construction", this section should present the ideas of how this could be fixed (through deserialization-time patches and/or alternative binary encodings). It is OK to say here that you don't know how binary and TASTy compatibility will be affected at the time of submitting the proposal. However, by the time it is accepted, those issues will need to be resolved.
-
-This section should also argue to what extent backward source compatibility is preserved. In particular, it should show that it doesn't alter the semantics of existing valid programs.
+The semantics of the proposed feature is fully expressible in Scala.
+Save for the implicit addition of `.value` on method selection when the receiver is an instance of `Containing[C]`, this proposal requires no change in the language.
+As a result, it has no backward binary or TASTy compatibility consequences.
 
 ### Feature Interactions
 
-A discussion of how the proposal interacts with other language features. Think about the following questions:
+The proposed feature is meant to interact with implicit search, as currently implemented by the language.
+More specifically, given an existential container `c`, accessing `c.value` _opens_ the existential while retaining its type `c.Value`, effectively keeping an _anchor_ (i.e., the path to the scope of the witness) to the interface of the type class.
 
-- When envisioning the application of your proposal, what features come to mind as most likely to interact with it?
-- Can you imagine scenarios where such interactions might go wrong?
-- How would you solve such negative scenarios? Any limitations/checks/restrictions on syntax/semantics to prevent them from happening? Include such solutions in your proposal.
-
-### Other concerns
-
-If you think of anything else that is worth discussing about the proposal, this is where it should go. Examples include interoperability concerns, cross-platform concerns, implementation challenges.
+Since no change in implicit resolution is needed, this proposal cannot create unforeseen negative interactions with existing features.
 
 ### Open questions
 
-If some design aspects are not settled yet, this section can present the open questions, with possible alternatives. By the time the proposal is accepted, all the open questions will have to be resolved.
+One problem not addressed by the proposed encoding is the support of multiple type classes to form the interface of a specific container.
+For example, one may desire to create a container of values whose types conform to both `Polygon` _and_ `Show`.
+We have explored possible encodings for such a feature but decided to remove them from this proposal, as support for multiple type classes can most likely be achieved without any additional language change.
 
-## Alternatives
-
-This section should present alternative proposals that were considered. It should evaluate the pros and cons of each alternative, and contrast them to the main proposal above.
-
-Having alternatives is not a strict requirement for a proposal, but having at least one with carefully exposed pros and cons gives much more weight to the proposal as a whole.
+Another open question relates to possible language support for shortening the expression of a container type and/or value.
 
 ## Related work
 
-This section should list prior work related to the proposal, notably:
+Swift support existential containers.
+For instance, `largest` can be written as follows in Swift:
 
-- A link to the Pre-SIP discussion that led to this proposal,
-- Any other previous proposal (accepted or rejected) covering something similar as the current proposal,
-- Whether the proposal is similar to something already existing in other languages,
-- If there is already a proof-of-concept implementation, a link to it will be welcome here.
+```swift
+func largest(_ xs: [any Polygon]) -> (any Polygon)? {
+  xs.min { (a, b) in a.area < b.area }
+}
+```
+
+Unlike in this proposal, existential containers in Swift are built-in and have a dedicated syntax (i.e., `any P`).
+One advantage of Swift's design is that the type system can treat an existential container as supertype of types conforming to that container's interface.
+For example, `any Polygon` is supertype of `Square` (assuming the latter conforms to `Polygon`):
+
+```swift
+print(largest([Square(), Hexagon()]))
+```
+
+In contrast, to avoid possible undesirable complications, this proposal does not suggest any change to the subtyping relation of Scala.
+
+Rust also supports existential containers in a similar way, writing `dyn P` to denote a container bundling some value of a type conforming to `P`.
+Similar to Swift, existential containers in Rust are considered supertypes of the types conforming to their bound.
+
+
+A more formal exploration of the state of the art as been documented in a research paper presented prior to this SIP [2].
 
 ## FAQ
 
-This section will probably initially be empty. As discussions on the proposal progress, it is likely that some questions will come repeatedly. They should be listed here, with appropriate answers.
+#### Is there any significant performance overhead in using existential containers?
+
+On micro benchmarks testing method dispatch specifcally, we have measured that dispatching through existential containers in Scala was about twice as slow as traditional virtual method dispatch, which is explained by the extra pointer indirection introduced by an existential container.
+This overhead drops below 10% on larger, more realistic benchmarks [2].
 
 ## References
 
 1. Stefan Wehr and Peter Thiemann. 2011. JavaGI: The Interaction of Type Classes with Interfaces and Inheritance. ACM Transactions on Programming Languages and Systems 33, 4 (2011), 12:1–12:83. https://doi.org/10.1145/1985342.1985343
-2.
+2. Dimi Racordon and Eugene Flesselle and Matt Bovel. 2024. Existential Containers in Scala. ACM SIGPLAN International Conference on Managed Programming Languages and Runtimes, pp. 55-64. https://doi.org/10.1145/3679007.3685056
+
