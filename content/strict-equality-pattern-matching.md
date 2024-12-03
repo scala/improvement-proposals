@@ -115,12 +115,13 @@ This change creates no new compatibility issues and improves the compatibility o
 1. It was proposed to instead change the `enum` feature so that it always includes an implicit `derives CanEqual` clause. This is unsatisfactory for many reasons:
    - doesn't work for sealed types
    - doesn't work for 3rd party libraries compiled with an older compiler
-   - `CanEqual` might be unwanted for that type – just because I want to perform pattern matching against an `enum` type doesn't mean I want to allow usage of `==`
+   - `CanEqual` might be undesirable for that type – doing general `==` comparisons is a more powerful operation than pattern matching, which can only compare
+     for equality with the singleton `case`s, and hence pattern matching is possible for many types where a general `==` operation can not be implemented correctly.
 
 1. It was proposed to change the behaviour of pattern matching from an `==` comparison to a type check, i. e. make `case Foo =>` equivalent to `case _: Foo.type =>`.
    - pro: the behaviour would be more consistent between `case class` and `case object` matching as matching against a `case class` also does a type check
-   - contra: it is a backward incompatible change. A prominent example is `Nil`, whose `equals` method is overridden to return true for empty collections, even if these collections aren't of type `List`. Changing the behaviour would break such code
-     - we could mostly avoid this by only doing the type check behaviour in the cases outlined above (i. e. scrutinee is `sealed` or `enum` and pattern is one of the `case`s or `case object`s), while retaining the equality check behaviour for cases like matching a `Vector` against `Nil`. But then pattern matching behaviour would be inconsistent depending on the types involved and we would only replace one inconsistency with another
+   - contra: it is a backward incompatible change. A prominent example is `Nil`, whose `equals` method is overridden to return true for empty collections, even if these
+     collections aren't of type `List`. Changing the behaviour would break such code
    - the author's opinion is that, while this is an approach that he might have chosen in a new language, the practical benefits over the existing behaviour are marginal and that therefore the compatibility concerns outweigh them in this case
 1. It was proposed to change the behaviour of `case object` so that it adds a suitable `def unapply(n: Nat): Boolean` method and to have `case Foo =>` invoke the `unapply` method (like `case Foo() =>` does today) if one exists, falling back to `==` otherwise
    - pro: more consistent behaviour between `case object` and `case class` as `unapply` would be used in both cases
