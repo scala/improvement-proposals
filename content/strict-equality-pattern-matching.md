@@ -1,10 +1,10 @@
 ---
 layout: sip
 permalink: /sips/:title.html
-stage: pre-sip
-status: submitted
+stage: design
+status: under-review
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
-title: SIP-NN - Strict-Equality pattern matching
+title: SIP-67 - Strict-Equality pattern matching
 ---
 
 **By: Matthias Berndt**
@@ -19,16 +19,17 @@ title: SIP-NN - Strict-Equality pattern matching
 | Oct 7th 2024  | Add paragraph about using `unapply` instead of equals     |
 ## Summary
 
-This proposal aims to make the `strictEquality` feature easier to adopt by avoiding the need for a `CanEqual` instance
-when matching a `sealed` or `enum` type against singleton cases (e. g. `Nil` or `None`).
+This proposal aims to make the `strictEquality` feature easier to adopt by making pattern matching
+against singleton cases (e. g. `Nil` or `None`) work even when the relevant `sealed` or `enum` type
+does not (or cannot) have a `derives CanEqual` clause.
 
 ## Motivation
 
 The `strictEquality` feature is important to improve type safety. However due to the way that pattern matching in
-Scala works, it often requires `CanEqual` instances where they conceptually don't really make sense, as evidenced
-by the fact that in e. g. Haskell, an `Eq` instance is never required to perform a pattern matching.
-It also seems arbitrary that a `CanEqual` instance is required to match on types such as `Option` or `List` but
-not for e. g. `Either`.
+Scala works, it requires a `CanEqual` instance when matching against a `case object` or a singleton `enum` `case`. This is problematic because it means that pattern matching doesn't work in the expected
+way for types where a `derives CanEqual` cause is not desired.
+In languages like Haskell, an `Eq` instance is never required to perform a pattern matching.
+It also seems arbitrary that a `CanEqual` instance is required to match on types such as `Option` or `List` but not for e. g. `Either`.
 
 
 A simple example is this code:
@@ -59,6 +60,11 @@ This fails to compile with the following error message:
    - the ADT might not be under the user's control, e. g. defined in a 3rd party library
    - one might not *want* a `CanEqual` instance to be available for this type because one doesn't want this type to be compared with the `==`
      operator. For example, when one of the fields in the `enum` is a function, it actually isn't possible to perform a meaningful equality check.
+     Functions inside ADTs are not uncommon, examples can be found for example in
+     [ZIO](https://github.com/zio/zio/blob/65a35bcba47bdc1720fd86c612fc6573c84b460d/core/shared/src/main/scala/zio/ZIO.scala#L6075),
+     [cats](https://github.com/typelevel/cats/blob/1cc04eca9f2bc934c869a7c5054b15f6702866fb/free/src/main/scala/cats/free/Free.scala#L219) or
+     [cats-effect](https://github.com/typelevel/cats-effect/blob/eb918fa59f85543278eae3506fda84ccea68ad7c/core/shared/src/main/scala/cats/effect/IO.scala#L2235)
+     It should be possible to match on such types without requiring a `CanEqual` instance that couldn't possibly work correctly in the general case.
  - turn the no-argument-list cases into empty-argument-list cases:
    ```scala
    enum Nat:
@@ -67,7 +73,8 @@ This fails to compile with the following error message:
    ```
    The downsides are similar to the previous point:
    - doesn't work for ADTs defined in a library
-   - hinders adoption in existing code bases by requiring new syntax (even more so, because now you not only need to change the `enum` definition but also every `match` and `PartialFunction` literal)
+   - hinders adoption in existing code bases by requiring new syntax (even more so, because now you not only need to change the `enum` definition
+   but also every `match` and `PartialFunction` literal)
    - uglier than before
    - pointless overhead: can have more than one `Zero()` object at run-time
  - perform a type check instead:
@@ -85,9 +92,19 @@ For these reasons the current state of affairs is unsatisfactory and needs to im
 
 ### Specification
 
-The proposed solution is to not require a `CanEqual` instance during  pattern matching when:
- - the scrutinee's type is a `sealed` type and the pattern is a `case object` that extends the scrutinee's type, or
- - the scrutinee's type is an `enum` type and the pattern is one of the enum's cases without a parameter list (e. g. `Nat.Z`)
+The proposed solution consists of two changes:
+ 1. Tweak the behaviour of pattern matching with regards to singleton `enum` `case` patterns. When a singleton `enum` `case` (like `Nat.Zero` in the above example)
+    is used as a pattern, it should be considered  to have that `case`'s singleton type, not the `enum` type. E. g. the above `def +` currently requires a `CanEqual[Nat, Nat]`,
+    and should require a `CanEqual[Nat.Zero.type, Nat]` in the future. This is already the case for `case object`s today. In expressions, singleton `enum` `case`s
+    should continue to have the `enum` type, not the singleton type.
+ 1. Add a magic `given` `CanEqual[A, B]` instance that is available when either of the following is true:
+    - `A` is the singleton type of a `case object`, and `B` is a supertype of `A`, and is a type that allows exhaustiveness checks
+      (e. g. a `sealed` type or a union or intersection of several `sealed` types)
+    - `A` is the singleton type of a singleton `enum` `case`, and `B` is a supertype of the corresponding `enum` type, and is a type that allows exhaustiveness
+      checks
+
+These rules ensure that pattern matching against singleton patterns continues to work in all cases that I would consider sane.
+
 
 ### Compatibility
 
