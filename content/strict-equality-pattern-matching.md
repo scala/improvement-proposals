@@ -29,7 +29,7 @@ does not (or cannot) have a `derives CanEqual` clause.
 The `strictEquality` feature is important to improve type safety. However due to the way that pattern matching in
 Scala works, it requires a `CanEqual` instance when matching against a `case object` or a singleton `enum` `case`. This is problematic because it means that pattern matching doesn't work in the expected
 way for types where a `derives CanEqual` cause is not desired.
-In languages like Haskell, an `Eq` instance is never required to perform a pattern matching.
+By contrast, in languages like Haskell, an `Eq` instance is never required to perform a pattern matching.
 It also seems arbitrary that a `CanEqual` instance is required to match on types such as `Option` or `List` but not for e. g. `Either`.
 
 
