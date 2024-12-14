@@ -72,13 +72,13 @@ that fulfil the same need, so it's not just a quirk of the Scala language.
 Many libraries use package objects to expose the "facade" of the package hierarchy:
 
 - Mill uses `package object`s to expose the build definitions within each `package`, and 
-- each one is an instance of `mill.Module`
+  each one is an instance of `mill.Module`
 
 - Requests-Scala uses a `package object` to represent the default `requests.BaseSession` 
-- instance with the default configuration for people to use
+ instance with the default configuration for people to use
 
 - PPrint uses a `package object` to expose the `pprint.log` and other APIs for people to use
-- directly, as a default instance of `PPrinter`
+ directly, as a default instance of `PPrinter`
 
 - OS-Lib uses a `package object` to expose the primary API of the `os.*` operations
 
