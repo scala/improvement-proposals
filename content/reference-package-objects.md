@@ -42,8 +42,8 @@ values: `a.b` fails to compile when `b` is a `package object`, even though it su
 non-obvious, or to use a normal `object`, which is not always possible. There is no other
 way to refer to the `package object b` in the example above. 
 
-This proposal is to allow `a.b` to automatically expand into `a.b.package` when `b` is a 
-`package object`. Such usage will simplify the language, simplify IDE support for the 
+Allowing `a.b` to automatically expand into `a.b.package` when `b` is a 
+`package object` will simplify the language, simplify IDE support for the 
 language, and generally make things more uniform and regular.
 
 
