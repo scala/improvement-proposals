@@ -60,11 +60,12 @@ are sufficiently useful that keeping them around is preferably to dropping them.
 `package object`s are the natural "entry point" of a package. While top-level declarations 
 reduce their need somewhat, they do not replace it: `package object`s are still necessary 
 for adding package-level documentation or having the package-level API inherit from traits
-or classes. Other languages have equivalent constructs (`module-info.java` or `__init__.py`) 
-that fulfil the same need, so it's not just a quirk of the Scala language. The 
-[Acyclic Plugin](https://github.com/com-lihaoyi/acyclic) uses package objects as a place to
-put package-level annotations in source code to apply package-level semantics in the compiler 
-plugin.
+or classes. For example the [Acyclic Plugin](https://github.com/com-lihaoyi/acyclic) uses package 
+objects as a place to put package-level annotations in source code to apply package-level
+semantics in the compiler plugin.
+
+Other languages have equivalent constructs (`module-info.java` or `__init__.py`) 
+that fulfil the same need, so it's not just a quirk of the Scala language. 
 
 ### Package API Facades
 
