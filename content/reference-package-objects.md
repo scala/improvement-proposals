@@ -97,7 +97,11 @@ needs a special case and special handling in the Scala plugin specifically to su
 
 * Special casing to support Mill, which allows references to package objects https://github.com/JetBrains/intellij-scala/pull/672
 
-
+The fact that it is impossible to refer to the `package object` without using a `.package` suffix
+is a wart: `.package` is an implementation/encoding detail, and so should not be a necessary part
+of the user-facing language. We can refer to all other Scala definitions and objects without 
+leaking implementation/encoding details, and it would be more uniform to allow that for 
+`package object`s as well.
 
 ## Limitations
 
