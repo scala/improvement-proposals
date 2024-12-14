@@ -208,6 +208,10 @@ The necessary IntelliJ changes have been made below:
 
 * https://github.com/JetBrains/intellij-scala/pull/672
 
+With IntelliJ-side discussion:
+
+* https://youtrack.jetbrains.com/issue/SCL-23198/Direct-references-to-package-objects-should-be-allowed-in-.mill-files
+
 These IntelliJ changes are currently guarded to only apply to `.mill` files, but the 
 guard can easily be removed to make it apply to any Scala files. In fact, implementing 
 this proposal would involve _removing_ a considerable amount of special casing from 
