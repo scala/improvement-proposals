@@ -103,20 +103,6 @@ of the user-facing language. We can refer to all other Scala definitions and obj
 leaking implementation/encoding details, and it would be more uniform to allow that for 
 `package object`s as well.
 
-## Limitations
-
-* `a.b` only expands to `a.b.package` when used "standalone", i.e. not when part of a
-  larger select chain `a.b.c` or equivalent postfix expression `a.b c`, prefix
-  expression `!a.b`, or infix expression `a.b c d`.
-
-* `a.b` expands to `a.b.package` of the type `a.b.package.type`, and only contains the 
-  contents of the `package object`. It does not contain other things in the 
-  `package a.b` that are outside of the `package object`
-
-Both these requirements are necessary for backwards compatibility, and anyway do not impact
-the main goal of removing the irregularity between `package object`s and normal `object`s
-and providing some non-hacky way to refer to the `package object` values
-
 
 ## User Alternatives
 
@@ -190,6 +176,22 @@ syntax and less standardization.
     to provide package-level documentation, annotations, etc.. We could provide another `.scala` 
     file that we specify by-convention to be the "package entrypoint", but we already have
     `package.scala` and it does the job just fine
+
+
+## Limitations
+
+* `a.b` only expands to `a.b.package` when used "standalone", i.e. not when part of a
+  larger select chain `a.b.c` or equivalent postfix expression `a.b c`, prefix
+  expression `!a.b`, or infix expression `a.b c d`.
+
+* `a.b` expands to `a.b.package` of the type `a.b.package.type`, and only contains the
+  contents of the `package object`. It does not contain other things in the
+  `package a.b` that are outside of the `package object`
+
+Both these requirements are necessary for backwards compatibility, and anyway do not impact
+the main goal of removing the irregularity between `package object`s and normal `object`s
+and providing some non-hacky way to refer to the `package object` values
+
 
 ## Implementation & Testing
 
