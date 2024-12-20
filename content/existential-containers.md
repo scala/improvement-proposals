@@ -69,9 +69,8 @@ In broad strokes, our solution generalizes the following possible implementation
 
 ```scala
 trait AnyPolygon:
-  type Value
+  type Value: Polygon as witness
   val value: Value
-  val witness: Polygon { type Self = Value }
 
 def largest(xs: Seq[AnyPolygon]): Option[AnyPolygon] =
   xs.maxByOption((a) => a.witness.area(a.value))
@@ -152,6 +151,11 @@ The proposed feature is meant to interact with implicit search, as currently imp
 More specifically, given an existential container `c`, accessing `c.value` _opens_ the existential while retaining its type `c.Value`, effectively keeping an _anchor_ (i.e., the path to the scope of the witness) to the interface of the type class.
 
 Since no change in implicit resolution is needed, this proposal cannot create unforeseen negative interactions with existing features.
+
+### Other concerns
+
+This document has been written under the experimental modularity improvements for Scala 3.
+Although the proposed feature is fully expressible without those changes, the encoding of existential containers can only work with the "old" (i.e., the one currently used in production) or "new" type class style.
 
 ### Open questions
 
