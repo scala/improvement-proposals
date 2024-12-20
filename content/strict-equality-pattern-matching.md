@@ -99,10 +99,8 @@ The proposed solution consists of two changes:
     and should require a `CanEqual[Nat.Zero.type, Nat]` in the future. This is already the case for `case object`s today. In expressions, singleton `enum` `case`s
     should continue to have the `enum` type, not the singleton type.
  1. Add a magic `given` `CanEqual[A, B]` instance that is available when either of the following is true:
-    - `A` is the singleton type of a `case object`, and `B` is a supertype of `A`, and is a type that allows exhaustiveness checks
-      (e. g. a `sealed` type or a union or intersection of several `sealed` types)
-    - `A` is the singleton type of a singleton `enum` `case`, and `B` is a supertype of the corresponding `enum` type, and is a type that allows exhaustiveness
-      checks
+    - `A` is the singleton type of a `case object`, and `B` is a supertype of `A`, and is a union or intersection of one or more `sealed` or `enum` types
+    - `A` is the singleton type of a singleton `enum` `case`, and `B` is a supertype of the corresponding `enum` type, and is a union of one or more `sealed` or `enum` types
 
 These rules ensure that pattern matching against singleton patterns continues to work in all cases that I would consider sane.
 
