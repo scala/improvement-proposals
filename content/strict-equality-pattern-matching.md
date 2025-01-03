@@ -18,6 +18,7 @@ title: SIP-67 - Strict-Equality pattern matching
 | Oct 4th 2024  | Add paragraph about using a type check instead of equals  |
 | Oct 7th 2024  | Add paragraph about using `unapply` instead of equals     |
 | Dec 3rd 2024  | Change the approach to a magic `CanEqual` instance        |
+| Jan 3rd 2024  | Undo previous change, "magic `CanEqual` has no benefits   |
 ## Summary
 
 This proposal aims to make the `strictEquality` feature easier to adopt by making pattern matching
@@ -27,10 +28,12 @@ does not (or cannot) have a `derives CanEqual` clause.
 ## Motivation
 
 The `strictEquality` feature is important to improve type safety. However due to the way that pattern matching in
-Scala works, it requires a `CanEqual` instance when matching against a `case object` or a singleton `enum` `case`. This is problematic because it means that pattern matching doesn't work in the expected
-way for types where a `derives CanEqual` cause is not desired.
-By contrast, in languages like Haskell, an `Eq` instance is never required to perform a pattern matching.
-It also seems arbitrary that a `CanEqual` instance is required to match on types such as `Option` or `List` but not for e. g. `Either`.
+Scala works, it requires a `CanEqual` instance when matching against a `case object` or a singleton `enum` `case`.
+This is problematic because it means that pattern matching doesn't work in the expected way for types where a
+`derives CanEqual` clause is not desired.
+By contrast, in languages like Haskell, an `Eq` instance is never required to perform pattern matching. It also
+seems arbitrary that a `CanEqual` instance is required to match on types such as `Option` or `List` but not on
+others such as `Either`.
 
 
 A simple example is this code:
@@ -93,17 +96,9 @@ For these reasons the current state of affairs is unsatisfactory and needs to im
 
 ### Specification
 
-The proposed solution consists of two changes:
- 1. Tweak the behaviour of pattern matching with regards to singleton `enum` `case` patterns. When a singleton `enum` `case` (like `Nat.Zero` in the above example)
-    is used as a pattern, it should be considered  to have that `case`'s singleton type, not the `enum` type. E. g. the above `def +` currently requires a `CanEqual[Nat, Nat]`,
-    and should require a `CanEqual[Nat.Zero.type, Nat]` in the future. This is already the case for `case object`s today. In expressions, singleton `enum` `case`s
-    should continue to have the `enum` type, not the singleton type.
- 1. Add a magic `given` `CanEqual[A, B]` instance that is available when either of the following is true:
-    - `A` is the singleton type of a `case object`, and `B` is a supertype of `A`, and is a union or intersection of one or more `sealed` or `enum` types
-    - `A` is the singleton type of a singleton `enum` `case`, and `B` is a supertype of the corresponding `enum` type, and is a union of one or more `sealed` or `enum` types
-
-These rules ensure that pattern matching against singleton patterns continues to work in all cases that I would consider sane.
-
+The proposed solution is to not require a `CanEqual` instance during  pattern matching when:
+ - the scrutinee's type is a `sealed` type and the pattern is a `case object` that extends the scrutinee's type, or
+ - the scrutinee's type is an `enum` type and the pattern is one of the enum's cases without a parameter list (e. g. `Nat.Z`)
 
 ### Compatibility
 
