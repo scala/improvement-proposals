@@ -64,7 +64,7 @@ In other words, it is impossible to call `largest` with an heterogeneous sequenc
 
 ## Proposed solution
 
-The problems raised above can be worked around if, instead of using generic parameters with a context bound, we use pairs bundling a value with its conformance witness.
+The problems raised above can be worked around if, instead of using generic parameters with a context bound, we use pairs bundling each value with its conformance witness.
 In broad strokes, our solution generalizes the following possible implementation of `largest`:
 
 ```scala
