@@ -167,7 +167,7 @@ Another open question relates to possible language support for shortening the ex
 
 ## Related work
 
-Swift support existential containers.
+Swift supports existential containers.
 For instance, `largest` can be written as follows in Swift:
 
 ```swift
