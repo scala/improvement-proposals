@@ -45,7 +45,7 @@ given Hexagon is Polygon: ...
 ```
 
 Defining `Polygon` as a type class rather than an abstract class to be inherited allows us to retroactively state that squares are polygons without modifying the definition of `Square`.
-Sticking to subtyping would require the definition of an inneficient and verbose wrapper class.
+Sticking to subtyping would require the definition of an inefficient and verbose wrapper class.
 
 Alas, type classes offer limited support for type erasure–the eliding of some type information at compile-time.
 Hence, it is difficult to manipulate heterogeneous collections or write procedures returning arbitrary values known to model a particular concept.
