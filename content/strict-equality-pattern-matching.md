@@ -97,8 +97,8 @@ For these reasons the current state of affairs is unsatisfactory and needs to im
 ### Specification
 
 The proposed solution is to not require a `CanEqual` instance during  pattern matching when:
- - the scrutinee's type is a `sealed` type and the pattern is a `case object` that extends the scrutinee's type, or
- - the scrutinee's type is an `enum` type and the pattern is one of the enum's cases without a parameter list (e. g. `Nat.Zero`)
+ - the pattern is a `case object` that extends the scrutinee's type, or
+ - the pattern is an `enum case` without a parameter list (e. g. `Nat.Zero`) and the scrutinee has that `enum` type (or a supertype thereof)
 
 ### Compatibility
 
@@ -122,6 +122,29 @@ This change creates no new compatibility issues and improves the compatibility o
    - contra: behaviour of `match` statements now depends on *both* the version of the compiler that you're using *and* the compiler used to compile the ADT.
    - contra: incompatible change. If your `case object` has an overridden `equals` method (like e. g. `Nil` does), you now need to define an `unapply` method that delegates to `equals`, otherwise your code will break. 
    - authors opinion: same as for 2. Fine if this was a new language, but the benefits aren't huge and practical compatibility concerns matter more.
+1. It was proposed to drop the requirement for a `CanEqual` instance during pattern matching
+   entirely and rely solely on the unreachability warning that the compiler emits when the scrutinee
+   type isn't a supertype of the pattern type.
+   The author's opinion is that this does not provide sufficient safety around the `equals` method.
+   As was explained above, `CanEqual` is not supposed to be available for types that cannot be
+   meaningfully tested for equality, such as `Int => Int`. This proposal trivially allows equality
+   comparisons between such types:
+   ```
+   val x: Int => Int = ???
+   val y: Int => Int = ???
+   x match
+     case `y` => true
+     case _ => false
+  ```
+  `strictEquality` currently prevents this from compiling, and that is a feature, not a bug.
+  It should also be pointed out that adding a `: Any` type ascription will make all such
+  comparisons compile, regardless of the type of the pattern. This is unfortunate as type
+  ascriptions are normally a fairly safe and innocouous operation.
+  The "philosophical" justification for nevertheless allowing matching against `case object`
+  and singleton `enum case`s is that in an ideal world, we wouldn't even need to call `equals`
+  to test for equality with these – the only thing that is equal to a singleton is the
+  singleton itself, and hence we could in principle use reference equality for these cases
+  (the fact that we don't is a mere concession to backward compatibility).
  
 ## Related Work
  - https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
