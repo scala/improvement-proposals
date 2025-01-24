@@ -33,15 +33,12 @@ The following illustrates:
 ```scala
 import shapes.{Square, Hexagon}
 
-trait TypeClass:
-  type Self
-
-trait Polygon extends TypeClass:
+trait Polygon[Self]:
   extension (self: Self)
     def area: Double
 
-given Square is Polygon: ...
-given Hexagon is Polygon: ...
+given Polygon[Square] with ...
+given Polygon[Hexagon] with ...
 ```
 
 Defining `Polygon` as a type class rather than an abstract class to be inherited allows us to retroactively state that squares are polygons without modifying the definition of `Square`.
@@ -56,7 +53,7 @@ def largest[T: Polygon](xs: Seq[T]): Option[T] =
   xs.maxByOption(_.area)
 
 largest(List(Square(), Hexagon()))
-// error: No given instance of type Polygon{type Self = Square | Hex} was found for a context parameter of method largest
+// error: No given instance of type Polygon[Square | Hexagon] was found for a context parameter of method largest
 ```
 
 The call to `largest` is illegal because, although there exist witnesses of the `Polygon` and `Hexagon`'s conformance to `Polygon`, no such witness exists for their least common supertype.
@@ -69,8 +66,9 @@ In broad strokes, a solution generalizes the following possible implementation o
 
 ```scala
 trait AnyPolygon:
-  type Value: Polygon as witness
+  type Value
   val value: Value
+  given witness: Polygon[Value]
 
 def largest(xs: Seq[AnyPolygon]): Option[AnyPolygon] =
   xs.maxByOption((a) => a.witness.area(a.value))
@@ -140,7 +138,7 @@ def largest1(xs: Seq[Polygon1]): Option[Polygon1] =
   xs.maxByOption(_.area)
 
 // Version with existential containers:
-trait Polygon2 extends TypeClass:
+trait Polygon2[Self]:
   extension (self: Self) def area: Double
 def largest2(xs: Seq[Containing[Polygon2]]): Option[Containing[Polygon2]] =
   xs.maxByOption(_.area) // <- sugared form of `xs.maxByOption(_.value.area)`
