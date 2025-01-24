@@ -2,7 +2,7 @@
 layout: sip
 title: SIP-47 - Clause Interleaving
 stage: completed
-status: accepted
+status: shipped
 permalink: /sips/:title.html
 ---
 
