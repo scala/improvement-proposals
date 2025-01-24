@@ -47,7 +47,7 @@ given Hexagon is Polygon: ...
 Defining `Polygon` as a type class rather than an abstract class to be inherited allows us to retroactively state that squares are polygons without modifying the definition of `Square`.
 Sticking to subtyping would require the definition of an inefficient and verbose wrapper class.
 
-Alas, type classes offer limited support for type erasure–the eliding of some type information at compile-time.
+Alas, type classes offer limited support for eliding type information at compile-time.
 Hence, it is difficult to manipulate heterogeneous collections or write procedures returning arbitrary values known to model a particular concept.
 The following illustrates:
 
@@ -76,7 +76,7 @@ def largest(xs: Seq[AnyPolygon]): Option[AnyPolygon] =
   xs.maxByOption((a) => a.witness.area(a.value))
 ```
 
-The type `AnyPolygon` conceptually represents a type-erased polygon.
+The type `AnyPolygon` conceptually represents an arbitrary polygon.
 It consists of a pair containing some arbitrary value as well as a witness of that value's type being a polygon.
 We call this pair an _existential container_, as a nod to a similar feature in Swift, and the remainder of this SIP explains how to express this idea in a single, type-safe abstraction.
 
