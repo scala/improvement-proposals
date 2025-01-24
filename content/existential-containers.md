@@ -145,7 +145,7 @@ The semantics of the proposed feature is fully expressible in Scala.
 Save for the implicit addition of `.value` on method selection when the receiver is an instance of `Containing[C]`, this proposal requires no change in the language.
 As a result, it has no backward binary or TASTy compatibility consequences.
 
-### Feature Interactions
+### Feature interactions
 
 The proposed feature is meant to interact with implicit search, as currently implemented by the language.
 More specifically, given an existential container `c`, accessing `c.value` _opens_ the existential while retaining its type `c.Value`, effectively keeping an _anchor_ (i.e., the path to the scope of the witness) to the interface of the type class.
