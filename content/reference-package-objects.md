@@ -180,18 +180,18 @@ syntax and less standardization.
 
 ## Limitations
 
-* `a.b` only expands to `a.b.package` when used "standalone", i.e. not when part of a
-  larger select chain `a.b.c` or equivalent postfix expression `a.b c`, prefix
-  expression `!a.b`, or infix expression `a.b c d`.
+* With this proposal, `a.b.c` can be refactored to `val x = a.b; x.c` only when `c` is declared inside
+  the `a.b` package object. This is slightly more irregular than the status quo, which disallows such
+  a refactoring at any time. In general, a package with a package object no longer behaves the same
+  as a package without.
 
-* `a.b` expands to `a.b.package` of the type `a.b.package.type`, and only contains the
-  contents of the `package object`. It does not contain other things in the
-  `package a.b` that are outside of the `package object`
+## Open Questions
 
-Both these requirements are necessary for backwards compatibility, and anyway do not impact
-the main goal of removing the irregularity between `package object`s and normal `object`s
-and providing some non-hacky way to refer to the `package object` values
+There are some open questions that can be resolved during experimentation
 
+* Should package objects be usable as singleton type prefixes, e.g. `type foo == scala.type`?
+* Should package objects participate in `foo() -> foo.apply()` desugaring, e.g. `_root_.pprint(124)`?
+* 
 
 ## Implementation & Testing
 
