@@ -349,3 +349,24 @@ Console.WriteLine(new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4]);  // True
 Console.WriteLine(new[] { 1, 0, 0, 1 } is [1, 0, .., 0, 1]);  // True
 Console.WriteLine(new[] { 1, 0, 1 } is [1, 0, .., 0, 1]);  // False
 ```
+
+## Ruby
+
+Ruby does something interesting with its pattern matching: rather than only allowing a single
+`*` vararg with single values to the left and right (like Python or Javascript) 
+Ruby's [Find Patterns](https://docs.ruby-lang.org/en/3.0/syntax/pattern_matching_rdoc.html#label-Patterns)
+allow the `*` only as the _left-most and right-most_ entry in the sequence, with the
+single values in the _middle_
+
+
+```ruby
+case ["a", 1, "b", "c", 2]
+in [*, String, String, *]
+  "matched"
+else
+  "not matched"
+end
+```
+
+This could be supported as part of the desugaring in this proposal if we want to, but for now is
+left out
