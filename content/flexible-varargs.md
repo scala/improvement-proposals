@@ -226,8 +226,9 @@ of the elements that satisfies all sub-patterns.
 Python's [PEP634: Structural Pattern Matching](https://peps.python.org/pep-0634)
 has the same limitation of only allowing one `*` unpacking in its
 [Sequence Patterns](https://peps.python.org/pep-0634/#sequence-patterns), with
-an arbitrary number of non-`*` patterns on the left and right, and follows the same
-pattern matching strategy that I sketched above.
+an arbitrary number of non-`*` patterns on the left and right, and follows the 
+[same pattern matching strategy](https://docs.python.org/3/reference/compound_stmts.html#sequence-patterns)
+that I sketched above.
 
 ### No Specific Performance Optimizations
 
