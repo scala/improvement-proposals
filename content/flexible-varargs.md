@@ -230,6 +230,19 @@ an arbitrary number of non-`*` patterns on the left and right, and follows the
 [same pattern matching strategy](https://docs.python.org/3/reference/compound_stmts.html#sequence-patterns)
 that I sketched above.
 
+Javascript has a stricter limitation where destructuring an array, it only allows
+single values on the _left_ `...rest` pattern. 
+
+```javascript
+[a, b, ...rest] = [10, 20, 30, 40, 50];
+// a = 10
+// b = 20
+// rest = [30, 40, 50]
+
+[a, b, ...rest, c] = [10, 20, 30, 40, 50];
+// Uncaught SyntaxError: Rest element must be last element
+```
+
 ### No Specific Performance Optimizations
 
 As proposed, the desugaring just relies on `IArray()` and `++` to construct the final 
