@@ -53,7 +53,8 @@ val numbers2 = Seq(4, 5, 6)
 val total = sum(numbers1*, numbers2*) // 21
 ```
 
-And allow `Option`s to be unpacked:
+And allow `Option`s to be unpacked, as it is very common to have some of the values
+you want to pass to a varargs be optional:
 
 ```scala
 val number1: Int = 1
