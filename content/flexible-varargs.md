@@ -353,7 +353,7 @@ Console.WriteLine(new[] { 1, 0, 1 } is [1, 0, .., 0, 1]);  // False
 ## Ruby
 
 Ruby does something interesting with its pattern matching: rather than only allowing a single
-`*` vararg with single values to the left and right (like Python or Javascript) 
+`*` vararg in the middle with single values to the left and right (like Python or Javascript) 
 Ruby's [Find Patterns](https://docs.ruby-lang.org/en/3.0/syntax/pattern_matching_rdoc.html#label-Patterns)
 allow the `*` only as the _left-most and right-most_ entry in the sequence, with the
 single values in the _middle_
