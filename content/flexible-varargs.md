@@ -223,26 +223,6 @@ may be valid. Thus there is no way to implement it efficiently in general, as it
 require an expensive (`O(2^n)`) backtracking search to try and find a valid assignment 
 of the elements that satisfies all sub-patterns. 
 
-Python's [PEP634: Structural Pattern Matching](https://peps.python.org/pep-0634)
-has the same limitation of only allowing one `*` unpacking in its
-[Sequence Patterns](https://peps.python.org/pep-0634/#sequence-patterns), with
-an arbitrary number of non-`*` patterns on the left and right, and follows the 
-[same pattern matching strategy](https://docs.python.org/3/reference/compound_stmts.html#sequence-patterns)
-that I sketched above.
-
-Javascript has a stricter limitation where destructuring an array, it only allows
-single values on the _left_ `...rest` pattern. 
-
-```javascript
-[a, b, ...rest] = [10, 20, 30, 40, 50];
-// a = 10
-// b = 20
-// rest = [30, 40, 50]
-
-[a, b, ...rest, c] = [10, 20, 30, 40, 50];
-// Uncaught SyntaxError: Rest element must be last element
-```
-
 ### No Specific Performance Optimizations
 
 As proposed, the desugaring just relies on `IArray()` and `++` to construct the final 
@@ -300,3 +280,50 @@ replacement for the more flexible `*` proposed in this document. Note that while
 "manual" approach of doing `foo ++ Seq(bar) ++ qux ++ Seq(baz)` could be applied to
 any of the three use cases above, all three libraries found it painful enough that
 adding implicit conversions was worthwhile.
+
+# Prior Art
+
+### Python
+
+Python's `*` syntax works identically to this proposal. In Python, you can mix
+single values with one or more `*` unpackings when calling a function:
+
+```python
+>>> a = [1, 2, 3]
+>>> b = [4, 5, 6]
+
+>>> print(*a, 0, *b)
+1 2 3 0, 4 5 6
+```
+
+Python's [PEP634: Structural Pattern Matching](https://peps.python.org/pep-0634)
+has the same limitation of only allowing one `*` unpacking in its
+[Sequence Patterns](https://peps.python.org/pep-0634/#sequence-patterns), with
+an arbitrary number of non-`*` patterns on the left and right, and follows the
+[same pattern matching strategy](https://docs.python.org/3/reference/compound_stmts.html#sequence-patterns)
+that I sketched above.
+
+### Javascript
+Javascript's expression `...`  syntax works identically to this proposal. In Python, you can mix
+single values with one or more `...` unpackings when calling a function:
+
+```javascript
+a = [1, 2, 3]
+b = [4, 5, 6]
+
+console.log(...a, 0, ...b)
+// 1 1 2 3 0 4 5 6
+```
+
+Javascript has a stricter limitation when destructuring an array, as it only allows
+single values on the _left_ `...rest` pattern.
+
+```javascript
+[a, b, ...rest] = [10, 20, 30, 40, 50];
+// a = 10
+// b = 20
+// rest = [30, 40, 50]
+
+[a, b, ...rest, c] = [10, 20, 30, 40, 50];
+// Uncaught SyntaxError: Rest element must be last element
+```
