@@ -280,4 +280,7 @@ This approach works, but relies on you controlling the
 target type, and adds considerable boilerplate defining implicit conversions for 
 every such target type. It thus can sometimes be found in libraries where that 
 overhead can be amortized over many callsites, but it not a general
-replacement for the more flexible `*` proposed in this document.
+replacement for the more flexible `*` proposed in this document. Note that while the
+"manual" approach of doing `foo ++ Seq(bar) ++ qux ++ Seq(baz)` could be applied to
+any of the three use cases above, all three libraries found it painful enough that
+adding implicit conversions was worthwhile.
