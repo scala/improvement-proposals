@@ -273,6 +273,9 @@ We can see this done repeatedly in the wild:
   [two implicit conversions](https://github.com/sbt/sbt/blob/1d16ca95106a11ad4ef0e3c5a1637c17189600da/internal/util-collection/src/main/scala/sbt/internal/util/Settings.scala#L691-L695) 
   for single and sequence entries
 
+* Scalatags' HTML templates, which use `Frag` as the target type and provide 
+  [an implicit conversion](https://github.com/com-lihaoyi/scalatags/blob/762ab37d0addc614bfd65bbeabeb5f123caf4395/scalatags/src/scalatags/Text.scala#L59-L63) from any `Seq[T]` with an implicit `T => Frag`
+
 This approach works, but relies on you controlling the 
 target type, and adds considerable boilerplate defining implicit conversions for 
 every such target type. It thus can sometimes be found in libraries where that 
