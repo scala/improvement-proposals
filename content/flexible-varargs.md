@@ -56,10 +56,11 @@ val total = sum(numbers1*, numbers2*) // 21
 And allow `Option`s to be unpacked:
 
 ```scala
-val numberOpt1: Option[Int] = Some(1)
-val numberOpt2: Option[Int] = None
+val number1: Int = 1
+val number2: Option[Int] = Some(2)
+val number3: Int = 3
 
-val total = sum(numberOpt1*, numberOpt2*) // 1
+val total = sum(number1, number2*, number3) // 6
 ```
 
 ## Motivation
