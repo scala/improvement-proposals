@@ -12,7 +12,7 @@ title: SIP-XX - Flexible Varargs
 
 | Date          | Version            |
 |---------------|--------------------|
-| Feb 28th 2024 | Initial Draft      |
+| Feb 28th 2025 | Initial Draft      |
 
 ## Summary
 
