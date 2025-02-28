@@ -316,7 +316,8 @@ console.log(...a, 0, ...b)
 ```
 
 Javascript has a stricter limitation when destructuring an array, as it only allows
-single values on the _left_ `...rest` pattern.
+single values to the _left_ of the `...rest` pattern, and does not allow anything to be
+to the right of it.
 
 ```javascript
 [a, b, ...rest] = [10, 20, 30, 40, 50];
