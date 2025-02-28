@@ -303,6 +303,13 @@ an arbitrary number of non-`*` patterns on the left and right, and follows the
 [same pattern matching strategy](https://docs.python.org/3/reference/compound_stmts.html#sequence-patterns)
 that I sketched above.
 
+```python
+match command:
+    case ["drop", *objects]:
+        for obj in objects:
+            ...
+```
+
 ### Javascript
 Javascript's expression `...`  syntax works identically to this proposal. In Python, you can mix
 single values with one or more `...` unpackings when calling a function:
@@ -393,5 +400,8 @@ else
 end
 ```
 
-This could be supported as part of the desugaring in this proposal if we want to, but for now is
-left out
+Implementing this requires a `O(n^2)` scan over the input sequence attempting to
+match the pattern starting at every index, hence the name `Find Patterns`. Although better
+than the `O(2^n)` exponential backtracking search that would be required for arbitrary 
+placement of `*` patterns, it is still much worst than the `O(n)` cost of the 
+single-`*` pattern that most languages do, and so we are leaving it out of this proposal.
