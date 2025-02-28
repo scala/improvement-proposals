@@ -329,6 +329,20 @@ to the right of it.
 // Uncaught SyntaxError: Rest element must be last element
 ```
 
+### PHP
+
+PHP's work in progress [Pattern Matching RFC](https://wiki.php.net/rfc/pattern-matching)
+allows for a `...` "rest" pattern to be added to a sequence pattern, but does not allow
+it to be bound to a local variable:
+
+```php
+// Array sequence patterns
+$list is [1, 2, 3, 4];   // Exact match.
+$list is [1, 2, 3, ...]; // Begins with 1, 2, 3, but may have other entries.
+$list is [1, 2, mixed, 4];   // Allows any value in the 3rd position.
+$list is [1, 2, 3|4, 5]; // 3rd value may be 3 or 4.
+```
+
 ### Dart
 
 Dart allows pattern matching on lists with a single `...` [Rest Element](https://dart.dev/language/pattern-types#rest-element)
