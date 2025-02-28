@@ -251,7 +251,7 @@ implicit def seqSummable(value: Seq[Int]) = Summable(value)
 implicit def singleSummable(value: Int) = Summable(Seq(value))
 implicit def optionSummable(value: Option[Int]) = Summable(value.toSeq)
 
-def sum(x: Int*) = x.sum
+def sum(x: Summable*) = x.flatMap(_.value).sum
 
 val numbers1 = Seq(1, 2, 3)
 val numbers2 = Seq(4, 5, 6)
