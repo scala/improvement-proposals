@@ -179,8 +179,14 @@ The proposed implementation is to basically desugar the multiple `*`s into the m
 val total = sum(0, numbers1*, numbers2*, 4) // 10
 
 // Desugaring
-val total = sum((IArray(0) ++ numbers1 ++ numbers2 ++ IArray(4))*) // 10
+val total = sum(IArray.newBuilder.addOne(0).addAll(numbers1).addAll(numbers2).addOne(4).result()*) // 10
 ```
+
+We don't want to hard-code too much deep integration with the Scala collections library,
+but at the same time do not want to do this too naively, since this may be used in some
+performance critical APIs (e.g. Scalatags templates). It seems reasonable to assume that 
+any possible implementation of `IArray` or `Seq` will have an API like `newBuilder` that
+allows you to construct the collection efficiently without excessive copying.
 
 The implementation for patterns could be something like
 
@@ -194,11 +200,9 @@ numbers match {
 class VarargsMatchHelper(beforeCount: Int, afterCount: Int) {
   def unapply[T](values: Seq[T]): Option[(Seq[T], Seq[T], Seq[T])] = {
     Option.when (values.length >= beforeCount + afterCount){
-      (
-        values.take(beforeCount),
-        values.drop(beforeCount).dropRight(afterCount), 
-        values.takeRight(afterCount)
-      )
+      val (first, rest) = values.splitAt(beforeCount)
+      val (middle, last) = rest.splitAt(rest.length - afterCount)
+      (first, middle, last)
     }
   }
 }
@@ -222,14 +226,6 @@ elements to each sub-pattern, and depending on the sub-patterns not all such ass
 may be valid. Thus there is no way to implement it efficiently in general, as it would 
 require an expensive (`O(2^n)`) backtracking search to try and find a valid assignment 
 of the elements that satisfies all sub-patterns. 
-
-### No Specific Performance Optimizations
-
-As proposed, the desugaring just relies on `IArray()` and `++` to construct the final 
-sequence that will be passed to varargs. We don't want to use `Seq` because it returns
-a `List`, and `List#++` is very inefficient. But we do not do any further optimizations,
-and anyone who hits performance issues with flexible vararg unpacking can always rewrite
-it themselves manually constructing an `mutable.ArrayBuffer` or `mutable.ArrayDeque`.
 
 ### Not supporting unpacking arbitrary `Iterable`s
 
@@ -311,7 +307,7 @@ match command:
 ```
 
 ### Javascript
-Javascript's expression `...`  syntax works identically to this proposal. In Python, you can mix
+Javascript's expression `...`  syntax works identically to this proposal. In Javascript, you can mix
 single values with one or more `...` unpackings when calling a function:
 
 ```javascript
