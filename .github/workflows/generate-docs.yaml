@@ -12,5 +12,5 @@ jobs:
       - uses: actions/checkout@v3
       - name: Generate SIP documentation
         env:
-          IMPROVEMENT_BOT_TOKEN: ${{ secrets.IMPROVEMENT_BOT_TOKEN }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
         run: scala-cli .github/scripts/generate-docs.scala
