@@ -14,7 +14,7 @@ import io.circe.{ Json, yaml }
 import scala.annotation.tailrec
 import scala.sys.process.Process
 
-val gitToken = sys.env("IMPROVEMENT_BOT_TOKEN")
+val gitToken = sys.env("BOT_TOKEN")
 val yamlPrinter = yaml.Printer(preserveOrder = true)
 
 /**
@@ -43,8 +43,8 @@ def clone(repo: String, branch: String): os.Path =
   val url = s"https://x-access-token:${gitToken}@github.com/${repo}"
   val path = os.temp.dir()
   run(s"git clone --branch ${branch} ${url} ${path}", os.pwd)
-  run(s"git config user.name \"Scala Improvement Bot\"", path)
-  run(s"git config user.email scala.improvement@epfl.ch", path)
+  run(s"git config user.name \"dottybot\"", path)
+  run(s"git config user.email dottybot@groupes.epfl.ch", path)
   path
 
 // Invoke command and make sure it succeeds. For some reason, os.proc(cmd).call(cwd) does not work.
