@@ -96,9 +96,67 @@ For these reasons the current state of affairs is unsatisfactory and needs to im
 
 ### Specification
 
-The proposed solution is to not require a `CanEqual` instance during  pattern matching when:
+The proposed solution is to not require a `CanEqual` instance during pattern matching when:
  - the pattern is a `case object` that extends the scrutinee's type, or
  - the pattern is an `enum case` without a parameter list (e. g. `Nat.Zero`) and the scrutinee has that `enum` type (or a supertype thereof)
+
+The semantics of pattern matching against a constant are otherwise unchanged, that is, `equals` will continue
+to be invoked.
+
+### Examples
+
+#### Example 1
+
+```scala
+def foo(vector: Vector[Int]) =
+  vector match
+    case Nil => 0
+```
+This example is not affected by this SIP: `Vector[Int]` is not a supertype of `Nil.type`. `CanEqual` is still required.
+(Note: This code produces an unreachable code warning, but the branch is nevertheless taken (compiler bug))
+
+#### Example 2
+```scala
+def foo(list: List[Int]) =
+  list match
+    case Nil => 0
+```
+This example is affected by this SIP. `List[Int]` is a supertype of `Nil.type`, and `Nil` is a case object, hence no
+`CanEqual` instance is required (Note: the example still compiles without this SIP because that `CanEqual` instance
+is available. But with this SIP, pattern matching will no longer require it)
+
+#### Example 3
+
+```scala
+val TheAnswer = 42
+
+def foo(i: Int) =
+  i match
+    case TheAnswer => 0
+```
+This example is not affected by this SIP: `TheAnswer` is not a `case object` or `enum case`, `CanEqual` is required like before.
+
+#### Example 4
+```scala
+def foo(either: Either[String, Int]) =
+  either match
+    case Left(_) => "l"
+    case Right(_) => "r"
+```
+This example is not affected by this SIP. It never required `CanEqual` as matching is performed using `unapply`.
+
+
+#### Example 5
+```scala
+enum Foo:
+  case Bar
+  case Baz
+
+def foo(x: Any) =
+  x match
+    case Foo.Bar => 0
+```
+This example is affected by this SIP: `Any` is a supertype of `Foo` and `Foo.Bar` is an `enum case` without a parameter list, hence no `CanEqual` instance is required. 
 
 ### Compatibility
 
