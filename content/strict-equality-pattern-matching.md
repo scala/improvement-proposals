@@ -18,7 +18,8 @@ title: SIP-67 - Strict-Equality pattern matching
 | Oct 4th 2024  | Add paragraph about using a type check instead of equals  |
 | Oct 7th 2024  | Add paragraph about using `unapply` instead of equals     |
 | Dec 3rd 2024  | Change the approach to a magic `CanEqual` instance        |
-| Jan 3rd 2024  | Undo previous change, "magic `CanEqual` has no benefits   |
+| Jan 3rd 2025  | Undo previous change, "magic `CanEqual`" has no benefits   |
+| Mar 6th 2025  | Add examples   |
 ## Summary
 
 This proposal aims to make the `strictEquality` feature easier to adopt by making pattern matching
