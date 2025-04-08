@@ -39,7 +39,7 @@ parameters and fields are added over time.
 
 1. New parameters need to have a default value
 2. New parameters can only be added on the right
-3. The `@unroll`ed methods must be abstract or final
+3. The `@unroll`ed methods must be effectively final, but not local
 
 These are both existing industry-wide standard when dealing with data and schema evolution
 (e.g. [Schema evolution in Avro, Protocol Buffers and Thrift — Martin Kleppmann’s blog](https://martin.kleppmann.com/2012/12/05/schema-evolution-in-avro-protocol-buffers-thrift.html)),
