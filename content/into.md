@@ -45,6 +45,7 @@ val res0: List[Int] = List(0, 1, 2, 3)
 ```
 The input line `xs ++ ys` makes use of an implicit conversion from `Array[Int]` to `IterableOnce[Int]`. This conversion is defined in the standard library as an `implicit def`. Once the standard library is rewritten with Scala 3 conversions, this will require a language import at the use site, which is clearly unacceptable. It is possible to avoid the need for implicit conversions using method overloading or type classes, but this often leads to longer and more complicated code, and neither of these alternatives work for vararg parameters.
 
+## First Scheme: `into` as a Type Constructor
 
 This is where the `into` type constructor comes in. Here is a signature of a `++` method on `List[A]` that uses it:
 
