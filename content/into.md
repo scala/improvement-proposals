@@ -191,7 +191,7 @@ This means implicit `Conversion` instances with `Modifier` results can be insert
 
 Here is a simplified example:
 ```scala
-trait Modifier
+into trait Modifier
 given Conversion[Option[Node], Modifier] = ...
 given Conversion[Seq[Node], Modifier] = ...
 
