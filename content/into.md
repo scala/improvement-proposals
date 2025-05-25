@@ -317,3 +317,12 @@ The following alternatives were considered.
      def f(xs: List[into[C]]): Unit = ...
      ```
      and we have a list `ys` of type `List[C]`, then with the current scheme we can apply `f` to `ys`. But if `into[T] <: T` this would not work anymore.
+
+ 4. Generalize the scheme where we drop `into` for parameters in method bodies to all uses of `into`. This would make `into` even more flexible. But it would be harder to implement. Parameters already have a dual representation, where the local parameter symbol in a method body is different from the parameter in the method type. We use that duality also elsewhere to introduce some type distinctions. For instance, a vararg parameter has type `T*` externally but has type `Seq[T]` in the method body.
+ The `into` erasure fits with this scheme. By contrast, other types such as types of local vals or types in type aliases exist in one form only. So it's hard to establish a dual view for these types where `into` is sometimes present and at other times absent.
+
+## Implementation
+
+The described scheme is implemented in Scala 3 PR [#23014](https://github.com/scala/scala3/pull/23014).
+
+
