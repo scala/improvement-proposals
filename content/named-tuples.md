@@ -1,9 +1,9 @@
 ---
 layout: sip
 permalink: /sips/named-tuples.html
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-named-tuples/6403/164
 stage: completed
 status: shipped
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-named-tuples/6403/164
 title: SIP-58 - Named Tuples
 ---
 

@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-13 - Implicit classes
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/implicit-classes.html
+stage: completed
+status: shipped
+title: SIP-13 - Implicit classes
 ---
 
 **By: Josh Suereth**

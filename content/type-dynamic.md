@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-17 - Type Dynamic
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/type-dynamic.html
+stage: completed
+status: shipped
+title: SIP-17 - Type Dynamic
 ---
 
 

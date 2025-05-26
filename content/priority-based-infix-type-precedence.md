@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-33 - Priority-based infix type precedence
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/priority-based-infix-type-precedence.html
+stage: completed
+status: shipped
+title: SIP-33 - Priority-based infix type precedence
 ---
 
 **By: Oron Port**

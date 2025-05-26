@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-25 - Trait Parameters
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/trait-parameters.html
+stage: completed
+status: shipped
+title: SIP-25 - Trait Parameters
 ---
 
 > This proposal has been implemented in Scala 3.0.

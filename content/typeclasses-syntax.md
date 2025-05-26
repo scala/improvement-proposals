@@ -1,8 +1,9 @@
 ---
 layout: sip
+permalink: /sips/:title.html
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-improve-syntax-for-context-bounds-and-givens/6576/97
 stage: completed
 status: shipped
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-improve-syntax-for-context-bounds-and-givens/6576/97
 title: SIP-64 - Improve Syntax for Context Bounds and Givens
 ---
 

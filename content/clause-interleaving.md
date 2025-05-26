@@ -1,9 +1,9 @@
 ---
 layout: sip
-title: SIP-47 - Clause Interleaving
+permalink: /sips/:title.html
 stage: completed
 status: shipped
-permalink: /sips/:title.html
+title: SIP-47 - Clause Interleaving
 ---
 
 **By: Quentin Bernet and Guillaume Martres and Sébastien Doeraene**
