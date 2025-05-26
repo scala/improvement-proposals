@@ -4,7 +4,7 @@ permalink: /sips/:title.html
 stage: design
 status: submitted
 presip-thread: n/a
-title: SIP-NN - Existential Containers
+title: SIP-69 - Existential Containers
 ---
 
 **By: Dimi Racordon and Eugene Flesselle and Matt Bovel**
