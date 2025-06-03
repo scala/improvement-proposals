@@ -15,12 +15,13 @@ title: SIP-57 - Replace non-sensical @unchecked annotations
 |---------------|--------------------|
 | Dec 8th 2023  | Initial Draft      |
 | Jan 19th 2024 | Clarification about current @unchecked behavior |
+| Jun 3rd 2025  | Rename `.runtimeCheck` to `.runtimeChecked` |
 
 ## Summary
 
 We propose to replace the mechanism to silence warnings for "unchecked" patterns, in the cases where silencing the warning will still result in the pattern being checked at runtime.
 
-Currently, a user can silence warnings that a scrutinee may not be matched by a pattern, by annotating the scrutinee with the `@unchecked` annotation. This SIP proposes to use a new annotation `@RuntimeCheck` to replace `@unchecked` for this purpose. For convenience, an extension method will be added to `Predef` that marks the receiver with the annotation (used as follows: `foo.runtimeCheck`). Functionally it behaves the same as the old annotation, but improves readability at the callsite.
+Currently, a user can silence warnings that a scrutinee may not be matched by a pattern, by annotating the scrutinee with the `@unchecked` annotation. This SIP proposes to use a new annotation `@RuntimeCheck` to replace `@unchecked` for this purpose. For convenience, an extension method will be added to `Predef` that marks the receiver with the annotation (used as follows: `foo.runtimeChecked`). Functionally it behaves the same as the old annotation, but improves readability at the callsite.
 
 ## Motivation
 
@@ -92,15 +93,15 @@ In all usages where the compiler looks for `@unchecked` for this purpose, we ins
 
 By placing the annotation in the `internal` package, we communicate that the user is not meant to directly use the annotation.
 
-Instead, for convenience, we provide an extension method `Predef.runtimeCheck`, which can be applied to any expression.
+Instead, for convenience, we provide an extension method `Predef.runtimeChecked`, which can be applied to any expression.
 
 The new usage to assert that a pattern is checked at runtime then becomes as follows:
 ```scala
 def xs: List[Any] = ???
-val y :: ys = xs.runtimeCheck
+val y :: ys = xs.runtimeChecked
 ```
 
-We also make `runtimeCheck` a transparent inline method. This ensures that the elaboration of the method defines its semantics. (i.e. `runtimeCheck` is not meaningful because it is immediately inlined at type-checking).
+We also make `runtimeChecked` a transparent inline method. This ensures that the elaboration of the method defines its semantics. (i.e. `runtimeChecked` is not meaningful because it is immediately inlined at type-checking).
 
 ### Specification
 
@@ -113,7 +114,7 @@ import scala.annotation.internal.RuntimeCheck
 
 object Predef:
   extension [T](x: T)
-    transparent inline def runtimeCheck: x.type =
+    transparent inline def runtimeChecked: x.type =
       x: @RuntimeCheck
 ```
 
@@ -128,8 +129,8 @@ Considering backwards source compatibility, the following situation will change:
 package example
 
 extension (predef: scala.Predef.type)
-  transparent inline def runtimeCheck[T](x: T): x.type =
-    println("fake runtimeCheck")
+  transparent inline def runtimeChecked[T](x: T): x.type =
+    println("fake runtimeChecked")
     x
 ```
 ```scala
@@ -138,16 +139,16 @@ package example
 
 @main def Test =
   val xs = List[Any](1,2,3)
-  val y :: ys = Predef.runtimeCheck(xs)
+  val y :: ys = Predef.runtimeChecked(xs)
   assert(ys == List(2, 3))
 ```
 
-Previously this code would print `fake runtimeCheck`, however with the proposed change then recompiling this code will _succeed_ and no longer will print.
+Previously this code would print `fake runtimeChecked`, however with the proposed change then recompiling this code will _succeed_ and no longer will print.
 
 Potentially we could mitigate this if necessary with a migration warning when the new method is resolved (`@experimental` annotation would be a start)
 
 
-In general however, the new `runtimeCheck` method will not change any previously linking method without causing an ambiguity compilation error.
+In general however, the new `runtimeChecked` method will not change any previously linking method without causing an ambiguity compilation error.
 
 ### Other concerns
 
@@ -216,9 +217,9 @@ On line 2: warning: non-variable type argument Int in type pattern scala.collect
 val res2: Int = 1
 ```
 
-#### Aligning to Scala 2.13 semantics with runtimeCheck
+#### Aligning to Scala 2.13 semantics with `runtimeChecked`
 
-with `xs.runtimeCheck` we should still produce an unchecked warning for `case is: ::[Int] =>`
+with `xs.runtimeChecked` we should still produce an unchecked warning for `case is: ::[Int] =>`
 ```scala
 scala> xs.runtimeChecked match {
      |   case is: ::[Int] => is.head
@@ -239,15 +240,15 @@ scala> xs.runtimeChecked match {
      | }
 val res14: Int = 1
 ```
-This has a small extra migration cost because if the scrutinee changes from `(xs: @unchecked)` to `xs.runtimeCheck` now some individual cases might need to add `@unchecked` on type arguments to avoid creating new warnings - however this cost is offset by perhaps revealing unsafe patterns previously unaccounted for.
+This has a small extra migration cost because if the scrutinee changes from `(xs: @unchecked)` to `xs.runtimeChecked` now some individual cases might need to add `@unchecked` on type arguments to avoid creating new warnings - however this cost is offset by perhaps revealing unsafe patterns previously unaccounted for.
 
 Once again `@nowarn` can be used to fully restore any old behavior
 
 ## Alternatives
 
-1) make `runtimeCheck` a method on `Any` that returns the receiver (not inline). The compiler would check for presence of a call to this method when deciding to perform static checking of pattern exhaustivity. This idea was criticised for being brittle with respect to refactoring, or automatic code transformations via macro.
+1) make `runtimeChecked` a method on `Any` that returns the receiver (not inline). The compiler would check for presence of a call to this method when deciding to perform static checking of pattern exhaustivity. This idea was criticised for being brittle with respect to refactoring, or automatic code transformations via macro.
 
-2) `runtimeCheck` should elaborate to code that matches the expected type, e.g. to heal `t: Any` to `Int` when the expected type is `Int`. The problem is that this is not useful for patterns that can not be runtime checked by type alone. Also, it implies a greater change to the spec, because now `runtimeCheck` would have to be specially treated.
+2) `runtimeChecked` should elaborate to code that matches the expected type, e.g. to heal `t: Any` to `Int` when the expected type is `Int`. The problem is that this is not useful for patterns that can not be runtime checked by type alone. Also, it implies a greater change to the spec, because now `runtimeChecked` would have to be specially treated.
 
 ## Related work
 
