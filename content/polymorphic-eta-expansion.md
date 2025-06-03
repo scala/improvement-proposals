@@ -1,9 +1,9 @@
 ---
 layout: sip
-title: SIP-49 - Polymorphic Eta-Expansion
+permalink: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
-permalink: /sips/:title.html
+title: SIP-49 - Polymorphic Eta-Expansion
 ---
 
 **By: Quentin Bernet and Guillaume Martres** <!-- and Martin and Seb ?-->

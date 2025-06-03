@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-31 - Byname implicit arguments
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/byname-implicits.html
+stage: completed
+status: shipped
+title: SIP-31 - Byname implicit arguments
 ---
 
 > This proposal has been implemented in Scala 2.13.0 and Scala 3.0.0.

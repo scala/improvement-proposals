@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-14 - Futures and Promises
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/futures-promises.html
+stage: completed
+status: shipped
+title: SIP-14 - Futures and Promises
 ---
 
 **By: Philipp Haller, Aleksandar Prokopec, Heather Miller, Viktor Klang, Roland Kuhn, and Vojin Jovanovic**

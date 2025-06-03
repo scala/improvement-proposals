@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-35 - Opaque types
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/opaque-types.html
+stage: completed
+status: shipped
+title: SIP-35 - Opaque types
 ---
 
 > This proposal has been implemented with some changes in Scala 3.0.0.

@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-39 - Right-Associative By-Name Operators
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/right-associative-by-name-operators.html
+stage: completed
+status: shipped
+title: SIP-39 - Right-Associative By-Name Operators
 ---
 
 > This proposal has been implemented in Scala 2.13.0 and Scala 3.0.0.

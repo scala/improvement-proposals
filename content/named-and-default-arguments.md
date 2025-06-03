@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SID-1 Named and Default Arguments
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/named-and-default-arguments.html
+stage: completed
+status: shipped
+title: SID-1 Named and Default Arguments
 ---
 
 **Lukas Rytz**

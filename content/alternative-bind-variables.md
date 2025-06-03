@@ -1,9 +1,9 @@
 ---
 layout: sip
 permalink: /sips/:title.html
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-bind-variables-for-alternative-patterns/6321/13
 stage: implementation
 status: waiting-for-implementation
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-bind-variables-for-alternative-patterns/6321/13
 title: SIP-60 - Bind variables within alternative patterns
 ---
 
