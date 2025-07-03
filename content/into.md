@@ -147,7 +147,7 @@ However, the next section shows that unwrapping with `.underlying` is not needed
 
 
 
-### Dropping `into` for Parameters in Method Bodies
+### Dropping `into` for Parameters in Method and Class Bodies
 
 The typical use cases for `into` wrappers are for parameters. Here, they specify that the
 corresponding arguments can be converted to the formal parameter types. On the other hand, inside a method, a parameter type can be assumed to be of the underlying type since the conversion already took place when the enclosing method was called. This is reflected in the type system which erases `into` wrappers in the local types of parameters
@@ -162,6 +162,8 @@ as they are seen in a method body. Here is an example:
 Inside the `++` method, the `elems` parameter is of type `IterableOnce[A]`, not `into[IterableOne[A]]`. Hence, we can simply write `elems.iterator` to get at the `iterator` method of the `IterableOnce` class.
 
 Specifically, we erase all `into` wrappers in the local types of parameter types that appear in covariant or invariant position. Contravariant `into` wrappers are kept since these typically are on the parameters of function arguments.
+For case classes this means that class mirrors will use the transformed version of
+the parameter types, where `into` wrappers have been erased.
 
 ### Into Constructors in Type Aliases
 
@@ -176,7 +178,7 @@ and then `++`, `flatMap` and other functions could use this alias in their param
 The `into` scheme discussed so far strikes a nice balance between explicitness and convenience. But migrating to it from Scala 2 implicits does require major changes since possibly a large number of function signatures has to be changed to allow conversions on the arguments. This might ultimately hold back migration to Scala 3 implicits.
 
 To facilitate migration, we also introduce an alternative way to specify target types of implicit conversions. We allow `into` as a soft modifier on
-classes, traits, and opaque type aliases. If a type definition is declared with `into`, then implicit conversions into that type don't need a language import.
+classes, traits, and opaque type aliases (but not on enums). If a type definition is declared with `into`, then implicit conversions into that type don't need a language import.
 
 For instance, the Laminar framework
 defines a trait `Modifier` that is commonly used as a parameter type of user-defined methods and that should support implicit conversions into it.
