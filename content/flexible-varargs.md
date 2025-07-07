@@ -94,7 +94,7 @@ As you can see, the version using inline `Seq()`s and `++` is super verbose, and
 cleanup using `+:` and `:+` doesn't actually work due to weird associativity problems.
 With this proposal, you can write what you mean and have it just work.
 
-### Constucting Sequences
+### Constructing Sequences
 
 The second scenario that this streamlines is constructing `Seq`s and other collections.
 For example, a common scenario is constructing a collection from values:
