@@ -96,7 +96,7 @@ With this proposal, you can write what you mean and have it just work.
 
 ### Constucting Sequences
 
-The second scenarios that this streamlines is constructing `Seq`s and other collections.
+The second scenario that this streamlines is constructing `Seq`s and other collections.
 For example, a common scenario is constructing a collection from values:
 
 
