@@ -158,7 +158,7 @@ val coll = foo.toSeq ++ bar ++ Seq(qux, baz)
 val coll = Seq() ++ foo ++ bar ++ Seq(qux, baz)
 ```
 
-With those proposal, all three scenarios would look almost the same - reflecting
+With this proposal, all three scenarios would look almost the same - reflecting
 the fact that they are really doing the same thing - and you are no longer prone to weird
 type inference issues depending on the type of the left-most value:
 
