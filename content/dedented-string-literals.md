@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-XX - Dedented String Literals
+title: SIP-XX - Dedented Multiline String Literals
 ---
 
 **By: Li Haoyi**
