@@ -396,6 +396,36 @@ possible:
 
 - Other syntaxes like `@"..."` are possible, but probably too esoteric to be worth considering
 
+### Alternative ways of specifying indentation
+
+The proposed rule of specifies the indentation to be removed relies on the indentation of 
+the trailing `'''` delimiter. Other possible approaches include:
+
+- The minimum indentation of any non-whitespace line within the string, which is why [Ruby does](#ruby)
+    - This does not allow the user to define strings with all lines indented by some amount, 
+      unless the indentation of the closing delimiter is counted as well. But if the indentation
+      of the closing delimiter is counted, then it is simpler to just use that, and prohibit
+      other lines from being indented less than the delimiter
+
+- An explicit indentation-counter, which is what YAML does, e.g. with the below text block 
+  dedenting the string by 4 characters:
+```yaml
+example: >4
+    Several lines of text,
+    with some "quotes" of various 'types',
+    and also a blank line:
+
+    and some text with
+    extra indentation
+    on the next line,
+    plus another line at the end.
+```
+
+This works, but it is very unintuitive for users to have to translate the indentation to be 
+removed (which is a visual thing) into a number that gets written at the top of the block. In 
+contrast, the current proposal specifies the indentation to be removed in terms of the 
+indentation of the closing delimiter, which keeps it within the "visual" domain without 
+needing the user to count spaces.
 
 ### Triple-Backticked Multiline Strings
 
