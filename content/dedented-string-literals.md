@@ -259,6 +259,19 @@ TODO
 
 ## Limitations
 
+Dedented `'''` strings MUST be multiline strings. Using this syntax for single-line
+strings is not allowed, 
+
+```scala
+val x = '''hello'''
+```
+
+As mentioned above, the opening and closing delimiters MUST have a leading/trailing 
+newline, making the `'''` delimiters "vertical" delimiters that are easy to scan
+rather than "horizontal" delimiters like `"` or `"""` which requires the reader
+to scan left and right to determine the bounds of the string literal. 
+
+
 All lines within a dedented `'''` string MUST be indented further than the closing
 delimiter. That means this is illegal:
 
