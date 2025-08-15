@@ -171,7 +171,7 @@ def helper = {
 ```
 
 There are a huge number of ways to write and format dedented multiline strings today, and yet
-none of them are great to look at visually, and there are many ways you can format them badly.
+none of them are great to look at visually, and even more ways you can format them badly.
 Overall this zoo of options seems inferior to the proposed dedented multiline string syntax,
 which has a single valid way of writing the example above, with much better visual clarity than
 any of the existing options:
