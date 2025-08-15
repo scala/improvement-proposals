@@ -202,6 +202,7 @@ def helper = {
 }
 println("SCALAZ CODE EXAMPLE:\n" + helper)
 ```
+
 ```scala
 SCALAZ CODE EXAMPLE:
 import scalaz.{
@@ -236,6 +237,7 @@ def helper = {
   x
 }
 ```
+
 ```scala
 -- [E007] Type Mismatch Error: -------------------------------------------------
 2 |    val x: String & Singleton = """i am cow
@@ -253,14 +255,17 @@ on `String & Singleton` types like normal strings can:
 ```scala
 scala> val x: "hello" = "hello"
 ```
+
 ```scala
 val x: "hello" = hello
 ```
+
 ```scala
 scala> val x: """i am cow
      |   |hear me moo""".stripMargin = """i am cow
      |   |hear me moo""".stripMargin
-```                                                           
+```          
+
 ```scala
 -- Error: ----------------------------------------------------------------------
 2 |  |hear me moo""".stripMargin = """i am cow
@@ -299,6 +304,7 @@ foo match {
   case """i am cow
   |hear me moo""".stripMargin =>
 ```
+
 ```scala
 -- [E040] Syntax Error: --------------------------------------------------------
 3 |   |hear me moo""".stripMargin => 
