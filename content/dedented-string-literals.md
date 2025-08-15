@@ -121,7 +121,7 @@ This proposal resolves a lot of issues working with status-quo triple-quoted str
 These issues aren't rocket science, but are a constant friction that makes working
 with triple-quoted strings annoying and unpleasant.
 
-## Verbosity & Visual Clarity
+### Verbosity & Visual Clarity
 
 Using traditional `""".stripMargin` strings with `|` and `.stripMargin` is very verbose, which
 interferes with visually reading the code.
@@ -188,7 +188,7 @@ def helper = {
 }
 ```
 
-## Incorrectness with Multiline Interpolation
+### Incorrectness with Multiline Interpolation
 
 `""".stripMargin` strings can misbehave when used with string interpolations that may 
 span multiple lines. For example:
@@ -227,7 +227,7 @@ concern, but has resulted in multiple bugs in widely-used tools and libraries:
   were being removed by `stripMargin`, resulting in the documentation examples being incorrect
   https://github.com/com-lihaoyi/mill/pull/4544
 
-## Literal/Singleton Types
+### Literal/Singleton Types
 
 `.stripMargin` strings are not literals, and cannot generate `String & Singleton` types
 even though from a user perspective the user really may just want a string literal. 
@@ -275,7 +275,7 @@ scala> val x: """i am cow
   |                 end of statement expected but '.' found
 ```
 
-## Literal String Expressions
+### Literal String Expressions
 
 This also means that any macros that may work on string literals, e.g. validating
 the string literal at build time, would not be able to work with multiline strings.
