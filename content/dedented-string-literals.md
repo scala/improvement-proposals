@@ -374,7 +374,7 @@ Having a dedicate `tq"""` interpolator also means multiline strings cannot be us
 other existing interpolators, such as `s""`, `r""`, or user-specified interpolators
 like `sql""` introduced by libraries like [ScalaSql](https://github.com/com-lihaoyi/scalasql)
 
-### Other syntaxes for multiline strings
+### Other Delimiters
 
 `'''` was chosen as a currently-unused syntax in Scala, but other options are also
 possible:
