@@ -33,6 +33,10 @@ i am cow
 hear me moo
 ```
 
+This is a common feature in other languages (see [Prior Art](#prior-art)) with exactly
+the same semantics, although unlike other languages Scala's `"""` already has an existing
+semantic, and so for this proposal the currently-unused `'''` syntax is chosen instead.
+
 Dedented strings automatically strip:
 
 - The first newline after the opening `'''` 
