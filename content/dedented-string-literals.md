@@ -137,6 +137,55 @@ def helper = {
 }
 ```
 
+In particular, the "shape" of raw multiline string is the line-wrapping
+zig-zag that is hard to skim at a glance, and hard to correlate with the
+actual contents of the string
+
+```
+             i am cow
+   hear me moo
+```
+
+This can be mitigated by indenting the subsequent lines, but that results in lots
+of unnecessary indentation
+
+```scala
+def helper = {
+  val x = """i am cow
+            |hear me moo""".stripMargin
+  x
+}
+```
+
+Or it can be solved by following `.stripMargin` with `.trim`, at a cost of more verbosity
+and visual noise:
+
+```scala
+def helper = {
+  val x = """
+    |i am cow
+    |hear me moo
+    |""".stripMargin.trim
+  x
+}
+```
+
+There are a huge number of ways to write and format dedented multiline strings today, and yet
+none of them are great to look at visually, and there are many ways you can format them badly.
+Overall this zoo of options seems inferior to the proposed dedented multiline string syntax,
+which has a single valid way of writing the example above, with much better visual clarity than
+any of the existing options:
+
+```scala
+def helper = {
+  val x = '''
+  i am cow
+  hear me moo
+  '''
+  x
+}
+```
+
 ## Incorrectness with Multiline Interpolation
 
 `""".stripMargin` strings can misbehave when used with string interpolations that may 
