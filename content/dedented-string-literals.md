@@ -275,6 +275,8 @@ scala> val x: """i am cow
   |                 end of statement expected but '.' found
 ```
 
+## Literal String Expressions
+
 This also means that any macros that may work on string literals, e.g. validating
 the string literal at build time, would not be able to work with multiline strings.
 This includes `inline def`s or macros that may want to validate or process these
@@ -312,6 +314,26 @@ foo match {
 3 |   |hear me moo""".stripMargin => 
   |                  ^
   |                  '=>' expected, but '.' found
+```
+
+`""".stripMargin` cannot be used in annotations like `@implicitNotFound`. As shown below,
+it does not properly update the error message, because `""".stripMargin` is not a literal
+string. Using triple-quoted strings without `.stripMargin` results in the error message being
+updated correctly, but then you lose the ability to properly dedent the error:
+
+```scala
+scala> @scala.annotation.implicitNotFound(
+     | """i am cow
+     |   |hear me moo""".stripMargin.toUpperCase) class Foo()
+// defined class Foo
+                                                                                                                          
+scala> implicitly[Foo]
+-- [E172] Type Error: ----------------------------------------------------------
+1 |implicitly[Foo]
+  |               ^
+  |No given instance of type Foo was found for parameter e of method implicitly in object Predef
+1 error found
+                 
 ```
 
 ## Implementation
