@@ -41,7 +41,7 @@ Dedented strings automatically strip:
 
 - The first newline after the opening `'''` 
 - The final newline and any whitespace before the closing `'''`
-- Any indentation up to the position of the closing `'''`
+- Any indentation on every line up to the position of the closing `'''`
 
 The opening `'''` MUST be followed immediately by a newline, and the trailing `'''` MUST
 be preceded by a newline followed by whitespace characters. Lines within the 
