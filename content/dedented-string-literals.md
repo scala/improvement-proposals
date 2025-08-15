@@ -502,7 +502,7 @@ till you come to the end; then stop."
 
 ### Elixir
 
-Elixer's [Multiline Strings](https://hexdocs.pm/elixir/1.7.4/syntax-reference.html#strings)
+Elixir's [Multiline Strings](https://hexdocs.pm/elixir/1.7.4/syntax-reference.html#strings)
 behave exactly as this proposal:
 
 ```elixir
