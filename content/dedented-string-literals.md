@@ -40,11 +40,13 @@ semantic, and so for this proposal the currently-unused `'''` syntax is chosen i
 Dedented strings automatically strip:
 
 - The first newline after the opening `'''` 
-- The final newline before the closing `'''`
+- The final newline and any whitespace before the closing `'''`
 - Any indentation up to the position of the closing `'''`
 
 The opening `'''` MUST be followed immediately by a newline, and the trailing `'''` MUST
-be preceded by a newline followed by whitespace characters.
+be preceded by a newline followed by whitespace characters. Lines within the 
+dedented string MUST be either empty, or have indentation equal-to-or-greater-than
+the closing delimiter.
 
 If a user explicitly wants indentation to be present in the string, they
 can simply adjust the contents accordingly:
