@@ -500,12 +500,12 @@ till you come to the end; then stop."
 > lines. However, if you write whitespace at the beginning of a line in addition to what’s before
 > the closing quotation marks, that whitespace is included.
 
-### Elixer
+### Elixir
 
 Elixer's [Multiline Strings](https://hexdocs.pm/elixir/1.7.4/syntax-reference.html#strings)
 behave exactly as this proposal:
 
-```elixer
+```elixir
 ...> test = """
 ...>     this
 ...>     is
