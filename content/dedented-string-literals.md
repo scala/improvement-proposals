@@ -229,7 +229,7 @@ concern, but has resulted in multiple bugs in widely-used tools and libraries:
 
 ## Literal/Singleton Types
 
-`.stripLiteral` strings are not literals, and cannot generate `String & Singleton` types
+`.stripMargin` strings are not literals, and cannot generate `String & Singleton` types
 even though from a user perspective the user really may just want a string literal. 
 
 ```scala
@@ -251,7 +251,7 @@ def helper = {
   | longer explanation available when compiling with `-explain`
 ```
 
-This means that `""".stripLiteral` strings cannot take part in type-level logic
+This means that `""".stripMargin` strings cannot take part in type-level logic
 on `String & Singleton` types like normal strings can:
 
 ```scala
