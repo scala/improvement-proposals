@@ -226,6 +226,7 @@ Note how with this dedented string literal:
 
 * The string contents forms a single rectangular block on screen, so you don't need to
   read the code in a zig-zag fashion line-by-line left-to-right to see the contents of the string
+  (as you would have to do with the first of the example of above)
 
 * There is also no non-string contents to the left or to the right of the string contents: `|`s, opening or 
   closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand 
