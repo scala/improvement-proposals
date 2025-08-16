@@ -222,12 +222,18 @@ def helper = {
 }
 ```
 
-Note how with this dedented string literal, the string contents forms a single rectangular 
-block on screen, so you don't need to read the code line-by-line left-to-right to see
-the contents of the string as you sometimes have to do with triple-quoted strings. There is also
-no non-string contents to the left or to the right of the string contents: `|`s, opening or 
-closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand 
-out clearly from the rest of the code without distraction.
+Note how with this dedented string literal:
+
+* The string contents forms a single rectangular block on screen, so you don't need to
+  read the code in a zig-zag fashion line-by-line left-to-right to see the contents of the string
+
+* There is also no non-string contents to the left or to the right of the string contents: `|`s, opening or 
+  closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand 
+  out clearly from the rest of the code without distraction.
+
+* The amount of horizontal-space used is much less than the examples using traditional multiline 
+  strings above: without multiple levels of indentations and without a trailing `""".stripMargin` 
+  extending the last line.
 
 
 ### Incorrectness with Multiline Interpolation
