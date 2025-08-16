@@ -222,7 +222,7 @@ def helper = {
 }
 ```
 
-Note how with this dedented multi-line string, the string contents forms a single rectangular 
+Note how with this dedented string literal, the string contents forms a single rectangular 
 block on screen, so you don't need to read the code line-by-line left-to-right to see
 the contents of the string as you sometimes have to do with triple-quoted strings. There is also
 no non-string contents to the left or to the right of the string contents: `|`s, opening or 
