@@ -195,11 +195,22 @@ def helper = {
 }
 ```
 
-There are a huge number of ways to write and format dedented multiline strings today, and yet
-none of them are great to look at visually, and even more ways you can format them badly.
-Overall this zoo of options seems inferior to the proposed dedented multiline string syntax,
-which has a single valid way of writing the example above, with much better visual clarity than
-any of the existing options:
+It can also be mitigated by indenting it as follows:
+
+```scala
+def helper = {
+  val x = 
+    """i am cow
+      |hear me moo""".stripMargin
+  x
+}
+```
+
+In general, there are a huge number of ways to write and format dedented multiline strings 
+today, and yet none of them are great to look at visually, and there are even more ways you
+can format them badly. Overall this zoo of options seems inferior to the proposed dedented
+multiline string syntax, which has a single valid way of writing the example above, with
+much better visual clarity than any of the existing options:
 
 ```scala
 def helper = {
@@ -210,6 +221,14 @@ def helper = {
   x
 }
 ```
+
+Note how with this dedented multi-line string, the string contents forms a single rectangular 
+block on screen, so you don't need to read the code line-by-line left-to-right to see
+the contents of the string as you sometimes have to do with triple-quoted strings. There is also
+no non-string contents to the left or to the right of the string contents: `|`s, opening or 
+closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand 
+out clearly from the rest of the code without distraction.
+
 
 ### Incorrectness with Multiline Interpolation
 
