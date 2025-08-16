@@ -93,6 +93,29 @@ can simply adjust the contents accordingly:
 In most use cases, we expect `'''` to be preferred, although `"""` strings can continue to
 exist for backwards compatibility and referred to as "raw multiline strings".
 
+We allow _Extended Delimiters_ with more than three `'''`, to allow the strings to contain arbitrary
+contents, similar to what is provided in [C#](#c) and [Swift](#swift). e.g. if you want the string to contain `'''`, you can use a four-`''''` delimiter to 
+stop the `'''` within the body from prematurely closing the literal:
+
+
+```scala
+> def helper = {
+    val x = ''''
+    '''
+    i am cow
+    hear me moo
+    '''
+    ''''
+    x
+  }
+
+> println(helper)
+'''
+i am cow
+hear me moo
+'''
+```
+
 Dedented string literals should be able to be used anywhere a normal `"` or triple `"""`
 can be used: 
 
@@ -463,7 +486,8 @@ needing the user to count spaces.
 
 Many other languages have exactly this feature, all with exactly the same reason
 and exactly the same specification: trimming the leading and trailing newlines, along
-with indentation.
+with indentation. Many have similar rules for flexible delimiters to allow the strings
+to contain arbitrary contents
 
 ### Java
 
@@ -487,6 +511,9 @@ String html = """
 > The position of the opening """ characters has no effect on the algorithm, but the position 
 > of the closing """ characters does have an effect if placed on its own line.
 
+Java doesn't have extended delimiters like those proposed here, but requires you to escape
+`\"""` included in the text block using a backslash to prevent premature closing of the literal.
+
 ### C#
 
 C# has [Raw String Literals](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-11.0/raw-string-literal)
@@ -504,6 +531,17 @@ var xml = """
 > To make the text easy to read and allow for indentation that developers like in code,
 > these string literals will naturally remove the indentation specified on the last line 
 > when producing the final literal value. For example, a literal of the form:
+
+C# also allows arbitrary-length delimiters as described in this propsoal
+
+```csharp
+var xml = """"
+          Ok to use """ here
+          """";
+```
+
+> Because the nested contents might itself want to use """ then the starting/ending 
+> delimiters can be longer
 
 ### Swift
 
@@ -529,6 +567,19 @@ till you come to the end; then stop."
 > closing quotation marks (""") tells Swift what whitespace to ignore before all of the other
 > lines. However, if you write whitespace at the beginning of a line in addition to what’s before
 > the closing quotation marks, that whitespace is included.
+
+Swift also supports extended delimiters similar to that described in this proposal:
+
+```swift
+let threeMoreDoubleQuotationMarks = #"""
+Here are three more double quotes: """
+"""#
+```
+
+> String literals created using extended delimiters can also be multiline string literals. 
+> You can use extended delimiters to include the text """ in a multiline string, overriding
+> the default behavior that ends the literal. For example:
+
 
 ### Elixir
 
@@ -556,6 +607,10 @@ behave exactly as this proposal:
 > quotes within them. The resulting string will end with a newline. The indentation of the 
 > last """ is used to strip indentation from the inner string. For example:
 
+Elixir allows both `"""` and `'''` syntax for multi-line strings, with `'''`-delimited strings
+allowing you to embed `"""` in the body (and vice versa). This is similar to Python's syntax
+for triple-quoted strings
+
 ### Ruby
 
 Ruby has [Squiggly Heredoc](https://ruby-doc.org/core-2.5.0/doc/syntax/literals_rdoc.html#label-Strings) 
@@ -575,3 +630,15 @@ SQUIGGLY_HEREDOC
 > Note that empty lines and lines consisting solely of literal tabs and spaces will be ignored 
 > for the purposes of determining indentation, but escaped tabs and spaces are considered 
 > non-indentation characters.
+
+As a HEREDOC-inspired syntax, you can change the header of your multi-line string in Ruby
+to include arbitrary text in the body. This is different in form but similar in function to
+the extended delimiters described in this proposal
+
+```ruby
+expected_result = <<~MY_CUSTOM_SQUIGGLY_HEREDOC
+  This would contain specially formatted text.
+  SQUIGGLY_HEREDOC
+  That might span many lines
+MY_CUSTOM_SQUIGGLY_HEREDOC
+```
