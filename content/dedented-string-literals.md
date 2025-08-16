@@ -472,15 +472,25 @@ res0: Array[Char] = Array('\"', '\n', '\"')
 ```
 
 - Single-quoted strings with `"` cannot currently span multiple lines, and so
-  they could be specified to have these semantics when used multi-line. This has
-  the advantage of not introducing a new delimiter, but the disadvantage that a
-  single `"` isn't very visually distinct when used for demarcating vertical blocks
-  of text
+  they could be specified to have these dedenting semantics when used multi-line. 
+    - This has the advantage of not introducing a new delimiter, as `"` is already
+      used for strings
+    - This has the disadvantage that a single `"` isn't very visually distinct 
+      when used for demarcating blocks of text, and separating them vertically
+      from the code before and after
+    - Some languages do have multi-line strings with single-character delimiters,
+      e.g. Javascripts template literals use a single-backtick
 
 - Triple-backticks are another syntax that is currently available, and so could be used as
   a multi-line delimiter. This has the advantage of being similar to blocks used in
-  markdown, with a similar meaning, but the disadvantage that it would collide if a
-  user tries to embed Scala code in a markdown code block
+  markdown, with a similar meaning, but several disadvantages:
+   - It would collide if a user tries to embed Scala code in a markdown code block. In fact,
+     I couldn't even figure out how to embed triple-backticks in this document!
+   - Backticks are currently used for identifiers while single-quotes are used for literals, 
+     so single-quotes seems more appropriate to use for multi-line literals than backticks. 
+   - Single-quotes also would look more familiar to anyone coming from other languages like 
+     Python or Elixir (albeit with slightly different semantics) while triple-backticks have 
+     no precedence in any programming language.
 
 - Other syntaxes like `@"..."` are possible, but probably too esoteric to be worth considering
 
