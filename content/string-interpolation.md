@@ -1,11 +1,10 @@
 ---
 layout: sip
-title: SIP-11 - String Interpolation
-stage: completed
-status: shipped
-vote-status: complete
 permalink: /sips/:title.html
 redirect_from: /sips/pending/string-interpolation.html
+stage: completed
+status: shipped
+title: SIP-11 - String Interpolation
 ---
 
 **By: Martin Odersky**

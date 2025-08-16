@@ -1,10 +1,10 @@
 ---
 layout: sip
-title: SIP-30 - @static fields and methods in Scala objects (SI-4581)
-stage: completed
-status: shipped
 permalink: /sips/:title.html
 redirect_from: /sips/pending/static-members.html
+stage: completed
+status: shipped
+title: SIP-30 - @static fields and methods in Scala objects (SI-4581)
 ---
 
 > This proposal has been implemented in Scala 3.0.0

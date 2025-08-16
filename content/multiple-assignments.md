@@ -1,9 +1,9 @@
 ---
 layout: sip
 permalink: /sips/:title.html
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-multiple-assignments/6425
 stage: implementation
 status: under-review
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-multiple-assignments/6425
 title: SIP-59 - Multiple Assignments
 ---
 
