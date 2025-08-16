@@ -233,9 +233,8 @@ Note how with this dedented string literal:
   out clearly from the rest of the code without distraction.
 
 * The amount of horizontal-space used is much less than the examples using traditional multiline 
-  strings above: without multiple levels of indentations and without a trailing `""".stripMargin` 
-  extending the last line.
-
+  strings above: without multiple levels of indentations, without a trailing `""".stripMargin` 
+  extending the last line, or `.stripMargin.trim`
 
 ### Incorrectness with Multiline Interpolation
 
