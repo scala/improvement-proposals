@@ -515,8 +515,6 @@ contrast, the current proposal specifies the indentation to be removed in terms 
 indentation of the closing delimiter, which keeps it within the "visual" domain without 
 needing the user to count spaces.
 
-### Triple-Backticked Multiline Strings
-
 ## Prior Art
 
 Many other languages have exactly this feature, all with exactly the same reason
