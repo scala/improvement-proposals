@@ -436,6 +436,16 @@ possible:
   change those, despite them being used in every other language like [Java](#java),
   [C#](#c), and [Swift](#swift).
 
+- Similarly, we cannot use four-double-quotes as the delimiter for the new semantics,
+  because those are already valid syntax today, and (perhaps unintuitively) represent
+  triple-quoted strings with quotes inside of them:
+
+```scala
+@ """"
+  """".toCharArray 
+res0: Array[Char] = Array('\"', '\n', '\"')
+```
+
 - Single-quoted strings with `"` cannot currently span multiple lines, and so
   they could be specified to have these semantics when used multi-line. This has
   the advantage of not introducing a new delimiter, but the disadvantage that a
