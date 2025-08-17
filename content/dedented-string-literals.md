@@ -347,23 +347,6 @@ cmd2.sc:2: Function can only accept constant singleton type
           ^
 ```
 
-`""".stripMargin` strings also cannot participate in pattern matches:
-
-```scala
-def foo: String = ???
-                                                                                                                          
-foo match {
-  case """i am cow
-  |hear me moo""".stripMargin =>
-```
-
-```scala
--- [E040] Syntax Error: --------------------------------------------------------
-3 |   |hear me moo""".stripMargin => 
-  |                  ^
-  |                  '=>' expected, but '.' found
-```
-
 `""".stripMargin` cannot be used in annotations like `@implicitNotFound`. As shown below,
 it does not properly update the error message, because `""".stripMargin` is not a literal
 string. Using triple-quoted strings without `.stripMargin` results in the error message being
@@ -382,6 +365,26 @@ scala> implicitly[Foo]
   |No given instance of type Foo was found for parameter e of method implicitly in object Predef
 1 error found
                  
+```
+
+### Pattern Matching
+
+
+`""".stripMargin` strings also cannot participate in pattern matches:
+
+```scala
+def foo: String = ???
+                                                                                                                          
+foo match {
+  case """i am cow
+  |hear me moo""".stripMargin =>
+```
+
+```scala
+-- [E040] Syntax Error: --------------------------------------------------------
+3 |   |hear me moo""".stripMargin => 
+  |                  ^
+  |                  '=>' expected, but '.' found
 ```
 
 ## Implementation
@@ -447,14 +450,20 @@ indentation, avoiding the problems with runtime indentation removal we
 [discussed above](#incorrectness-with-mutliline-interpolation). However, using an interpolator
 does not solve the other issues of multiline strings not being valid 
 [literal types](#literalsingleton-types) or [literal string expressions](#literal-string-expressions).
+A custom interpolator could also work in [pattern matching](#pattern-matching)
 
 Custom interpolators also do not compose: having a dedicate `tq"""` interpolator also
 means multiline strings cannot be used with other existing interpolators, such as `s""`,
 `r""`, or user-specified interpolators like `sql""` introduced by libraries like 
 [ScalaSql](https://github.com/com-lihaoyi/scalasql).
 
-A macro-based `.stripMarginMacro` could avoid the issue with composition of interpolators, but 
-otherwise suffers from all the other issues mentioned above.
+### Macro-based `.stripMargin`
+
+A macro-based `.stripMarginMacro` could avoid the issue with composition of interpolators
+mentioned above, but still will suffer from the issue of not being
+[literal types](#literalsingleton-types) or
+[literal string expressions](#literal-string-expressions), and also would not work
+in [pattern matching](#pattern-matching).
 
 ### Other Delimiters
 
