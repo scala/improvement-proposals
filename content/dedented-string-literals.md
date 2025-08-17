@@ -400,6 +400,39 @@ hear me moo""" =>
 }
 ```
 
+### Downstream Tooling Complexity
+
+The last major problem with the existing `""".stripMargin` pattern is that all tools
+that read, write, or analyze Scala source files or classfiles need to be aware of it.
+This results in complexity of these tools' user experience or implementation, or bugs
+if the tool does not handle it precisely.
+
+1. [pprint.log](https://github.com/com-lihaoyi/PPrint) prints out multi-line strings
+   triple-quoted, but these cannot be pasted into source code without fiddling
+   with `|`s and `.stripMargin`s to make sure the indentation is fixed
+
+2. [uTest's assertGoldenLiteral](https://github.com/com-lihaoyi/utest?tab=readme-ov-file#assertgoldenliteral)
+   does not work for multi-line strings because of not handling indentation properly
+
+3. [munit hardcodes support for """.stripMargin strings](https://scalameta.org/munit/docs/assertions.html#assertnodiff)
+   when pretty-printing values in errors
+
+4. [Mill's bytecode change-detection](https://github.com/com-lihaoyi/mill/pull/2417)
+   will detect spurious changes if a `""".stripMargin` string is indented or de-dented,
+   due to not recognizing the pattern in the bytecode
+
+5. [ScalaFmt's flag assumeStandardLibraryStripMargin](https://scalameta.org/scalafmt/docs/configuration.html#assumestandardlibrarystripmargin)
+   adds a special case, complicating it's configuration schema due to the fact that `stripMargin`
+   is a library method and thus ScalaFmt cannot guarantee it's behavior
+
+6. IntelliJ IDEA needs [substantial amounts of special casing](https://github.com/JetBrains/intellij-scala/blob/idea252.x/scala/scala-impl/src/org/jetbrains/plugins/scala/format/StripMarginParser.scala)
+   to parse, format, and generate `""".stripMargin` strings.
+
+All this complexity would go away with the proposed de-dented multiline strings: rather
+than every downstream tool needing hard-coded support to be `stripMargin`-aware, 
+tools will only need to generate `'''` multiline strings, which can then be pasted into
+user code with arbitrary indentation and they will do the right thing.
+
 ## Implementation
 
 TODO
