@@ -539,6 +539,21 @@ res0: Array[Char] = Array('\"', '\n', '\"')
       from the code before and after
     - Some languages do have multi-line strings with single-character delimiters,
       e.g. Javascripts template literals use a single-backtick
+    - A single `"` would require that `"`s in the multi-line string be escaped. Given
+      that `"`s are very common characters to have in strings, that would be very annoying,
+      and mean that people would still need to use `""".stripMargin` strings in common cases
+    - If we don't rely on `"`s to be escaped in the common case, it could be hard to
+      define a rule to say which `"` does close the string and which `"` does not, 
+      and users may have trouble visually parsing code following that rule. e.g.
+
+```scala
+def openingParagraph = "
+  One dark and stormy night,
+  he said
+  "...i am cow
+  hear me moo"
+".toJson
+```
 
 - Triple-backticks are another syntax that is currently available, and so could be used as
   a multi-line delimiter. This has the advantage of being similar to blocks used in
