@@ -446,11 +446,15 @@ This `tq"""` interpolator could be a macro that looks at the source code and rem
 indentation, avoiding the problems with runtime indentation removal we 
 [discussed above](#incorrectness-with-mutliline-interpolation). However, using an interpolator
 does not solve the other issues of multiline strings not being valid 
-[literal types](#literalsingleton-types)
+[literal types](#literalsingleton-types) or [literal string expressions](#literal-string-expressions).
 
-Having a dedicate `tq"""` interpolator also means multiline strings cannot be used with
-other existing interpolators, such as `s""`, `r""`, or user-specified interpolators
-like `sql""` introduced by libraries like [ScalaSql](https://github.com/com-lihaoyi/scalasql)
+Custom interpolators also do not compose: having a dedicate `tq"""` interpolator also
+means multiline strings cannot be used with other existing interpolators, such as `s""`,
+`r""`, or user-specified interpolators like `sql""` introduced by libraries like 
+[ScalaSql](https://github.com/com-lihaoyi/scalasql).
+
+A macro-based `.stripMarginMacro` could avoid the issue with composition of interpolators, but 
+otherwise suffers from all the other issues mentioned above.
 
 ### Other Delimiters
 
