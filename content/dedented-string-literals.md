@@ -387,6 +387,19 @@ foo match {
   |                  '=>' expected, but '.' found
 ```
 
+Both normal single-quoted `"` and triple-quoted `"""` strings can be pattern matched on, 
+but with triple-quoted strings it includes indentation and so is frustrating to use in practice 
+due to needing to manually de-dent the string to avoid matching the indentation
+
+```scala
+def helper = {
+  foo match {
+    case """i am cow
+hear me moo""" =>
+  }
+}
+```
+
 ## Implementation
 
 TODO
