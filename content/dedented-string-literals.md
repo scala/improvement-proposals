@@ -767,7 +767,8 @@ One delimiter that uses `"`s, avoids introducing a new `'''` delimiter, and also
 avoids the parsing edge cases and implementation challenges would be , e.g. `"---\n` would
 need to be followed by `\n---"`. This header could be variable length, allowing the ability
 to embed arbitrary contents without escaping, similar to the extendable `'''` delimiters
-proposed above and present in [C#'s](#c) or [Swift's](#swift).
+proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC strings in
+[Bash](#bash) or [Ruby](#ruby).
 
 ```scala
 def openingParagraph = "---
