@@ -798,7 +798,7 @@ If we want to stick with `"` for strings, this _Single-Quote with Header_ syntax
 like a good compromise that provides a `"`-based syntax while avoiding all the pitfalls
 of the raw [Single-Quoted Multi-line Strings](#single-quoted-multiline-strings) delimiter above.
 
-### Other Syntaxes
+#### Other Syntaxes
 - Triple-backticks are another syntax that is currently available, and so could be used as
   a multi-line delimiter. This has the advantage of being similar to blocks used in
   markdown, with a similar meaning, but several disadvantages:
@@ -817,14 +817,68 @@ of the raw [Single-Quoted Multi-line Strings](#single-quoted-multiline-strings) 
 The proposed rule of specifies the indentation to be removed relies on the indentation of
 the trailing `'''` delimiter. Other possible approaches include:
 
-- The minimum indentation of any non-whitespace line within the string, which is why [Ruby does](#ruby)
-    - This does not allow the user to define strings with all lines indented by some amount,
-      unless the indentation of the closing delimiter is counted as well. But if the indentation
-      of the closing delimiter is counted, then it is simpler to just use that, and prohibit
-      other lines from being indented less than the delimiter
+#### Minimum Indentation Within String
+By this rule, rather than looking at the indentation of the closing delimiter to determine how
+much to remove, we instead remove the minimum indentation of any non-whitespace line within the
+string. This is why [Ruby does](#ruby)
 
-- An explicit indentation-counter, which is what YAML does, e.g. with the below text block
-  dedenting the string by 4 characters:
+The advantage of this is that some people may think indenting the contents of the string
+looks subjectively better
+
+```scala
+def helper = {
+  val x = '''
+    i am cow
+    hear me moo
+  '''
+  x
+}
+```
+
+The downsides are twofold:
+
+- This does not allow the user to define strings with all lines indented by some amount,
+  unless the indentation of the closing delimiter is counted as well. This is likely an
+  uncommon use case, and can be mitigated by calling `.indent()`, but such strings are
+  then no longer literals with all the issues that that entails
+
+- There are now multiple ways to write the same string, adding some unnecessary flexibility.
+  In current proposal there is a single valid multi-line syntax for any particular string, 
+  whereas with the rule of using the minimum-indentation-within-string the same string can 
+  be written in many different ways.
+
+```scala
+def helper = { // two space indented contents
+  val x = '''
+    i am cow
+    hear me moo
+  '''
+  x
+}
+```
+```scala
+def helper = { // non-indented contents
+  val x = '''
+  i am cow
+  hear me moo
+  '''
+  x
+}
+```
+```scala
+def helper = { // four space indented contents
+  val x = '''
+      i am cow
+      hear me moo
+  '''
+  x
+}
+```
+
+#### An explicit indentation-counter 
+
+This is what YAML does, e.g. with the below text block
+dedenting the string by 4 characters:
 ```yaml
 example: >4
     Several lines of text,
