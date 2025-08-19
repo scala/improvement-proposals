@@ -576,7 +576,7 @@ def helper = {
 For all intents and purposes this is identical to the `'''` proposal, with some tweaks:
 
 - `''` looks less similar to a `Char` literal `'\''`, so less chance of confusion
-- `''` looks less simila to the triple-quoted strings common in other languages, so
+- `''` looks less similar to the triple-quoted strings common in other languages, so
   there is less benefit of familiarity.
 
 #### Triple-or-more double-quotes
