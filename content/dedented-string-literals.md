@@ -1052,4 +1052,3 @@ val no_unexpected_spaces : string =
 However, Ocaml's "raw" string syntax `{| |}` does not have a mode that removes indentation,
 which is an [open issue on the OCaml repo](https://github.com/ocaml/ocaml/issues/13860)
 
-- 
