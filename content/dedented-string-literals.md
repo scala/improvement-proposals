@@ -39,12 +39,12 @@ semantic, and so for this proposal the currently-unused `'''` syntax is chosen i
 
 Dedented strings automatically strip:
 
-- The first newline after the opening `'''` 
+- The first newline after the opening `'''`
 - The final newline and any whitespace before the closing `'''`
 - Any indentation on every line up to the position of the closing `'''`
 
 The opening `'''` MUST be followed immediately by a newline, and the trailing `'''` MUST
-be preceded by a newline followed by whitespace characters. Lines within the 
+be preceded by a newline followed by whitespace characters. Lines within the
 dedented string MUST be either empty, or have indentation equal-to-or-greater-than
 the closing delimiter.
 
@@ -94,7 +94,7 @@ In most use cases, we expect `'''` to be preferred, although `"""` strings can c
 exist for backwards compatibility and referred to as "raw multiline strings".
 
 We allow _Extended Delimiters_ with more than three `'''`, to allow the strings to contain arbitrary
-contents, similar to what is provided in [C#](#c) and [Swift](#swift). e.g. if you want the string to contain `'''`, you can use a four-`''''` delimiter to 
+contents, similar to what is provided in [C#](#c) and [Swift](#swift). e.g. if you want the string to contain `'''`, you can use a four-`''''` delimiter to
 stop the `'''` within the body from prematurely closing the literal:
 
 
@@ -117,7 +117,7 @@ hear me moo
 ```
 
 Dedented string literals should be able to be used anywhere a normal `"` or triple `"""`
-can be used: 
+can be used:
 
 - Literal types (`String & Singleton`)
 - String interpolation, with builtin or custom interpolators
@@ -125,7 +125,6 @@ can be used:
 - Pattern matching
 
 ```scala
-                                                                                                                   
 foo match{
   case '''
     i am cow
@@ -134,8 +133,12 @@ foo match{
 }
 ```
 
-As `'''` is not valid syntax in Scala today, there are no backwards compatibility 
-concerns.
+As `'''` is not valid syntax in Scala today, there are no technical backwards compatibility
+concerns. See the section on [Choice Of Delimiters](#choice-of-delimiters) for a discussion on why
+`'''` is proposed and some viable alternatives
+
+We expect that traditional `"""` strings will remain in use - e.g. for single-line scenarios -
+but most multi-line strings would be served better by `'''` as the default choice
 
 ## Motivation
 
@@ -147,7 +150,8 @@ with triple-quoted strings annoying and unpleasant.
 ### Verbosity & Visual Clarity
 
 Using traditional `""".stripMargin` strings with `|` and `.stripMargin` is very verbose, which
-interferes with visually reading the code.
+interferes with visually reading the code. There are many different ways to format them,
+none of them particularly good, and many of them bad.
 
 Furthermore, very often you don't want the leading or trailing newline either, which means
 you need to put text on the first line of the multi-line string which breaks vertical
@@ -199,14 +203,14 @@ It can also be mitigated by indenting it as follows:
 
 ```scala
 def helper = {
-  val x = 
+  val x =
     """i am cow
       |hear me moo""".stripMargin
   x
 }
 ```
 
-There are a huge number of ways to write and format dedented multiline strings 
+There are a huge number of ways to write and format dedented multiline strings
 today, and yet none of them are great to look at visually, and there are even more ways you
 can format them badly. Overall this zoo of options seems inferior to the proposed dedented
 multiline string syntax, which has a single valid way of writing the example above, with
@@ -228,17 +232,17 @@ Note how with this dedented string literal:
   read the code in a zig-zag fashion line-by-line left-to-right to see the contents of the string
   (as you would have to do with the first of the example of above)
 
-* There is also no non-string contents to the left or to the right of the string contents: `|`s, opening or 
-  closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand 
+* There is also no non-string contents to the left or to the right of the string contents: `|`s, opening or
+  closing `"""`s, or `.stripMargin` method calls. This makes the multiline string contents stand
   out clearly from the rest of the code without distraction.
 
-* The amount of horizontal-space used is much less than the examples using traditional multiline 
-  strings above: without multiple levels of indentations, without a trailing `""".stripMargin` 
+* The amount of horizontal-space used is much less than the examples using traditional multiline
+  strings above: without multiple levels of indentations, without a trailing `""".stripMargin`
   extending the last line, or `.stripMargin.trim`
 
 ### Incorrectness with Multiline Interpolation
 
-`""".stripMargin` strings can misbehave when used with string interpolations that may 
+`""".stripMargin` strings can misbehave when used with string interpolations that may
 span multiple lines. For example:
 
 ```scala
@@ -246,7 +250,7 @@ def helper = {
   val scalazOperators = Seq("<$>", "<*>", "|@|", "|->").mkString(",\n  ")
   s"""
   |import scalaz.{
-  |  $scalazOperators  
+  |  $scalazOperators
   |}
   |""".stripMargin
 }
@@ -259,7 +263,7 @@ import scalaz.{
   <$>,
   <*>,
 @|,
-->  
+->
 }
 ```
 
@@ -278,7 +282,7 @@ concern, but has resulted in multiple bugs in widely-used tools and libraries:
 ### Literal/Singleton Types
 
 `.stripMargin` strings are not literals, and cannot generate `String & Singleton` types
-even though from a user perspective the user really may just want a string literal. 
+even though from a user perspective the user really may just want a string literal.
 
 ```scala
 def helper = {
@@ -314,7 +318,7 @@ val x: "hello" = hello
 scala> val x: """i am cow
      |   |hear me moo""".stripMargin = """i am cow
      |   |hear me moo""".stripMargin
-```          
+```      
 
 ```scala
 -- Error: ----------------------------------------------------------------------
@@ -326,12 +330,12 @@ scala> val x: """i am cow
 ### Literal String Expressions
 
 This also means that any macros that may work on string literals, e.g. validating
-the string literal at build time, would not be able to work with multiline strings.
+the string literal at build time, would not be able to work with `""".stripMargin` strings.
 This includes `inline def`s or macros that may want to validate or process these
 string literals at compile time (e.g. validating SQL literals, preventing
-directory traversal attacks, pre-compiling regexes or parsers, etc.). 
+directory traversal attacks, pre-compiling regexes or parsers, etc.).
 
-One example is FastParse's `StringIn` parser which generates code 
+One example is FastParse's `StringIn` parser which generates code
 for efficiently parsing the given strings at compile time, fails when `""".stripMargin`
 strings are given:
 
@@ -341,7 +345,7 @@ strings are given:
       """i am cow
         |hear me moo""".stripMargin
     )
-  ) 
+  )
 cmd2.sc:2: Function can only accept constant singleton type
   StringIn(
           ^
@@ -357,14 +361,14 @@ scala> @scala.annotation.implicitNotFound(
      | """i am cow
      |   |hear me moo""".stripMargin.toUpperCase) class Foo()
 // defined class Foo
-                                                                                                                          
+                                                                                                                      
 scala> implicitly[Foo]
 -- [E172] Type Error: ----------------------------------------------------------
 1 |implicitly[Foo]
   |               ^
   |No given instance of type Foo was found for parameter e of method implicitly in object Predef
 1 error found
-                 
+             
 ```
 
 ### Pattern Matching
@@ -374,7 +378,7 @@ scala> implicitly[Foo]
 
 ```scala
 def foo: String = ???
-                                                                                                                          
+                                                                                                                      
 foo match {
   case """i am cow
   |hear me moo""".stripMargin =>
@@ -382,13 +386,13 @@ foo match {
 
 ```scala
 -- [E040] Syntax Error: --------------------------------------------------------
-3 |   |hear me moo""".stripMargin => 
+3 |   |hear me moo""".stripMargin =>
   |                  ^
   |                  '=>' expected, but '.' found
 ```
 
-Both normal single-quoted `"` and triple-quoted `"""` strings can be pattern matched on, 
-but with triple-quoted strings it includes indentation and so is frustrating to use in practice 
+Both normal single-quoted `"` and triple-quoted `"""` strings can be pattern matched on,
+but with triple-quoted strings it includes indentation and so is frustrating to use in practice
 due to needing to manually de-dent the string to avoid matching the indentation
 
 ```scala
@@ -429,7 +433,7 @@ if the tool does not handle it precisely.
    to parse, format, and generate `""".stripMargin` strings.
 
 All this complexity would go away with the proposed de-dented multiline strings: rather
-than every downstream tool needing hard-coded support to be `stripMargin`-aware, 
+than every downstream tool needing hard-coded support to be `stripMargin`-aware,
 tools will only need to generate `'''` multiline strings, which can then be pasted into
 user code with arbitrary indentation and they will do the right thing.
 
@@ -440,16 +444,16 @@ TODO
 ## Limitations
 
 Dedented `'''` strings MUST be multiline strings. Using this syntax for single-line
-strings is not allowed, 
+strings is not allowed,
 
 ```scala
 val x = '''hello'''
 ```
 
-As mentioned above, the opening and closing delimiters MUST have a leading/trailing 
+As mentioned above, the opening and closing delimiters MUST have a leading/trailing
 newline, making the `'''` delimiters "vertical" delimiters that are easy to scan
 rather than "horizontal" delimiters like `"` or `"""` which requires the reader
-to scan left and right to determine the bounds of the string literal. 
+to scan left and right to determine the bounds of the string literal.
 
 
 All lines within a dedented `'''` string MUST be indented further than the closing
@@ -492,15 +496,15 @@ def helper = {
 ```
 
 This `tq"""` interpolator could be a macro that looks at the source code and removes
-indentation, avoiding the problems with runtime indentation removal we 
-[discussed above](#incorrectness-with-mutliline-interpolation). However, using an interpolator
-does not solve the other issues of multiline strings not being valid 
-[literal types](#literalsingleton-types) or [literal string expressions](#literal-string-expressions).
-A custom interpolator could also work in [pattern matching](#pattern-matching)
+indentation, avoiding the problems with runtime indentation removal we
+[discussed above](#incorrectness-with-mutliline-interpolation). A custom interpolator could also work in [pattern matching](#pattern-matching).
+However, using an interpolator does not solve the other issues of multiline strings
+not being valid [literal types](#literalsingleton-types) or [literal string expressions](#literal-string-expressions).
+
 
 Custom interpolators also do not compose: having a dedicate `tq"""` interpolator also
 means multiline strings cannot be used with other existing interpolators, such as `s""`,
-`r""`, or user-specified interpolators like `sql""` introduced by libraries like 
+`r""`, or user-specified interpolators like `sql""` introduced by libraries like
 [ScalaSql](https://github.com/com-lihaoyi/scalasql).
 
 ### Macro-based `.stripMargin`
@@ -511,12 +515,45 @@ mentioned above, but still will suffer from the issue of not being
 [literal string expressions](#literal-string-expressions), and also would not work
 in [pattern matching](#pattern-matching).
 
-### Other Delimiters
+### Choice Of Delimiters
 
-`'''` was chosen as a currently-unused syntax in Scala, but other options are also
-possible:
+`'''` was chosen as a currently-unused syntax in Scala, with plenty of precedence
+for `'''`-quoted strings in other languages. Languages like Python, Groovy,
+Dart, and Elixir all have both `"""` and `'''` strings without any apparent issue,
+with several (e.g. Groovy and Elixir) having different semantics between the two syntaxes.
 
-- Triple-double-quotes `"""` are already used with a particular semantic, so we cannot
+The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
+Scala code - a quick search of the libraries I have checked out finds 141 uses of `'\''`,
+compared to 24331 uses of `.stripMargin` that could benefit from this improved syntax -
+which suggests that the benefit will be widespread and the similarity with `'\''` would
+be edge case that occurs rarely and cause minimal confusion.
+
+Other options to consider are listed below
+
+#### Double-single-quotes
+
+Like `'''`, `''` is also currently invalid syntax in Scala, and could be used for
+defining multi-line strings:
+
+```scala
+def helper = {
+  val x = ''
+  i am cow
+  hear me moo
+  ''
+  x
+}
+```
+
+For all intents and purposes this is identical to the `'''` proposal, with some tweaks:
+
+- `''` looks less similar to a `Char` literal `'\''`, so less chance of confusion
+- `''` looks less simila to the triple-quoted strings common in other languages, so
+  there is less benefit of familiarity.
+
+#### Triple-or-more double-quotes
+
+-  `"""` are already used with a particular semantic, so we cannot
   change those, despite them being used in every other language like [Java](#java),
   [C#](#c), and [Swift](#swift).
 
@@ -526,25 +563,42 @@ possible:
 
 ```scala
 @ """"
-  """".toCharArray 
+  """".toCharArray
 res0: Array[Char] = Array('\"', '\n', '\"')
 ```
 
-- Single-quoted strings with `"` cannot currently span multiple lines, and so
-  they could be specified to have these dedenting semantics when used multi-line. 
-    - This has the advantage of not introducing a new delimiter, as `"` is already
-      used for strings
-    - This has the disadvantage that a single `"` isn't very visually distinct 
-      when used for demarcating blocks of text, and separating them vertically
-      from the code before and after
-    - Some languages do have multi-line strings with single-character delimiters,
-      e.g. Javascripts template literals use a single-backtick
-    - A single `"` would require that `"`s in the multi-line string be escaped. Given
-      that `"`s are very common characters to have in strings, that would be very annoying,
-      and mean that people would still need to use `""".stripMargin` strings in common cases
-    - If we don't rely on `"`s to be escaped in the common case, it could be hard to
-      define a rule to say which `"` does close the string and which `"` does not, 
-      and users may have trouble visually parsing code following that rule. e.g.
+#### Single-quoted Multiline Strings
+Single-quoted strings with `"` cannot currently span multiple lines, and so
+they could be specified to have these dedenting semantics when used multi-line.
+
+```scala
+def openingParagraph = "
+  i am cow
+  hear me moo
+"
+```
+
+This has the advantage of not introducing a new delimiter, as `"` is already
+used for strings.
+
+
+A single `"` would require that `"`s in the multi-line string be escaped. Given
+that `"`s are very common characters to have in strings, that would be very annoying,
+and mean that people would still need to use `""".stripMargin` strings in common cases
+
+```scala
+def openingParagraph = "
+  {
+    \"i am\": \"cow\",
+    \"hear me\": \"moo\"
+  }
+"
+```
+
+It is possible to define rules such that `"`s do not need to escape, but it could
+complicate parsing. e.g. one suggested rule is _"the first line starting with a `"`
+and with an odd number of `"`s terminates the multi-line string"_, but that fails
+in simple cases like:
 
 ```scala
 def openingParagraph = "
@@ -555,31 +609,61 @@ def openingParagraph = "
 ".toJson
 ```
 
+In general, such rules also are difficult to implement: while it is possible to do
+such "line-based" lexing in the Scala compiler's hand-written parser, I expect it will
+be challenging for other external tools, e.g. FastParse's parser combinators or syntax
+highlighters like Github Linguist, Highlight.js, or Prism.js are not typically able
+to encode rules such as _"the first line starting with a `"`
+and with an odd number of `"`s terminates the multi-line string"_
+
+
+#### Single-Quote with Header
+
+One delimiter that uses `"`s, avoids introducing a new `'''` delimiter, and also
+avoids the parsing edge cases and implementation challenges would be , e.g. `"---\n` would
+need to be followed by `\n---"`. This header could be variable length, allowing the ability
+to embed arbitrary contents without escaping, similar to the extendable `'''` delimiters
+proposed above and present in [C#'s](#c) or [Swift's](#swift).
+
+```scala
+def openingParagraph = "---
+  One dark and stormy night,
+  he said
+  "...i am cow
+  hear me moo"
+---"
+```
+
+Although in theory the delimiter between `"` and `\n` could contain any characters except
+`"` and `\n` while remaining unambiguous, in practice we will likely want to limit it to
+a small set e.g. dashes-only to avoid unnecessary flexibility in the syntax
+
+### Other Syntaxes
 - Triple-backticks are another syntax that is currently available, and so could be used as
   a multi-line delimiter. This has the advantage of being similar to blocks used in
   markdown, with a similar meaning, but several disadvantages:
    - It would collide if a user tries to embed Scala code in a markdown code block. In fact,
      I couldn't even figure out how to embed triple-backticks in this document!
-   - Backticks are currently used for identifiers while single-quotes are used for literals, 
-     so single-quotes seems more appropriate to use for multi-line literals than backticks. 
-   - Single-quotes also would look more familiar to anyone coming from other languages like 
-     Python or Elixir (albeit with slightly different semantics) while triple-backticks have 
+   - Backticks are currently used for identifiers while single-quotes are used for literals,
+     so single-quotes seems more appropriate to use for multi-line literals than backticks.
+   - Single-quotes also would look more familiar to anyone coming from other languages like
+     Python or Elixir (albeit with slightly different semantics) while triple-backticks have
      no precedence in any programming language.
 
 - Other syntaxes like `@"..."` are possible, but probably too esoteric to be worth considering
 
 ### Alternative ways of specifying indentation
 
-The proposed rule of specifies the indentation to be removed relies on the indentation of 
+The proposed rule of specifies the indentation to be removed relies on the indentation of
 the trailing `'''` delimiter. Other possible approaches include:
 
 - The minimum indentation of any non-whitespace line within the string, which is why [Ruby does](#ruby)
-    - This does not allow the user to define strings with all lines indented by some amount, 
+    - This does not allow the user to define strings with all lines indented by some amount,
       unless the indentation of the closing delimiter is counted as well. But if the indentation
       of the closing delimiter is counted, then it is simpler to just use that, and prohibit
       other lines from being indented less than the delimiter
 
-- An explicit indentation-counter, which is what YAML does, e.g. with the below text block 
+- An explicit indentation-counter, which is what YAML does, e.g. with the below text block
   dedenting the string by 4 characters:
 ```yaml
 example: >4
@@ -593,16 +677,16 @@ example: >4
     plus another line at the end.
 ```
 
-This works, but it is very unintuitive for users to have to translate the indentation to be 
-removed (which is a visual thing) into a number that gets written at the top of the block. In 
-contrast, the current proposal specifies the indentation to be removed in terms of the 
-indentation of the closing delimiter, which keeps it within the "visual" domain without 
+This works, but it is very unintuitive for users to have to translate the indentation to be
+removed (which is a visual thing) into a number that gets written at the top of the block. In
+contrast, the current proposal specifies the indentation to be removed in terms of the
+indentation of the closing delimiter, which keeps it within the "visual" domain without
 needing the user to count spaces.
 
 ## Prior Art
 
-Many other languages have exactly this feature, all with exactly the same reason
-and exactly the same specification: trimming the leading and trailing newlines, along
+Many other languages have dedented string literals, all with exactly the same reason
+and almost the same specification: trimming the leading and trailing newlines, along
 with indentation. Many have similar rules for flexible delimiters to allow the strings
 to contain arbitrary contents
 
@@ -622,10 +706,10 @@ String html = """
 """;
 ```
 
-> The re-indentation algorithm takes the content of a text block whose line terminators have 
+> The re-indentation algorithm takes the content of a text block whose line terminators have
 > been normalized to LF. It removes the same amount of white space from each line of content
 > until at least one of the lines has a non-white space character in the leftmost position.
-> The position of the opening """ characters has no effect on the algorithm, but the position 
+> The position of the opening """ characters has no effect on the algorithm, but the position
 > of the closing """ characters does have an effect if placed on its own line.
 
 Java doesn't have extended delimiters like those proposed here, but requires you to escape
@@ -646,7 +730,7 @@ var xml = """
 ```
 
 > To make the text easy to read and allow for indentation that developers like in code,
-> these string literals will naturally remove the indentation specified on the last line 
+> these string literals will naturally remove the indentation specified on the last line
 > when producing the final literal value. For example, a literal of the form:
 
 C# also allows arbitrary-length delimiters as described in this propsoal
@@ -657,7 +741,7 @@ var xml = """"
           """";
 ```
 
-> Because the nested contents might itself want to use """ then the starting/ending 
+> Because the nested contents might itself want to use """ then the starting/ending
 > delimiters can be longer
 
 ### Swift
@@ -675,11 +759,11 @@ till you come to the end; then stop."
 """
 ```
 
-> A multiline string literal includes all of the lines between its opening and closing 
+> A multiline string literal includes all of the lines between its opening and closing
 > quotation marks. The string begins on the first line after the opening quotation marks
-> (""") and ends on the line before the closing quotation marks, which means that neither 
+> (""") and ends on the line before the closing quotation marks, which means that neither
 > of the strings below start or end with a line break:
-> 
+>
 > A multiline string can be indented to match the surrounding code. The whitespace before the
 > closing quotation marks (""") tells Swift what whitespace to ignore before all of the other
 > lines. However, if you write whitespace at the beginning of a line in addition to what’s before
@@ -693,7 +777,7 @@ Here are three more double quotes: """
 """#
 ```
 
-> String literals created using extended delimiters can also be multiline string literals. 
+> String literals created using extended delimiters can also be multiline string literals.
 > You can use extended delimiters to include the text """ in a multiline string, overriding
 > the default behavior that ends the literal. For example:
 
@@ -721,19 +805,45 @@ behave exactly as this proposal:
 ```
 
 > Multi-line strings in Elixir are written with three double-quotes, and can have unescaped
-> quotes within them. The resulting string will end with a newline. The indentation of the 
+> quotes within them. The resulting string will end with a newline. The indentation of the
 > last """ is used to strip indentation from the inner string. For example:
 
 Elixir allows both `"""` and `'''` syntax for multi-line strings, with `'''`-delimited strings
 allowing you to embed `"""` in the body (and vice versa). This is similar to Python's syntax
 for triple-quoted strings
 
+### Bash
+
+Bash has multiple variants of `<< HEREDOC`:
+
+```bash
+cat << EOF
+The current working directory is: $PWD
+You are logged in as: $(whoami)
+EOF
+```
+
+This includes `<<- HEREDOC` strings that strip indentation. This is done relatively naively,
+by simply removing all leading `\t` tab characters.
+
+> The first line starts with an optional command followed by the special redirection
+> operator `<<` and the delimiting identifier.
+>
+> * You can use any string as a delimiting identifier, the most commonly used are EOF or END.
+> * If the delimiting identifier is unquoted, the shell will substitute all variables, commands
+>   and special characters before passing the here-document lines to the command.
+> * Appending a minus sign to the redirection operator <<-, will cause all leading tab characters
+>   to be ignored. This allows you to use indentation when writing here-documents in shell scripts. Leading whitespace characters are not allowed, only tab.
+> * The here-document block can contain strings, variables, commands and any other type of input.
+> * The last line ends with the delimiting identifier. White space in front of the delimiter is
+>   not allowed.
+
 ### Ruby
 
-Ruby has [Squiggly Heredoc](https://ruby-doc.org/core-2.5.0/doc/syntax/literals_rdoc.html#label-Strings) 
-strings that have similar leading/trailing newline removal, but has a 
-"least indented non-whitespace-only" line policy for removing indentation, rather than a
-closing-delimiter policy like the other languages above
+Ruby has [Squiggly Heredoc](https://ruby-doc.org/core-2.5.0/doc/syntax/literals_rdoc.html#label-Strings),
+inspired by Bash, but with a different "least indented non-whitespace-only" line policy
+for removing indentation, rather than Bash's tab-based removal or a
+closing-delimiter-indentation policy like the other languages above
 
 ```ruby
 expected_result = <<~SQUIGGLY_HEREDOC
@@ -743,9 +853,9 @@ expected_result = <<~SQUIGGLY_HEREDOC
 SQUIGGLY_HEREDOC
 ```
 
-> The indentation of the least-indented line will be removed from each line of the content. 
-> Note that empty lines and lines consisting solely of literal tabs and spaces will be ignored 
-> for the purposes of determining indentation, but escaped tabs and spaces are considered 
+> The indentation of the least-indented line will be removed from each line of the content.
+> Note that empty lines and lines consisting solely of literal tabs and spaces will be ignored
+> for the purposes of determining indentation, but escaped tabs and spaces are considered
 > non-indentation characters.
 
 As a HEREDOC-inspired syntax, you can change the header of your multi-line string in Ruby
@@ -759,3 +869,29 @@ expected_result = <<~MY_CUSTOM_SQUIGGLY_HEREDOC
   That might span many lines
 MY_CUSTOM_SQUIGGLY_HEREDOC
 ```
+
+### Ocaml
+
+Ocaml [allows single-quoted to span multiple lines](https://ocaml.org/manual/5.3/lex.html#sss:stringliterals),
+and automatically removes indentation if the newline character is escaped with a preceding `\`:
+
+```ocaml
+# let contains_unexpected_spaces =
+    "This multiline literal
+     contains three consecutive spaces."
+
+  let no_unexpected_spaces =
+    "This multiline literal \n\
+     uses a single space between all words.";;
+val contains_unexpected_spaces : string =
+  "This multiline literal\n   contains three consecutive spaces."
+val no_unexpected_spaces : string =
+  "This multiline literal \nuses a single space between all words."
+```
+
+However, Ocaml's "raw" string syntax `{| |}` does not have a mode that removes indentation,
+which is an [open issue on the OCaml repo](https://github.com/ocaml/ocaml/issues/13860)
+
+## Other String Syntaxes
+
+- 
