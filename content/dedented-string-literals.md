@@ -548,9 +548,9 @@ in [pattern matching](#pattern-matching).
 for `'''`-quoted strings in other languages. Languages like Python, Groovy,
 Dart, Elixir, and TOML all have both `"""` and `'''` strings without any apparent issue,
 with several (Groovy, Elixir, TOML) having different semantics between the two syntaxes.
-The "ambiguity" of `'''` looking like it should mean the 1-character string `"'"` also does
-not appear to be a problem in practice.
-We expect this will provide familiarity for anyone coming to Scala from other languages.
+The "ambiguity" of `'''` looking similar to the 1-character string `'\''` also does
+not appear to be a problem in practice. We expect this will provide familiarity for 
+anyone coming to Scala from other languages.
 
 The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
 Scala code: a quick search of the libraries I have checked out finds 141 uses of `'\''`,
