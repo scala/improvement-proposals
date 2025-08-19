@@ -456,10 +456,31 @@ strings is not allowed,
 val x = '''hello'''
 ```
 
-As mentioned above, the opening and closing delimiters MUST have a leading/trailing
+For such single-line scenarios, the recommendation is to continue using traditional `"""` 
+strings, which do not need `.stripMargin` and thus avoid all the downfalls of multi-line
+`""".stripMargin` strings discussed above.
+
+The opening and closing delimiters MUST have a trailing/leading
 newline, making the `'''` delimiters "vertical" delimiters that are easy to scan
 rather than "horizontal" delimiters like `"` or `"""` which requires the reader
-to scan left and right to determine the bounds of the string literal.
+to scan left and right to determine the bounds of the string literal. String
+contents on the same line as the delimiters is not allowed:
+
+```scala
+// not allowed!
+val x = '''hello
+world
+i am cow'''
+```
+
+But code _outside_ the string literal has no limitations:
+
+```scala
+val x = println('''
+hello
+world
+''') // this is fine!
+```
 
 
 All lines within a dedented `'''` string MUST be indented further than the closing
