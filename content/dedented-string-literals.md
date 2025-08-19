@@ -685,11 +685,11 @@ foo(
 // This parses as `foo` being passed two parameter
 foo(
   "
-this is
+  this is
   ",
-"
-not a drill
-"
+  "
+  not a drill
+  "
 )
 ```
 
