@@ -137,8 +137,17 @@ As `'''` is not valid syntax in Scala today, there are no technical backwards co
 concerns. See the section on [Choice Of Delimiters](#choice-of-delimiters) for a discussion on why
 `'''` is proposed and some viable alternatives
 
-We expect that traditional `"""` strings will remain in use - e.g. for single-line scenarios -
-but most multi-line strings would be served better by `'''` as the default choice
+We expect that traditional `"""` strings will remain in use - e.g. for single-line scenarios such
+as those found in
+[Scalatags](https://github.com/com-lihaoyi/scalatags/blob/0024ce995f301b10a435c672ff643f2a432a7f3b/scalatags/test/src/scalatags/generic/BasicTests.scala#L46-L61),
+[Mill](https://github.com/com-lihaoyi/mill/blob/50e775b31d3f8fc8734c0a90dc231a4dd5ba1d4f/integration/invalidation/invalidation/src/ScriptsInvalidationTests.scala#L29),
+[Cask](https://github.com/com-lihaoyi/cask/blob/2bbee717e176a62d6a9af6c8187fbf219aad913d/docs/build.sc#L42),
+[Ammonite](https://github.com/com-lihaoyi/Ammonite/blob/2fdc440b23c9bc7eb782c496c05ec1d3c10ee3d6/amm/repl/src/test/scala/ammonite/interp/AutocompleteTests.scala#L62-L104),
+[PPrint](https://github.com/com-lihaoyi/PPrint/blob/abea5a533dcb054ab0ef67a4418636faf8e243a5/pprint/test/src/test/pprint/VerticalTests.scala#L32),
+[OS-Lib](https://github.com/com-lihaoyi/os-lib/blob/72605235899b65e144ffe48821c63085cb9062ad/os/test/src/PathTests.scala#L34),
+[Requests-Scala](https://github.com/com-lihaoyi/requests-scala/blob/a9541623017816a53ecafc5052d02ef7ec62cf2c/requests/src/requests/Requester.scala#L257),
+[FastParse](https://github.com/com-lihaoyi/fastparse/blob/d8f95daef21d6e6f9734624237f993f4cebfa881/fastparse/test/src-2.12%2B/fastparse/CustomWhitespaceMathTests.scala#L54-L58),
+and other projects - but most multi-line strings would be served better by `'''` as the default choice
 
 ## Motivation
 
@@ -318,7 +327,7 @@ val x: "hello" = hello
 scala> val x: """i am cow
      |   |hear me moo""".stripMargin = """i am cow
      |   |hear me moo""".stripMargin
-```      
+```
 
 ```scala
 -- Error: ----------------------------------------------------------------------
@@ -361,14 +370,14 @@ scala> @scala.annotation.implicitNotFound(
      | """i am cow
      |   |hear me moo""".stripMargin.toUpperCase) class Foo()
 // defined class Foo
-                                                                                                                      
+
 scala> implicitly[Foo]
 -- [E172] Type Error: ----------------------------------------------------------
 1 |implicitly[Foo]
   |               ^
   |No given instance of type Foo was found for parameter e of method implicitly in object Predef
 1 error found
-             
+
 ```
 
 ### Pattern Matching
@@ -378,7 +387,7 @@ scala> implicitly[Foo]
 
 ```scala
 def foo: String = ???
-                                                                                                                      
+
 foo match {
   case """i am cow
   |hear me moo""".stripMargin =>
@@ -640,7 +649,89 @@ def openingParagraph = "
 // The preceding comment causes this to become an unclosed string literal!
 ```
 
-In general, such rules also are difficult to implement: while it is possible to do
+Furthermore, this could cause confusion when embeding the multi-line string in surrounding code:
+
+```scala
+// This parses as `foo` being passed one parameter
+foo(
+  "
+  this is
+  ","
+  not a drill
+  "
+)
+// This parses as `foo` being passed two parameter
+foo(
+  "
+this is
+  ",
+"
+not a drill
+"
+)
+```
+
+Another possible rule is indentation-based: _"the first single-quote preceded on a line
+only by whitespace that is indented equal-or-less than the opening quote"_ closes the string"_.
+_"indentation of the opening quote"_ could mean one
+
+1. The column offset of the `"` character itself. That would mean the entire string body must
+   be to the right of the opening quote, which does force a more verbose layout that takes
+   more vertical and horizontal space:
+
+```scala
+def openingParagraph = "
+                         i am cow
+                         hear me moo
+                       "
+def openingParagraph =
+  "
+    i am cow
+    hear me moo
+  "
+```
+
+2. The indentation of the statement which contains the opening quote. This allows a more compact
+   syntax in some cases, but not others
+
+```scala
+def openingParagraph = "
+  i am cow
+  hear me moo
+"
+
+// The indentation of statement below is starts at "hello"
+"hello"
+  .map(
+    foo => "
+i am cow
+hear me moo
+"
+  )
+```
+
+3. The column-offset of the first non-whitespace character on the line containing the opening `"`
+
+```scala
+def openingParagraph = "
+  i am cow
+  hear me moo
+"
+
+// The indentation/closing-quote is measured from the start of `foo =>`
+"hello"
+  .map(
+    foo => "
+    i am cow
+    hear me moo
+    "
+  )
+```
+
+In general, such lexing rules very unusual: there is no precedence for this kind of
+_"string terminates on a line with an odd number of quotes sprinkled anywhere within it"_
+syntax anywhere in the broader programming landscape. Apart from violating users expectations,
+such rules also violate tooling assumptions: while it is possible to do
 such "line-based" lexing in the Scala compiler's hand-written parser, I expect it will
 be challenging for other external tools, e.g. FastParse's parser combinators or syntax
 highlighters like Github Linguist, Highlight.js, or Prism.js are not typically able
@@ -922,7 +1013,5 @@ val no_unexpected_spaces : string =
 
 However, Ocaml's "raw" string syntax `{| |}` does not have a mode that removes indentation,
 which is an [open issue on the OCaml repo](https://github.com/ocaml/ocaml/issues/13860)
-
-## Other String Syntaxes
 
 - 
