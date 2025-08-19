@@ -849,7 +849,7 @@ to contain arbitrary contents
 
 ### Java
 
-Java 15 since [JEP 378](https://openjdk.org/jeps/378) now multiline strings called "text blocks"
+Java since [JEP 378](https://openjdk.org/jeps/378)/Java-15 now multiline strings called "text blocks"
 that implement exactly this, with identical leading/trailing newline and indentation removal
 policies:
 
