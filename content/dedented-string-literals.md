@@ -850,7 +850,7 @@ to contain arbitrary contents
 ### Java
 
 Java since [JEP 378](https://openjdk.org/jeps/378)/Java-15 (released Sep-2020) now supports 
-multiline strings called "text blocks" that implement exactly this, with identical 
+multiline strings called "text blocks" that implement exactly this, with similar 
 leading/trailing newline and indentation removal policies:
 
 ```java
