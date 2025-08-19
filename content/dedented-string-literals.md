@@ -695,7 +695,7 @@ foo(
 
 Another possible rule is indentation-based: _"the first single-quote preceded on a line
 only by whitespace that is indented equal-or-less than the opening quote"_ closes the string"_.
-_"indentation of the opening quote"_ could mean one
+_"indentation of the opening quote"_ could mean one of three things:
 
 1. The column offset of the `"` character itself. That would mean the entire string body must
    be to the right of the opening quote, which does force a more verbose layout that takes
