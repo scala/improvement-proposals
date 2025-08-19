@@ -849,9 +849,9 @@ to contain arbitrary contents
 
 ### Java
 
-Java since [JEP 378](https://openjdk.org/jeps/378)/Java-15 now multiline strings called "text blocks"
-that implement exactly this, with identical leading/trailing newline and indentation removal
-policies:
+Java since [JEP 378](https://openjdk.org/jeps/378)/Java-15 (released Sep-2020) now supports 
+multiline strings called "text blocks" that implement exactly this, with identical 
+leading/trailing newline and indentation removal policies:
 
 ```java
 String html = """
