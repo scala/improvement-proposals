@@ -770,12 +770,6 @@ and with an odd number of `"`s terminates the multi-line string"_
 
 This would mean the multi-line string starts with a delimiter such as
 `"---\n`, and would terminate with a corresponding delimiter `\n---"`.
-This uses `"`s, avoids introducing a new `'''` delimiter, and also
-avoids the parsing edge cases and implementation challenges of using `"` alone. 
-This `---` header could be variable length, allowing the ability
-to embed arbitrary contents without escaping, similar to the extendable `'''` delimiters
-proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC strings in
-[Bash](#bash) or [Ruby](#ruby).
 
 ```scala
 def openingParagraph = "---
@@ -785,6 +779,13 @@ def openingParagraph = "---
   hear me moo"
 ---"
 ```
+
+This uses `"`s, avoids introducing a new `'''` delimiter, and also
+avoids the parsing edge cases and implementation challenges of using `"` alone.
+This `---` header could be variable length, allowing the ability
+to embed arbitrary contents without escaping, similar to the extendable `'''` delimiters
+proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC strings in
+[Bash](#bash) or [Ruby](#ruby).
 
 Although in theory the delimiter between `"` and `\n` could contain any characters except
 `"` and `\n` while remaining unambiguous, in practice we will likely want to limit it to
