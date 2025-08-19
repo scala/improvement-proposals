@@ -547,7 +547,7 @@ in [pattern matching](#pattern-matching).
 `'''` was chosen as a currently-unused syntax in Scala, with plenty of precedence
 for `'''`-quoted strings in other languages. Languages like Python, Groovy,
 Dart, Elixir, and TOML all have both `"""` and `'''` strings without any apparent issue,
-with several (e.g. Groovy and Elixir) having different semantics between the two syntaxes.
+with several (Groovy, Elixir, TOML) having different semantics between the two syntaxes.
 
 The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
 Scala code: a quick search of the libraries I have checked out finds 141 uses of `'\''`,
