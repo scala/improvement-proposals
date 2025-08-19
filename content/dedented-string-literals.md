@@ -66,10 +66,7 @@ can simply adjust the contents accordingly:
   hear me moo
 ```
 
-And if a user wants leading or trailing newlines, they can add those as well
-
-If a user explicitly wants indentation to be present in the string, they
-can simply adjust the contents accordingly:
+And if a user wants leading or trailing newlines, they can add those as well:
 
 ```scala
 > def helper = {
