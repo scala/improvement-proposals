@@ -580,8 +580,8 @@ For all intents and purposes this is identical to the `'''` proposal, with some 
 
 - `''` looks less similar to a `Char` literal `'\''`, so less chance of confusion
 - `''` looks less similar to the triple-quoted strings common in other languages, so
-  there is less benefit of familiarity. We are not aware of any language in the world
-  which uses `''` as a delimiter for string literals.
+  there is less benefit of familiarity. The only language I'm aware of that uses this
+  syntax for multi-line strings is Nix.
 - `''` means "empty string" in a _very_ large number of programming languages. Using it 
   as a string _delimiter_ in Scala would likely cause confusion on that basis.
 
