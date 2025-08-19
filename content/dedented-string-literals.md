@@ -981,7 +981,10 @@ EOF
 ```
 
 This includes `<<- HEREDOC` strings that strip indentation. This is done relatively naively,
-by simply removing all leading `\t` tab characters.
+by simply removing all leading `\t` tab characters. The customizable `EOF` header serves a
+similar purpose to the _extended delimiters_ included in this proposal, and allows
+the user to choose a delimiter that does not exist in the literal avoiding the need
+for escaping entirely.
 
 > The first line starts with an optional command followed by the special redirection
 > operator `<<` and the delimiting identifier.
