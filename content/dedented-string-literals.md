@@ -126,7 +126,7 @@ foo match{
   case '''
     i am cow
     hear me moo
-  ''' =>
+    ''' =>
 }
 ```
 
