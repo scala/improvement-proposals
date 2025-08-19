@@ -550,9 +550,10 @@ Dart, and Elixir all have both `"""` and `'''` strings without any apparent issu
 with several (e.g. Groovy and Elixir) having different semantics between the two syntaxes.
 
 The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
-Scala code - a quick search of the libraries I have checked out finds 141 uses of `'\''`,
-compared to 24331 uses of `.stripMargin` that could benefit from this improved syntax -
-which suggests that the benefit will be widespread and the similarity with `'\''` would
+Scala code: a quick search of the libraries I have checked out finds 141 uses of `'\''`,
+compared to 24331 uses of `.stripMargin` that could benefit from this improved syntax,
+172 times as many use sites.
+This suggests that the benefit will be widespread and the similarity with `'\''` would
 be edge case that occurs rarely and cause minimal confusion.
 
 Other options to consider are listed below
