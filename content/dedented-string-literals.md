@@ -789,7 +789,8 @@ proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC string
 
 Although in theory the delimiter between `"` and `\n` could contain any characters except
 `"` and `\n` while remaining unambiguous, in practice we will likely want to limit it to
-a small set e.g. dashes-only to avoid unnecessary flexibility in the syntax.
+to avoid unnecessary flexibility in the syntax. `---` seems like a reasonable choice,
+but other syntaxes are possible.
 
 If we want to stick with `"` for strings, this _Single-Quote with Header_ syntax seems
 like a good compromise that provides a `"`-based syntax while avoiding all the pitfalls
