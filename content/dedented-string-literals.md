@@ -768,9 +768,11 @@ and with an odd number of `"`s terminates the multi-line string"_
 
 #### Single-Quote with Header
 
-One delimiter that uses `"`s, avoids introducing a new `'''` delimiter, and also
-avoids the parsing edge cases and implementation challenges would be , e.g. `"---\n` would
-need to be followed by `\n---"`. This header could be variable length, allowing the ability
+This would mean the multi-line string starts with a delimiter such as
+`"---\n`, and would terminate with a corresponding delimiter `\n---"`.
+This uses `"`s, avoids introducing a new `'''` delimiter, and also
+avoids the parsing edge cases and implementation challenges of using `"` alone. 
+This `---` header could be variable length, allowing the ability
 to embed arbitrary contents without escaping, similar to the extendable `'''` delimiters
 proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC strings in
 [Bash](#bash) or [Ruby](#ruby).
