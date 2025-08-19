@@ -752,11 +752,15 @@ def openingParagraph = "
 
 In general, such lexing rules very unusual: there is no precedence for this kind of
 _"string terminates on a line with an odd number of quotes sprinkled anywhere within it"_
-syntax anywhere in the broader programming landscape. Apart from violating users expectations,
-such rules also violate tooling assumptions: while it is possible to do
-such "line-based" lexing in the Scala compiler's hand-written parser, I expect it will
-be challenging for other external tools, e.g. FastParse's parser combinators or syntax
-highlighters like Github Linguist, Highlight.js, or Prism.js are not typically able
+syntax anywhere in the broader programming landscape. While the edge cases where they misbehave
+may not be super common, the misbehavior is sufficiently _weird_ that I expect it will cause
+significant user confusion every time an edge case is encountered.
+
+
+Apart from violating users expectations, such rules also violate tooling assumptions: while 
+it is possible to do such "line-based" lexing in the Scala compiler's hand-written parser,
+I expect it will be challenging for other external tools, e.g. FastParse's parser combinators
+or syntax highlighters like Github Linguist, Highlight.js, or Prism.js are not typically able
 to encode rules such as _"the first line starting with a `"`
 and with an odd number of `"`s terminates the multi-line string"_
 
@@ -781,7 +785,11 @@ def openingParagraph = "---
 
 Although in theory the delimiter between `"` and `\n` could contain any characters except
 `"` and `\n` while remaining unambiguous, in practice we will likely want to limit it to
-a small set e.g. dashes-only to avoid unnecessary flexibility in the syntax
+a small set e.g. dashes-only to avoid unnecessary flexibility in the syntax.
+
+If we want to stick with `"` for strings, this _Single-Quote with Header_ syntax seems
+like a good compromise that provides a `"`-based syntax while avoiding all the pitfalls
+of the raw [Single-Quoted Multi-line Strings](#single-quoted-multiline-strings) delimiter above.
 
 ### Other Syntaxes
 - Triple-backticks are another syntax that is currently available, and so could be used as
