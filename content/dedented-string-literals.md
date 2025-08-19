@@ -546,7 +546,7 @@ in [pattern matching](#pattern-matching).
 
 `'''` was chosen as a currently-unused syntax in Scala, with plenty of precedence
 for `'''`-quoted strings in other languages. Languages like Python, Groovy,
-Dart, and Elixir all have both `"""` and `'''` strings without any apparent issue,
+Dart, Elixir, and TOML all have both `"""` and `'''` strings without any apparent issue,
 with several (e.g. Groovy and Elixir) having different semantics between the two syntaxes.
 
 The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
@@ -577,7 +577,10 @@ For all intents and purposes this is identical to the `'''` proposal, with some 
 
 - `''` looks less similar to a `Char` literal `'\''`, so less chance of confusion
 - `''` looks less similar to the triple-quoted strings common in other languages, so
-  there is less benefit of familiarity.
+  there is less benefit of familiarity. We are not aware of any language in the world
+  which uses `''` as a delimiter for string literals.
+- `''` means "empty string" in a _very_ large number of programming languages. Using it 
+  as a string _delimiter_ in Scala would likely cause confusion on that basis.
 
 #### Triple-or-more double-quotes
 
