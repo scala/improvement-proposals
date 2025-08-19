@@ -753,7 +753,8 @@ def openingParagraph = "
 In general, such lexing rules very unusual: there is no precedence for this kind of
 _"string terminates on a line with an odd number of quotes sprinkled anywhere within it"_
 syntax anywhere in the broader programming landscape. While the edge cases where they misbehave
-may not be super common, the misbehavior is sufficiently _weird_ that I expect it will cause
+may not be super common, the code examples above show they aren't _rare_ either, and 
+the misbehavior is sufficiently _weird_ that I expect it will cause
 significant user confusion every time an edge case is encountered.
 
 
