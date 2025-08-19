@@ -597,16 +597,47 @@ def openingParagraph = "
 
 It is possible to define rules such that `"`s do not need to escape, but it could
 complicate parsing. e.g. one suggested rule is _"the first line starting with a `"`
-and with an odd number of `"`s terminates the multi-line string"_, but that fails
-in simple cases like:
+and with an odd number of `"`s terminates the multi-line string"_. That works for the scenario
+above:
 
 ```scala
+def openingParagraph = "
+  {
+    "i am": "cow",
+    "hear me": "moo"
+  }
+"
+```
+
+But fails in other simple cases like:
+
+```scala
+// The `"...` closes the string prematurely
 def openingParagraph = "
   One dark and stormy night,
   he said
   "...i am cow
   hear me moo"
 ".toJson
+```
+
+```scala
+def openingParagraph = "
+  {
+    "i am": "cow",
+    "hear me": "moo"
+  }
+" + '"' // This becomes an unclosed string!
+```
+
+```scala
+def openingParagraph = "
+  {
+    "i am": "cow",
+    "hear me": "moo"
+  }
+" // A single-`"` string
+// The preceding comment causes this to become an unclosed string literal!
 ```
 
 In general, such rules also are difficult to implement: while it is possible to do
