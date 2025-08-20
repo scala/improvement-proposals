@@ -790,7 +790,7 @@ to embed arbitrary contents without escaping, similar to the extendable `'''` de
 proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC strings in
 [Bash](#bash) or [Ruby](#ruby).
 
-Although in theory the delimiter between `"` and `\n` could contain any characters except
+In theory the delimiter between `"` and `\n` could contain any characters except
 `"` and `\n` while remaining unambiguous. However, given `"""` is not available, it seems
 that most syntaxes would look somewhat out of place in Scala:
 
