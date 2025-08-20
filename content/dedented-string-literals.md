@@ -800,10 +800,10 @@ that most syntaxes would look somewhat out of place in Scala:
 * `"HEREDOC` and similar headers could work, but again are more commonly seen in "shell"
   languages like Bash, Ruby, and Perl, and looks somewhat out of place in Scala
 
-Compared to these syntaxes, `'''` is seen in Python, and the closely-related `"""` is seen 
-in, Python, Java, C#, and Swift, all of which are languages more similar to Scala than 
-YAML, Markdown, Bash, or Perl. So `'''` would likely fit better into the conventions of this
-family of programming languages.
+Compared to these syntaxes, `'''` is seen in Python, Dart, Elixir, and Groovy, and the
+closely-related `"""` is seen in, Python, Java, C#, and Swift, all of which are languages
+more similar to Scala than YAML, Markdown, Bash, or Perl. So `'''` would likely fit better
+into the conventions of this family of programming languages.
 
 If we want to stick with `"` for strings, this _Single-Quote with Header_ syntax seems
 like a good compromise that provides a `"`-based syntax while avoiding all the pitfalls
