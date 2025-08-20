@@ -791,10 +791,19 @@ proposed above and present in [C#](#c) or [Swift](#swift), or the HEREDOC string
 [Bash](#bash) or [Ruby](#ruby).
 
 Although in theory the delimiter between `"` and `\n` could contain any characters except
-`"` and `\n` while remaining unambiguous, in practice we will likely want to limit it to
-to avoid unnecessary flexibility in the syntax. `---` seems like a reasonable choice,
-inspired by the widespread use of `---` as a vertical document separator
-(YAML, Markdown, Asciidoc, Pandoc), but other syntaxes are possible.
+`"` and `\n` while remaining unambiguous. However, given `"""` is not available, it seems
+that most syntaxes would look somewhat out of place in Scala:
+
+* `"---` looks reasonable, but people would be more used to seeing this kind of `---` separator
+  in config and markup languages like YAML or Markdown, less so in a programming language like Scala 
+  
+* `"HEREDOC` and similar headers could work, but again are more commonly seen in "shell"
+  languages like Bash, Ruby, and Perl, and looks somewhat out of place in Scala
+
+Compared to these syntaxes, `'''` is seen in Python, and the closely-related `"""` is seen 
+in, Python, Java, C#, and Swift, all of which are languages more similar to Scala than 
+YAML, Markdown, Bash, or Perl. So `'''` would likely fit better into the conventions of this
+family of programming languages.
 
 If we want to stick with `"` for strings, this _Single-Quote with Header_ syntax seems
 like a good compromise that provides a `"`-based syntax while avoiding all the pitfalls
@@ -1088,6 +1097,11 @@ expected_result = <<~MY_CUSTOM_SQUIGGLY_HEREDOC
   That might span many lines
 MY_CUSTOM_SQUIGGLY_HEREDOC
 ```
+
+
+### Perl
+
+Perl has a similar HEREDOC syntax to Ruby  
 
 ### Ocaml
 
