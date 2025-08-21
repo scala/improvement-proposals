@@ -333,6 +333,22 @@ scala> val x: """i am cow
   |                 end of statement expected but '.' found
 ```
 
+This means multi-line strings cannot be used together with libraries like
+[Iron](https://github.com/Iltotore/iron), which rely on literal types. For example, you
+cannot use `""".stripMargin` strings to add error messages to Iron's refinement types
+and aid users in understanding failures
+
+```scala
+object helper {
+  type UUIDConstraint = DescribedAs[
+    Match["^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"],
+    """This string must be a UUID
+      |A UUID comprises 5 dash-separated blocks of 8, 4, 4, 4, and 12
+      |hexadecimal characters, all lowercase""".stripMargin
+  ]
+}
+```
+
 ### Literal String Expressions
 
 This also means that any macros that may work on string literals, e.g. validating
