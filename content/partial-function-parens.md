@@ -114,7 +114,7 @@ They are no longer also incidentally tied to partial-function syntax as they wer
 
 With this change, all the snippets below are now valid: we can see how the syntax of `()`, `{}`,
 or `.collect:` followed by indentation is now fully orthogonal to the partial function `case` 
-expression within them, resulting in a much more regular syntac than before when parentheses
+expression within them, resulting in a much more regular syntax than before when parentheses
 were prohibited but the other syntaxes worked.
 
 ```scala
