@@ -38,9 +38,13 @@ scala> Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a)
 
 ## Motivation
 
-Allowing partial functions with only a single-expression to be defined using parentheses makes 
-the language more regular, and removes a common friction of converting a function to a partial
-function and having to change all the parens to curlies:
+With Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
+and [SIP-44's Fewer Braces](https://docs.scala-lang.org/sips/fewer-braces.html), single-line
+partial functions are one of the only remaining places where curly braces are mandatory in Scala
+syntax.
+
+Needing to swap between parens and curlies a common friction of converting a function to 
+a partial function:
 
 ```scala
 Seq((1, 2), (3, 4)).map((a, b) => a) // OK
@@ -58,19 +62,16 @@ Seq((1, 2), (3, 4), (5, 6))
   .reduce(_ + _) // PARENS
 ```
 
-Partial functions and `match` statements are currently the only expressions where curly braces are
-required and parentheses are disallowed. In the syntax of other expressions, curly braces are only
+In the syntax of other expressions, curly braces are only
 necessary to define "blocks" with multiple statements: `if`-`else`, `try`-`catch`-`finally`,
 `for`-`yield`, `do`-`while`, method calls like `foo()` etc. all allow you to replace curly braces
 with parentheses (or elide them altogether) when there is only a single expression present.
-This is unlike other languages like Java that mandate curly braces in these syntactic constructs
+This is unlike other languages like Java that mandate curly braces in these syntactic constructs.
+Furthermore, in most expressions, Optional Braces means you do not have to write the curlies
+if you do not want to.
 
-Unlike `match` statements, partial functions are very commonly written in a single line with
-a single expression as the result, and so having to put curlies around them is tedious and
-irregular. Allowing them to use parentheses would make the language syntax more regular,
-reduce friction of people converting between normal and partial functions, and make code
-more regular and easier to read by associating curlies more strongly with multi-statement blocks
-rather than multi-statement-blocks-and-also-partial-functions.
+This proposal brings partial functions in-line with the rest of Scala syntax, with the curly
+braces reserved for multi-statement blocks, and made optional.
 
 ## Limitations
 
@@ -97,3 +98,6 @@ Seq((1, 2), (3, 4)).collect {
 
 Although with Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
 we expect that most of these more-complex constructs would be written without braces as well.
+
+This proposal does not affect `match` blocks, which typically have multiple lines, nor does
+it affect `catch` blocks which already allow a curly-free `catch case e: Throwable =>` syntax.
