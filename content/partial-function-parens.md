@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-XX - No-Curly Partial Functions and Matches
+title: SIP-XX Allow Partial Function Literals to be defined with Parentheses
 ---
 
 **By: Li Haoyi**
