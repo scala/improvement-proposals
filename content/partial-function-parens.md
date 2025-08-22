@@ -57,8 +57,8 @@ as each branch of the match only has a single expression to the right of the arr
 )
 ```
 
-Partial function literals in other non-function-call contexts can be defined with parens as well,
-as long as they have a single `case` block with a single expression on the right:
+Partial function literals should also be allowed to be defined without parentheses for
+single-line scenarios such as:
 
 ```scala
 val partial: PartialFunction[(Int, Int), Int] = case (a, b) if b > 2 => a
