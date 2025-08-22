@@ -178,7 +178,7 @@ and then `++`, `flatMap` and other functions could use this alias in their param
 The `into` scheme discussed so far strikes a nice balance between explicitness and convenience. But migrating to it from Scala 2 implicits does require major changes since possibly a large number of function signatures has to be changed to allow conversions on the arguments. This might ultimately hold back migration to Scala 3 implicits.
 
 To facilitate migration, we also introduce an alternative way to specify target types of implicit conversions. We allow `into` as a soft modifier on
-classes, traits, and opaque type aliases (but not on enums). If a type definition is declared with `into`, then implicit conversions into that type don't need a language import.
+classes, traits, opaque type aliases and enum types (but not on individual enum cases). If a type definition is declared with `into`, then implicit conversions into that type don't need a language import.
 
 For instance, the Laminar framework
 defines a trait `Modifier` that is commonly used as a parameter type of user-defined methods and that should support implicit conversions into it.
