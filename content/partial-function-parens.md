@@ -112,6 +112,32 @@ Optional Braces. With this proposal, curly braces are _only_ for opening multi-s
 _always_ in places that can be replaced by indentation-based blocks if the user wants to do so.
 They are no longer also incidentally tied to partial-function syntax as they were before.
 
+With this change, all the snippets below are now valid: we can see how the syntax of `()`, `{}`,
+or `.collect:` followed by indentation is now fully orthogonal to the partial function `case` 
+expression within them, resulting in a much more regular syntac than before when parentheses
+were prohibited but the other syntaxes worked.
+
+```scala
+Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a)
+Seq((1, 2), (3, 4)).collect { case (a, b) if b > 2 => a }
+Seq((1, 2), (3, 4)).collect: 
+  case (a, b) if b > 2 => a
+
+Seq((1, 2), (3, 4)).collect( 
+  case (a, b) if b > 2 => a
+  case (a, b) if a > 2 => b
+)
+
+Seq((1, 2), (3, 4)).collect {
+  case (a, b) if b > 2 => a
+  case (a, b) if a > 2 => b
+}
+
+Seq((1, 2), (3, 4)).collect: 
+  case (a, b) if b > 2 => a
+  case (a, b) if a > 2 => b
+
+```
 ## Limitations
 
 If not using the Brace-free/Fewer-braces syntax, partial function literals with multiple 
