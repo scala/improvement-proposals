@@ -83,8 +83,8 @@ syntax.
 // No way to write this without curlies
 Seq((1, 2), (3, 4)).collect{ case (a, b) if b > 2 => a } 
 ```
-Needing to swap between parens and curlies a common friction of converting a function to 
-a partial function:
+Needing to swap between parens and curlies also adds friction of converting a function to 
+a partial function, which happens frequently:
 
 ```scala
 Seq((1, 2), (3, 4)).map((a, b) => a) // OK
