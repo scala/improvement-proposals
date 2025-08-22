@@ -105,9 +105,25 @@ Seq((1, 2), (3, 4)).collect {
 ```
 
 Although with Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
-we expect that most of these multi-statement constructs would be written without braces as well.
+we expect that most of these multi-statement constructs would be written without braces as well:
+
+```scala
+Seq((1, 2), (3, 4)).collect:
+  case (a, b) if b > 2 =>
+    println(b)  
+    a
+```
+
+Partial functions with multiple `case` statements will also require braces:
+
+```scala
+Seq((1, 2), (3, 4)).collect:
+  case (a, b) if b > 2 => a
+  case _ => ???
+```
 
 This proposal does not affect `match` blocks, which typically have multiple lines, nor does
 it affect `catch` blocks which already allow a curly-free `catch case e: Throwable =>` syntax.
+These also can be written without braces in most multi-line scenarios
 
 
