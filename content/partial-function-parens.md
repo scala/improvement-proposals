@@ -105,7 +105,7 @@ Seq((1, 2), (3, 4)).collect {
 ```
 
 Although with Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
-we expect that most of these more-complex constructs would be written without braces as well.
+we expect that most of these multi-statement constructs would be written without braces as well.
 
 This proposal does not affect `match` blocks, which typically have multiple lines, nor does
 it affect `catch` blocks which already allow a curly-free `catch case e: Throwable =>` syntax.
