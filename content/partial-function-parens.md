@@ -78,7 +78,8 @@ Furthermore, in most expressions, Optional Braces means you do not have to write
 if you do not want to.
 
 This proposal brings partial functions in-line with the rest of Scala syntax, with the curly
-braces reserved for multi-statement blocks, and made optional.
+braces only being mandatory for multi-statement blocks, and made optional with Scala 3's
+Optional Braces.
 
 ## Limitations
 
