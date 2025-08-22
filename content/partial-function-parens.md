@@ -114,7 +114,6 @@ Seq((1, 2), (3, 4)).collect:
     a
 ```
 
-Partial functions with multiple `case` statements will also require braces:
 
 ```scala
 Seq((1, 2), (3, 4)).collect:
