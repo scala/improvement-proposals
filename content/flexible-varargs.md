@@ -169,11 +169,10 @@ val coll = Seq(foo, bar*, qux, baz*)
 val coll = Seq(foo*, bar*, qux, baz)
 ```
 
-## Implementation
+## Reference Implementation
 
-The proposed implementation is to basically desugar the multiple `*`s into the manual 
-`Seq`-construction code you would have written without it:
-
+A reference implementation of this is shown below, but the language is allowed to implement
+it in any way that returns a `Seq` that has the same elements as the reference implementation:
 ```scala
 // User Code
 val total = sum(0, numbers1*, numbers2*, 4) // 10
