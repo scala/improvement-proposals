@@ -79,6 +79,10 @@ and [SIP-44's Fewer Braces](https://docs.scala-lang.org/sips/fewer-braces.html),
 partial functions are one of the only remaining places where curly braces are mandatory in Scala
 syntax.
 
+```scala
+// No way to write this without curlies
+Seq((1, 2), (3, 4)).collect{ case (a, b) if b > 2 => a } 
+```
 Needing to swap between parens and curlies a common friction of converting a function to 
 a partial function:
 
