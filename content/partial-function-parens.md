@@ -17,7 +17,7 @@ title: SIP-XX Allow Partial Function Literals to be defined with Parentheses
 ## Summary
 
 This proposal is to allow parens `(...)` to be used instead of curly braces `{...}`
-when defining partial functions which have only one `case`, and eliding the `case` keyword:
+when defining partial functions which have only one `case`:
 
 
 ```scala
