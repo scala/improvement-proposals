@@ -36,6 +36,13 @@ scala> Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a)
   | longer explanation available when compiling with `-explain`
 ```
 
+Partial function literals in other non-function-call contexts can be defined with parens as well,
+as long as they have a single `case` block with a single expression on the right:
+
+```scala
+val partial: PartialFunction[(Int, Int), Int] = (case (a, b) if b > 2 => a)
+```
+
 ## Motivation
 
 With Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
@@ -101,3 +108,5 @@ we expect that most of these more-complex constructs would be written without br
 
 This proposal does not affect `match` blocks, which typically have multiple lines, nor does
 it affect `catch` blocks which already allow a curly-free `catch case e: Throwable =>` syntax.
+
+
