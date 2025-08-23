@@ -26,9 +26,9 @@ case class RequestConfig(url: String,
                          connectTimeout: Int,
                          readTimeout: Int)
 
-def downloadSimple(unpack config: Config) = doSomethingWith(config)
-def downloadAsync(unpack config: Config, ec: ExecutionContext) = doSomethingWith(config)
-def downloadStream(unpack config: Config) = doSomethingWith(config)
+def downloadSimple(unpack config: RequestConfig) = doSomethingWith(config)
+def downloadAsync(unpack config: RequestConfig, ec: ExecutionContext) = doSomethingWith(config)
+def downloadStream(unpack config: RequestConfig) = doSomethingWith(config)
 
 // Call with individual parameters
 val data = downloadSimple("www.example.com", 1000, 10000)
@@ -42,6 +42,11 @@ val futureData2 = downloadAsync(config*, ExecutionContext.global)
 val stream2 = downloadStream(config*)
 ```
 
+The delegation performed by `unpack` is very similar to inheritance with
+`extends`, or composition with `export`. Scala has always had good ways to DRY up repetitive
+member definitions, but has so far had no good way to DRY up repetitive parameter lists.
+`unpack` provides the way to do so.
+
 ## Motivation
 
 This proposal removes a tremendous amount of boilerplate converting between data structures
@@ -54,8 +59,8 @@ case class RequestConfig(url: String,
                          readTimeout: Int)
 
 def downloadSimple(url: String,
-             connectTimeout: Int,
-             readTimeout: Int) = doSomethingWith(config)
+                   connectTimeout: Int,
+                   readTimeout: Int) = doSomethingWith(config)
 def downloadAsync(url: String,
                   connectTimeout: Int,
                   readTimeout: Int,
@@ -503,12 +508,283 @@ trait Api {
 }
 ```
 
+### OS-Lib
+
+OS-Lib has similar APIs, e.g. 
+```scala
+os.walk(path, preOrder = false, followLinks = true)
+os.walk.attrs(path, preOrder = false, followLinks = true)
+os.walk.stream(path, preOrder = false, followLinks = true)
+```
+
+These are defined as 
+
+```scala
+object walk{
+  def apply(
+      path: Path,
+      skip: Path => Boolean = _ => false,
+      preOrder: Boolean = true,
+      followLinks: Boolean = false,
+      maxDepth: Int = Int.MaxValue,
+      includeTarget: Boolean = false
+  ): IndexedSeq[Path] = {
+    stream(
+      path,
+      skip,
+      preOrder,
+      followLinks,
+      maxDepth,
+      includeTarget
+    ).toArray[Path].toIndexedSeq
+  }
+  def attrs(
+    path: Path,
+    skip: (Path, os.StatInfo) => Boolean = (_, _) => false,
+    preOrder: Boolean = true,
+    followLinks: Boolean = false,
+    maxDepth: Int = Int.MaxValue,
+    includeTarget: Boolean = false
+  ): IndexedSeq[(Path, os.StatInfo)] = {
+    stream
+      .attrs(
+        path,
+        skip,
+        preOrder,
+        followLinks,
+        maxDepth,
+        includeTarget
+      )
+      .toArray[(Path, os.StatInfo)].toIndexedSeq
+  }
+  object stream {
+    def apply(
+      path: Path,
+      skip: Path => Boolean = _ => false,
+      preOrder: Boolean = true,
+      followLinks: Boolean = false,
+      maxDepth: Int = Int.MaxValue,
+      includeTarget: Boolean = false
+    ): Generator[Path] = {
+      attrs(
+        path,
+        (p, _) => skip(p),
+        preOrder, 
+        followLinks,
+        maxDepth,
+        includeTarget
+      ).map(_._1)
+    }
+    def attrs(
+      path: Path,
+      skip: (Path, os.StatInfo) => Boolean = (_, _) => false,
+      preOrder: Boolean = true,
+      followLinks: Boolean = false,
+      maxDepth: Int = Int.MaxValue,
+      includeTarget: Boolean = false
+    ): Generator[(Path, os.StatInfo)]
+  }
+}
+```
+
+With `unpack`, this could be consolidated into
+
+```scala
+object walk{
+  case class Config(path: Path,
+                    skip: Path => Boolean = _ => false,
+                    preOrder: Boolean = true,
+                    followLinks: Boolean = false,
+                    maxDepth: Int = Int.MaxValue,
+                    includeTarget: Boolean = false)
+
+  def apply(unpack config: Config): IndexedSeq[Path] = {
+    stream(config*).toArray[Path].toIndexedSeq
+  }
+  def attrs(unpack config: Config): IndexedSeq[(Path, os.StatInfo)] = {
+    stream.attrs(config*)
+      .toArray[(Path, os.StatInfo)].toIndexedSeq
+  }
+  object stream {
+    def apply(unpack config: Config): Generator[Path] = {
+      attrs(path, (p, _) => skip(p), preOrder, followLinks, maxDepth, includeTarget).map(_._1)
+    }
+    def attrs(unpack config: Config): Generator[(Path, os.StatInfo)] = ???
+  }
+}
+```
+
+Things to note:
+
+1. A lot of these methods are forwarders/wrappers for each other, purely for convenience, and
+   `*` can be used to forward the `config` object from the wrapper to the inner method
+
+2. Sometimes the parameter lists are subtly different, e.g. `walk.stream.apply` and 
+   `walk.stream.attrs` have a different type for `skip`. In such cases `unpack` cannot work
+   and so the forwarding has to be done manually. 
+
+## Detailed Behavior
+
+`unpack` unpacks the parameter _name_, _type_, and any _default value_ into the enclosing parameter
+list. As we saw earlier `unpack` can be performed on any parameter list: `def`s, `class` 
+constructors, `case class`es:
+
+```scala
+// Definition-site Unpacking
+case class RequestConfig(url: String,
+                         unpack timeoutConfig: TimeoutConfig)
+case class TimeoutConfig(connectTimeout: Int,
+                         readTimeout: Int)
+case class AsyncConfig(retry: Boolean, ec: ExecutionContext)
+def downloadSimple(unpack config: RequestConfig) = doSomethingWith(config)
+def downloadAsync(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
+def downloadStream(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
+```
+
+### Nested and Adjacent Unpacks
+
+There can be multiple hops, e.g. `downloadSimple` unpacks `RequestConfig`, and `RequestConfig`
+unpacks `TimeoutConfig`, and there can be multiple `unpack`s in a single parameter list as shown
+in `def downloadAsync` above. 
+
+Any names colliding during `unpack`ing should result in an error, just like if you wrote:
+
+```scala
+def downloadSimple(foo: Int, foo: Int) = ???
+// -- [E161] Naming Error: --------------------------------------------------------
+// 1 |def downloadSimple(foo: Int, foo: Int) = ???
+//   |                             ^^^^^^^^
+//   |foo is already defined as parameter foo
+//   |
+//   |Note that overloaded methods must all be defined in the same group of toplevel definitions
+// 1 error found
+```
+
+Similar errors should be shown for
+
+```scala
+case class HasFoo(foo: Int)
+def downloadSimple(foo: Int, unpack hasFoo: HasFoo) = ???
+```
+
+Or 
+
+```scala
+case class HasFoo(foo: Int)
+case class AlsoHasFoo(foo: Int)
+def downloadSimple(unpack hasFoo: HasFoo, unpack alsoHasFoo: AlsoHasFoo) = ???
+```
+
+
+### Generics
+
+Unpacking should work for generic methods and `case class`es:
+
+```scala
+case class Vector[T](x: T, y: T)
+def magnitude[T](unpack v: Point[T])
+magnitude(x = 5.0, y = 3.0) // 4.0: Double
+magnitude(x = 5, y = 3) // 4: Int
+```
+
+And for generic case classes referenced in non-generic methods:
+
+
+```scala
+case class Vector[T](x: T, y: T)
+def magnitudeInt(unpack v: Point[Int])
+magnitude(x = 5, y = 3) // 4: Int
+```
+
+### Orthogonality
+
+`unpack` on definitions and `*` on `case class` values are orthogonal: either can be used without
+the other. We already saw how you can use `unpack` at the definition-site and just pass parameters
+individuall at the call-site:
+
+```scala
+case class RequestConfig(url: String, 
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+def downloadSimple(unpack config: RequestConfig) = ???
+
+val data = downloadSimple("www.example.com", 1000, 10000)
+```
+
+Similarly, you can define parameters individually at the definition-site and `unpack` a `case class`
+with matching fields at the call-site
+
+```scala
+def downloadSimple(url: String,
+                   connectTimeout: Int,
+                   readTimeout: Int) = ???
+
+case class RequestConfig(url: String,
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+val config = RequestConfig("www.example.com", 1000, 10000)
+val data = downloadSimple(config*)
+```
+
+And you can `unpack` a different `case class` onto an `unpack`-ed parameter list as long
+as the names of the parameters line up:
+
+```scala
+case class RequestConfig(url: String, 
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+def downloadSimple(unpack config: RequestConfig) = ???
+
+case class OtherConfig(url: String,
+                       connectTimeout: Int,
+                       readTimeout: Int)
+
+val config = OtherConfig("www.example.com", 1000, 10000)
+val data = downloadSimple(config*)
+```
+
+Mix `unpack`-ed and individually passed argments:
+
+```scala
+case class AsyncConfig(retry: Boolean, ec: ExecutionContext)
+case class RequestConfig(url: String,
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+def downloadAsync(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = ???
+
+case class OtherConfig(url: String,
+                       connectTimeout: Int,
+                       readTimeout: Int,
+                       retry: Boolean)
+
+val config = OtherConfig("www.example.com", 1000, 10000, true)
+downloadAsync(config*, retry = true)
+```
+
+### Case Class Construction Semantics
+
+`unpack` may-or-may-not re-create a `case class` instance passed via `config*` to an 
+`unpack`ed parameter list. This is left up to the implementation. But for the vast majority
+of `case class`es with non-side-effecting constructors and structural equality, whether or 
+not the `case class` instance is re-created is entirely invisible to the user.
+
+
 ## Limitations
 ## Alternatives
+### Automatic Unpacking
+
 ## Prior Art
 
 ### uPickle's `@flatten`
+
 ### MainArg's `case class` embedding
+
 ### Python
+
 ### Kotlin
+
 ### Javascript
