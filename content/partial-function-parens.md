@@ -36,8 +36,8 @@ scala> Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a)
   | longer explanation available when compiling with `-explain`
 ```
 
-Partial functions with multiple `case` blocks should also be allowed to use parentheses,
-as long as every case block only contains a single expression:
+Partial functions with multiple `case` blocks should also be allowed to use parentheses
+:
 
 
 ```scala
@@ -65,8 +65,7 @@ Seq((1, 2), (3, 4)).collect(
 )
 ```
 
-For consistency, we also allow parentheses to be used in `match` statements, again as long
-as each branch of the match only has a single expression to the right of the arrow:
+For consistency, we also allow parentheses to be used in `match` statements:
 
 ```scala
 (1, 2) match (
@@ -135,7 +134,7 @@ Seq((1, 2), (3, 4), (5, 6))
 In the syntax of other expressions, curly braces are only
 necessary to define "blocks" with multiple statements: `if`-`else`, `try`-`catch`-`finally`,
 `for`-`yield`, `do`-`while`, method calls like `foo()` etc. all allow you to replace curly braces
-with parentheses (or elide them altogether) when there is only a single expression present.
+with parentheses or elide them altogether using indentation.
 This is unlike other languages like Java that mandate curly braces in these syntactic constructs.
 Furthermore, in most expressions, Optional Braces means you do not have to write the curlies
 if you do not want to.
