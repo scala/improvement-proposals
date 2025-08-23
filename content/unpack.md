@@ -802,12 +802,8 @@ values by field name seems like it would be a lot more intuitive than relying on
 order and hoping it lines up between your `case class` and the parameter list you are unpacking 
 it into. 
 
-### Automatic Unpacking
 
 ## Prior Art
-
-
-There is significant
 
 ### Scala `extends` and `export`
 
