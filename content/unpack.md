@@ -700,7 +700,7 @@ magnitude(x = 5, y = 3) // 4: Int
 
 `unpack` on definitions and `*` on `case class` values are orthogonal: either can be used without
 the other. We already saw how you can use `unpack` at the definition-site and just pass parameters
-individuall at the call-site:
+individually at the call-site:
 
 ```scala
 case class RequestConfig(url: String, 
