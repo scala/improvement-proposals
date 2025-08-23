@@ -47,6 +47,24 @@ Seq((1, 2), (3, 4)).collect(
 )
 ```
 
+Multi-line `case` blocks should work with parens as well, just like multi-line function
+literals without `case` already work:
+
+```scala
+Seq((1, 2), (3, 4)).collect(
+  case (a, b) =>
+    println(b)
+    a
+)
+
+// This already works today
+Seq((1, 2), (3, 4)).collect(
+  (a, b) =>
+    println(b)  
+    a
+)
+```
+
 For consistency, we also allow parentheses to be used in `match` statements, again as long
 as each branch of the match only has a single expression to the right of the arrow:
 
@@ -56,6 +74,18 @@ as each branch of the match only has a single expression to the right of the arr
   case _ => ???
 )
 ```
+
+And we should allow multi-`case` single-line partial functions, just like you can already do
+with `match` today:
+
+```scala
+Seq((1, 2), (3, 4)).collect{ case (a, b) if b > 2 => a case (a, b) if a > 2 => b }
+Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a case (a, b) if a > 2 => b)
+
+// This already works today
+(1, 2) match { case (a, b) if b > 2 => a case _ => ??? }
+```
+
 
 Partial function literals should also be allowed to be defined without parentheses for
 single-line scenarios such as:
@@ -141,27 +171,24 @@ Seq((1, 2), (3, 4)).collect:
   case (a, b) if b > 2 => a
   case (a, b) if a > 2 => b
 
-```
-## Limitations
-
-If not using the Brace-free/Fewer-braces syntax, partial function literals with multiple 
-statements in one `case` block will still require curly braces, in line with how curly 
-braces are used to define multi-statement blocks in other contexts: 
-
-```scala
-Seq((1, 2), (3, 4)).collect {
-  case (a, b) if b > 2 =>
-    println(b)  
+Seq((1, 2), (3, 4)).collect(
+  case (a, b) =>
+    println(b)
     a
-}
-```
+)
 
-Although with Scala 3's [Optional Braces](https://docs.scala-lang.org/scala3/reference/other-new-features/indentation.html),
-we expect that most of these multi-statement constructs would be written without braces as well:
-
-```scala
-Seq((1, 2), (3, 4)).collect:
-  case (a, b) if b > 2 =>
-    println(b)  
+Seq((1, 2), (3, 4)).map((a, b) => a)
+Seq((1, 2), (3, 4)).map { (a, b) => a }
+Seq((1, 2), (3, 4)).map:
+  (a, b) => a
+Seq((1, 2), (3, 4)).map:
+  (a, b) =>
+    println(b)
     a
+
+Seq((1, 2), (3, 4)).collect(
+  case (a, b) if b > 2 =>
+    println(b)
+    a
+)
 ```
