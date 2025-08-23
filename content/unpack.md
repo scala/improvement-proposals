@@ -1035,3 +1035,9 @@ as parameters, and `*` could make this a lot more convenient. than having to wri
 `unpack` could also be used to unpack a named tuple into a parameter list, which would 
 work identically to unpacking a `case class` type except a named tuple would not have 
 any default param values.
+
+The other way around, `unpack`ing a `case class` into a named tuple type, or a named tuple
+into another named tuple could also be useful.
+
+All of these ideas for integrating `unpack`/`*` with tuples and named tuples should be
+investigated, but for now they are beyond the scope of this proposal.
