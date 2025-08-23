@@ -779,12 +779,121 @@ not the `case class` instance is re-created is entirely invisible to the user.
 
 ## Prior Art
 
+
+There is significant
+
+### Scala `extends` and `export`
+
+`unpack` is similar to Scala's `extends` and `export` clauses, except rather than applying
+to members of a trait it applies to parameters in a parameter list. It serves a similar purpose,
+and has similar ways it can be abused: e.g. too-deep chains of `unpack`-ed `case class`es are
+confusing just like too-deep inheritance hierarchies with `extends`.
+
 ### uPickle's `@flatten`
+
+uPickle has the `@flatten` annotation which flattens out nested case classes during
+JSON serialization.
+
+```scala
+case class Outer(msg: String, @flatten inner: Inner) derives ReadWriter
+case class Inner(@flatten inner2: Inner2) derives ReadWriter
+case class Inner2(i: Int) derives ReadWriter
+
+write(Outer("abc", Inner(Inner2(7)))) // {"msg": "abc", "i": 7}
+```
+
+Like `unpack`, `@flatten` can be used recursively to flatten out
+a multi-layer `case class` tree into a single flat JSON object, as shown above
 
 ### MainArg's `case class` embedding
 
+MainArgs allows you to re-use sets of command-line flags - defined by case classes - 
+in method `def`s that define the sub-command entrypoints of the program:
+
+```scala
+object Main{
+  @main
+  case class Config(@arg(short = 'f', doc = "String to print repeatedly")
+                    foo: String,
+                    @arg(doc = "How many times to print string")
+                    myNum: Int = 2,
+                    @arg(doc = "Example flag")
+                    bool: Flag)
+  implicit def configParser = ParserForClass[Config]
+
+  @main
+  def bar(config: Config,
+          @arg(name = "extra-message")
+          extraMessage: String) = {
+    println(config.foo * config.myNum + " " + config.bool.value + " " + extraMessage)
+  }
+  @main
+  def qux(config: Config,
+          n: Int) = {
+    println((config.foo * config.myNum + " " + config.bool.value + "\n") * n)
+  }
+
+  def main(args: Array[String]): Unit = ParserForMethods(this).runOrExit(args)
+}
+```
+```bash
+$ ./mill example.classarg bar --foo cow --extra-message "hello world"
+cowcow false hello world
+
+$ ./mill example.classarg qux --foo cow --n 5
+```
+
+In this example, you can see how `def bar` and `def qux` both make use of the parameters from
+`case class Config`, along with their own unique parameters `extraMessage` or `n`. This
+serves a similar purpose as `unpack` would serve in Scala code, de-coupling the possibly-nested
+`case class` data structure from the flag parameter list exposed to users (in MainArgs, users 
+interacting with the program via the CLI).
+
 ### Python
 
+Python's [PEP-692](https://peps.python.org/pep-0692/) defines an `Unpack[_]` marker type
+that can be used together with `TypedDict` classes. These work similarly to `unpack` in this
+proposal, but use typed-dictionary-based implementation for compatibility with Python's 
+widespread use of `**kwargs` to forward parameters as a runtime dictionary.
+
+> ```python
+> from typing import TypedDict, Unpack
+> 
+> class Movie(TypedDict):
+>     name: str
+>     year: int
+> 
+> def foo(**kwargs: Unpack[Movie]) -> None: ...
+> ```
+> 
+> means that the `**kwargs` comprise two keyword arguments specified by `Movie`
+> (i.e. a name keyword of type `str` and a year keyword of type `int`). This indicates 
+> that the function should be called as follows:
+> 
+> ```python
+> kwargs: Movie = {"name": "Life of Brian", "year": 1979}
+> 
+> foo(**kwargs)                               # OK!
+> foo(name="The Meaning of Life", year=1983)  # OK!
+> ```
 ### Kotlin
 
-### Javascript
+Kotlin has an open extension proposal [KEEP-8214](https://youtrack.jetbrains.com/issue/KT-8214)
+to support a `dataarg` modifier on `data class`es that functions identically to `unpack`
+in this proposal
+
+```kotlin
+data class Options(
+  val firstParam: Int = 0,
+  val secondParam: String = "",
+  val thirdParam: Boolean = true
+)
+
+fun foo(dataarg options: Options){}
+
+fun f() {
+    foo(secondParam = "a", thirdParam = false)
+    foo(1)
+    foo()  
+}
+```
