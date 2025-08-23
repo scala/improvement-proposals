@@ -432,7 +432,7 @@ Things to note:
   `requests.get.apply(request*, ...)` or `requests.get.stream(request*, ...)` to pass it in,
   without needing a dedicated overload taking a `r: Request` object as the first parameter
 
-## uPickle
+### uPickle
 
 uPickle has a similar API, where the user can call 
 ```scala
