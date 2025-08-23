@@ -772,9 +772,36 @@ downloadAsync(config*, retry = true)
 of `case class`es with non-side-effecting constructors and structural equality, whether or 
 not the `case class` instance is re-created is entirely invisible to the user.
 
+### Name-Based Unpacking
 
-## Limitations
-## Alternatives
+Unpacking at callsites via `*` is done by-field-name, rather than positionally. That means
+that even if the field names are in different orders, it will still work
+
+```scala
+def downloadSimple(url: String,
+                   connectTimeout: Int,
+                   readTimeout: Int) = ???
+
+case class RequestConfig(connectTimeout: Int, // Different order!
+                         url: String,
+                         readTimeout: Int)
+
+val config = RequestConfig("www.example.com", 1000, 10000)
+val data = downloadSimple(config*) // OK
+// Equivalent to the following, which is allowed today in Scala
+val data = downloadSimple(
+  connectTimeout = config.connectTimeout,
+  url = config.url,
+  readTimeout = config.readTimeout
+) 
+```
+
+In general, we believe that most developers think of their `case class`es as defined by
+the field names and types, rather than by the field ordering. So having `*` unpack `case class`
+values by field name seems like it would be a lot more intuitive than relying on the parameter 
+order and hoping it lines up between your `case class` and the parameter list you are unpacking 
+it into. 
+
 ### Automatic Unpacking
 
 ## Prior Art
