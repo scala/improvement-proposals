@@ -218,7 +218,7 @@ val futureData = downloadAsync(config*, asyncConfig*)
 val stream = downloadStream(config*, asyncConfig*)
 ```
 
-## Applications in the Wild
+## Applications
 
 ### Requests-Scala
 
@@ -802,6 +802,100 @@ values by field name seems like it would be a lot more intuitive than relying on
 order and hoping it lines up between your `case class` and the parameter list you are unpacking 
 it into. 
 
+### Binary Compatibility
+
+parameter lists using `unpack` should be externally indistinguishable from individually-defined
+parameters. So a library should be able to take a method defining individual parameters
+
+```scala
+def downloadSimple(url: String,
+                   connectTimeout: Int,
+                   readTimeout: Int)
+```
+
+And later, perhaps in the interest of code sharing, replace it with a method `unpack`ing a ` 
+case class: 
+
+```scala
+case class RequestConfig(url: String, 
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+def downloadSimple(unpack config: RequestConfig)
+```
+
+And this should require no changes at any callsites, and should not break binary or tasty
+compatibility.
+
+
+### Default parameter values
+
+As can be seen from some of the other examples in this proposal, `unpack` should include
+the default parameter values:
+
+```scala
+case class RequestConfig(url: String, 
+                         connectTimeout: Int = 10000,
+                         readTimeout: Int = 10000)
+
+// These two methods definitions should be equivalent
+def downloadSimple(unpack config: RequestConfig)
+def downloadSimple(url: String,
+                   connectTimeout: Int = 10000,
+                   readTimeout: Int = 10000)
+```
+
+Large flat parameter lists often contain default parameters, and usually the user would 
+want the same default parameter across all use sites. So default parameters should be maintained
+when `unpack`ing a `case class` type into the enclosing parameter list.
+
+### `@unroll` interaction
+
+`@unroll` annotations on the parameters of a `case class` should be preserved when unpacking
+those parameters into a method `def`
+
+```scala
+case class RequestConfig(url: String, 
+                         @unroll connectTimeout: Int = 10000,
+                         @unroll readTimeout: Int = 10000)
+
+// These two methods definitions should be equivalent
+def downloadSimple(unpack config: RequestConfig)
+def downloadSimple(url: String,
+                   @unroll connectTimeout: Int = 10000,
+                   @unroll readTimeout: Int = 10000)
+```
+
+We expect that both `unpack` and `unroll` would be used together frequently: `unpack` to
+preserve consistency between different methods in the same version, `unroll` to preserve
+binary and tasty compatibility of the same method across different versions. The two goals
+are orthogonal and a library author can be expected to want both at the same time, and so
+`unpack` needs to preserve the semantics of `@unroll` on each individual unpacked parameter.
+
+### Modifier handling
+
+`case class` fields can have modifiers like `val`, `var`, `private`, etc. that are not allowed
+in method `def`s. `unpack` should preserve these modifiers if the enclosing parameter list
+belongs to a `class` or `case class`, and strip these modifiers if the enclosing parameter list
+belongs to a method `def`
+
+```scala
+case class RequestConfig(var url: String,
+                         var connectTimeout: Int = 10000,
+                         readTimeout: Int = 10000)
+
+// These two methods definitions should be equivalent
+def downloadSimple(unpack config: RequestConfig)
+def downloadSimple(url: String,
+                   connectTimeout: Int = 10000,
+                   readTimeout: Int = 10000)
+// These two class definitions should be equivalent
+class Foo(unpack config: RequestConfig)
+class Foo(var url: String,
+          var connectTimeout: Int = 10000,
+          readTimeout: Int = 10000)
+```
+
 
 ## Prior Art
 
@@ -920,3 +1014,24 @@ fun f() {
     foo()  
 }
 ```
+
+## Future Work
+
+### Support for tuples and named tuples
+
+For this initial proposal, we limit `unpack` an `*` to only work on `case class`es. This is
+enough for the most painful scenarios [discussed above](#applications), and matches the most
+closely: a `case class` parameter list _exactly_ matches the structure of the enclosing parameter
+list we `unpack`ing the `case class` into, and unpacking values via `*` is also straightforward.
+However, we could potentially expand this to allow use of `unpack` an `*` on positional and 
+named tuples.
+
+While `unpack`/`*` on `case class`es is most useful for library authors, `*` on tuples
+and named tuples could be of great convenience in application code: method bodies often have
+local data structures containing tuples or named tuples that get passed as to method calls
+as parameters, and `*` could make this a lot more convenient. than having to write
+`foo(tuple._1, tuple._2, tuple._3)` or similar today. 
+
+`unpack` could also be used to unpack a named tuple into a parameter list, which would 
+work identically to unpacking a `case class` type except a named tuple would not have 
+any default param values.
