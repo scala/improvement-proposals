@@ -10,9 +10,9 @@ title: SIP-61 - Unroll Default Arguments for Binary Compatibility
 
 ## History
 
-| Date          | Version            |
-|---------------|--------------------|
-| Feb 14th 2024 | Initial Draft      |
+| Date        | Version            |
+|-------------|--------------------|
+| 23 Aug 2024 | Initial Draft      |
 
 
 ## Summary
