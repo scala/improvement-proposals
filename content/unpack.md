@@ -178,9 +178,9 @@ val stream = downloadStream(
 ```
 
 Forcing the user to construct this tree-shaped `case class` data structure is an abstraction leak:
-the user has to write code matching the internal implementation details and code sharing of
-the `def download` methods, and construct the corresponding `case class` tree, even though they
-may really only care about calling a single `downloadAsync` method.
+the user has to write code matching the internal implementation details and code sharing 
+relationships of the `def download` methods to construct the corresponding `case class` tree, 
+even though they may really only care about calling a single `downloadAsync` method.
 
 There are other more sophisticated ways that a library author can try to mitigate this -
 e.g. builder patterns - but the fundamental problem is unsolvable today. `unpack`/`*` solves
