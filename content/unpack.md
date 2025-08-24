@@ -723,6 +723,8 @@ def magnitudeInt(unpack v: Point[Int])
 magnitude(x = 5, y = 3) // 4: Int
 ```
 
+This is similar to what we saw in the `os.walk` example earlier.
+
 ### Orthogonality
 
 `unpack` on definitions and `*` on `case class` values are orthogonal: either can be used without
@@ -736,8 +738,12 @@ case class RequestConfig(url: String,
 
 def downloadSimple(unpack config: RequestConfig) = ???
 
-val data = downloadSimple("www.example.com", 1000, 10000)
+val data1 = downloadSimple("www.example.com", 1000, 10000)
+val data2 = downloadSimple(url = "www.example.com", connectTimeout = 1000, readTimeout = 10000)
 ```
+
+When you `unpack` a `case class`, the resulting parameters can be called via either positional
+or named arguments.
 
 Similarly, you can define parameters individually at the definition-site and `unpack` a `case class`
 with matching fields at the call-site
@@ -773,7 +779,7 @@ val config = OtherConfig("www.example.com", 1000, 10000)
 val data = downloadSimple(config*)
 ```
 
-Mix `unpack`-ed and individually passed argments:
+Or mix `unpack`-ed and individually passed arguments:
 
 ```scala
 case class AsyncConfig(retry: Boolean, ec: ExecutionContext)
@@ -789,6 +795,8 @@ case class OtherConfig(url: String,
                        retry: Boolean)
 
 val config = OtherConfig("www.example.com", 1000, 10000, true)
+// `OtherConfig` matches some of the fields from `unpack config: RequestConfig` and
+// `unpack asyncConfig: AsyncConfig`, and we pass the last missing `retry = true` individually
 downloadAsync(config*, retry = true)
 ```
 
