@@ -608,24 +608,24 @@ With `unpack`, this could be consolidated into
 ```scala
 object walk{
   case class Config[SkipType](path: Path,
-                              skip: SkipType = _ => false,
+                              skip: SkipType => Boolean = (_: T) => false,
                               preOrder: Boolean = true,
                               followLinks: Boolean = false,
                               maxDepth: Int = Int.MaxValue,
                               includeTarget: Boolean = false)
 
-  def apply(unpack config: Config[os.Path => Boolean]): IndexedSeq[Path] = {
+  def apply(unpack config: Config[os.Path]): IndexedSeq[Path] = {
     stream(config*).toArray[Path].toIndexedSeq
   }
-  def attrs(unpack config: Config[(os.Path, os.StatInfo) => Boolean]): IndexedSeq[(Path, os.StatInfo)] = {
+  def attrs(unpack config: Config[(os.Path, os.StatInfo)]): IndexedSeq[(Path, os.StatInfo)] = {
     stream.attrs(config*)
       .toArray[(Path, os.StatInfo)].toIndexedSeq
   }
   object stream {
-    def apply(unpack config: Config[os.Path => Boolean]): Generator[Path] = {
+    def apply(unpack config: Config[os.Path]): Generator[Path] = {
       attrs(path, (p, _) => skip(p), preOrder, followLinks, maxDepth, includeTarget).map(_._1)
     }
-    def attrs(unpack config: Config[(os.Path, os.StatInfo) => Boolean]): Generator[(Path, os.StatInfo)] = ???
+    def attrs(unpack config: Config[(os.Path, os.StatInfo)]): Generator[(Path, os.StatInfo)] = ???
   }
 }
 ```
@@ -635,8 +635,8 @@ Things to note:
 1. The different `def`s can all share the same `unpack config: Config` parameter to share
    the common parameters
 
-2. The `.attrs` method take a `Config[(os.Path, os.StatInfo) => Boolean]`, while the
-   `.apply` methods take a `Config[os.Path => Boolean]`, as the shared parameters have some
+2. The `.attrs` method take a `Config[(os.Path, os.StatInfo)]`, while the
+   `.apply` methods take a `Config[os.Path]`, as the shared parameters have some
    subtle differences accounted for by the type parameter
 
 3. A lot of these methods are forwarders/wrappers for each other, purely for convenience, and
@@ -663,6 +663,10 @@ def downloadSimple(unpack config: RequestConfig) = doSomethingWith(config)
 def downloadAsync(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
 def downloadStream(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
 ```
+
+You can `unpack` a `case class` into a method `def` parameter list as we see in  
+the `def download` methods above, or into a `case class` parameter list as we see in
+`case class RequestConfig` above.
 
 ### Nested and Adjacent Unpacks
 
