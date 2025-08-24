@@ -45,7 +45,8 @@ val stream2 = downloadStream(config*)
 The delegation performed by `unpack` is very similar to inheritance with
 `extends`, or composition with `export`. Scala has always had good ways to DRY up repetitive
 member definitions, but has so far had no good way to DRY up repetitive parameter lists.
-`unpack` provides the way to do so.
+`unpack` provides the way to do so, and removes the dilemma of passing things around as loose
+parameters or `case class` values by making it easy to convert between them in both directions.
 
 ## Motivation
 
