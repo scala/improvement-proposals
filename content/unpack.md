@@ -182,12 +182,18 @@ the user has to write code matching the internal implementation details and code
 relationships of the `def download` methods to construct the corresponding `case class` tree, 
 even though they may really only care about calling a single `downloadAsync` method.
 
-There are other more sophisticated ways that a library author can try to mitigate this -
-e.g. builder patterns - but the fundamental problem is unsolvable today. `unpack`/`*` solves
-this neatly, allowing the library author to use `unpack` in their definition-site parameter lists
-to share parameters between definitions, and the library user can either pass parameters 
-individually or unpack a configuration object via `*`, resulting in both the definition site
-and the call site being boilerplate-free even in the more involved example below:
+There are other more sophisticated ways that a library author can try to mitigate this,
+e.g. builder patterns. But fundamentally the problem is that language feature has limitations 
+that make people reach for user-land patterns as an alternative, at a cost of clarity and
+indirection. As a _library_ designer that makes sense as the least-bad option given the
+constraints, but as a _language_ designer we should strive to just fix the broken language
+feature so library designers don't need to jump through these hoops.
+
+`unpack`/`*` solves this neatly, allowing the library author to use `unpack` in their 
+definition-site parameter lists to share parameters between definitions, and the library 
+user can either pass parameters individually or unpack a configuration object via `*`, 
+resulting in both the definition site and the call site being boilerplate-free even in 
+the more involved example below:
 
 ```scala
 case class RequestConfig(url: String,
