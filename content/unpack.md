@@ -140,7 +140,7 @@ and use the `RequestConfig` wrapper.
 Apart from the boilerplate, some things to note:
 
 1. The `RequestConfig` object is really just an implementation detail of `download` meant
-   to shared parameters and args between the different `download` methods. From a user 
+   to share parameters and args between the different `download` methods. From a user 
    perspective, the name is meaningless and the contents are arbitrary: someone calling 
    `downloadAsync` would have to pass some params inside a `RequestConfig`, some parameters
    outside `RequestConfig`, with no reason why some parameters should go in one place or another
@@ -149,7 +149,7 @@ Apart from the boilerplate, some things to note:
    objects that the user has to construct to call your method, possibly nested. The user would
    have to import several `Config` classes and instantiate a tree-shaped data structure just to
    call these methods. But this tree-structure does not model anything the user cares about, but
-   instead models the code-sharing relationships between the various `def download` methods
+   instead models the internal code-sharing relationships between the various `def download` methods
 
 ```scala
 case class RequestConfig(url: String,
@@ -157,6 +157,7 @@ case class RequestConfig(url: String,
 case class TimeoutConfig(connectTimeout: Int,
                          readTimeout: Int)
 case class AsyncConfig(retry: Boolean, ec: ExecutionContext)
+
 def downloadSimple(config: RequestConfig) = doSomethingWith(config)
 def downloadAsync(config: RequestConfig, asyncConfig: AsyncConfig) = doSomethingWith(config)
 def downloadStream(config: RequestConfig, asyncConfig: AsyncConfig) = doSomethingWith(config)
@@ -176,12 +177,17 @@ val stream = downloadStream(
 )
 ```
 
-There are other more sophisticated ways that a library author can try to resolve this problem -
+Forcing the user to construct this tree-shaped `case class` data structure is an abstraction leak:
+the user has to write code matching the internal implementation details and code sharing of
+the `def download` methods, and construct the corresponding `case class` tree, even though they
+may really only care about calling a single `downloadAsync` method.
+
+There are other more sophisticated ways that a library author can try to mitigate this -
 e.g. builder patterns - but the fundamental problem is unsolvable today. `unpack`/`*` solves
 this neatly, allowing the library author to use `unpack` in their definition-site parameter lists
 to share parameters between definitions, and the library user can either pass parameters 
 individually or unpack a configuration object via `*`, resulting in both the definition site
-and the call site being boilerplate-free, even in the more involved example above:
+and the call site being boilerplate-free even in the more involved example below:
 
 ```scala
 case class RequestConfig(url: String,
@@ -189,6 +195,7 @@ case class RequestConfig(url: String,
 case class TimeoutConfig(connectTimeout: Int,
                          readTimeout: Int)
 case class AsyncConfig(retry: Boolean, ec: ExecutionContext)
+
 def downloadSimple(unpack config: RequestConfig) = doSomethingWith(config)
 def downloadAsync(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
 def downloadStream(unpack config: RequestConfig, unpack asyncConfig: AsyncConfig) = doSomethingWith(config)
@@ -279,6 +286,7 @@ class Requester{
     )
     ...
   }
+
   def stream(
     url: String,
     auth: RequestAuth = sess.auth,
@@ -399,6 +407,7 @@ class Requester{
     )
     ...
   }
+
   def stream(
     unpack request: Request,
     chunkedUpload: Boolean = false,
@@ -519,7 +528,9 @@ os.walk.attrs(path, preOrder = false, followLinks = true)
 os.walk.stream(path, preOrder = false, followLinks = true)
 ```
 
-These are defined as 
+These are defined as shown below: each version of `os.walk` has a different return type, and 
+so needs to be a different method, but they share many parameters and default values, and
+require a lot of boilerplate forwarding these internally:
 
 ```scala
 object walk{
@@ -540,6 +551,7 @@ object walk{
       includeTarget
     ).toArray[Path].toIndexedSeq
   }
+
   def attrs(
     path: Path,
     skip: (Path, os.StatInfo) => Boolean = (_, _) => false,
@@ -559,6 +571,7 @@ object walk{
       )
       .toArray[(Path, os.StatInfo)].toIndexedSeq
   }
+
   object stream {
     def apply(
       path: Path,
@@ -577,6 +590,7 @@ object walk{
         includeTarget
       ).map(_._1)
     }
+
     def attrs(
       path: Path,
       skip: (Path, os.StatInfo) => Boolean = (_, _) => false,
@@ -593,37 +607,44 @@ With `unpack`, this could be consolidated into
 
 ```scala
 object walk{
-  case class Config(path: Path,
-                    skip: Path => Boolean = _ => false,
-                    preOrder: Boolean = true,
-                    followLinks: Boolean = false,
-                    maxDepth: Int = Int.MaxValue,
-                    includeTarget: Boolean = false)
+  case class Config[SkipType](path: Path,
+                              skip: SkipType = _ => false,
+                              preOrder: Boolean = true,
+                              followLinks: Boolean = false,
+                              maxDepth: Int = Int.MaxValue,
+                              includeTarget: Boolean = false)
 
-  def apply(unpack config: Config): IndexedSeq[Path] = {
+  def apply(unpack config: Config[os.Path => Boolean]): IndexedSeq[Path] = {
     stream(config*).toArray[Path].toIndexedSeq
   }
-  def attrs(unpack config: Config): IndexedSeq[(Path, os.StatInfo)] = {
+  def attrs(unpack config: Config[(os.Path, os.StatInfo) => Boolean]): IndexedSeq[(Path, os.StatInfo)] = {
     stream.attrs(config*)
       .toArray[(Path, os.StatInfo)].toIndexedSeq
   }
   object stream {
-    def apply(unpack config: Config): Generator[Path] = {
+    def apply(unpack config: Config[os.Path => Boolean]): Generator[Path] = {
       attrs(path, (p, _) => skip(p), preOrder, followLinks, maxDepth, includeTarget).map(_._1)
     }
-    def attrs(unpack config: Config): Generator[(Path, os.StatInfo)] = ???
+    def attrs(unpack config: Config[(os.Path, os.StatInfo) => Boolean]): Generator[(Path, os.StatInfo)] = ???
   }
 }
 ```
 
 Things to note:
 
-1. A lot of these methods are forwarders/wrappers for each other, purely for convenience, and
+1. The different `def`s can all share the same `unpack config: Config` parameter to share
+   the common parameters
+
+2. The `.attrs` method take a `Config[(os.Path, os.StatInfo) => Boolean]`, while the
+   `.apply` methods take a `Config[os.Path => Boolean]`, as the shared parameters have some
+   subtle differences accounted for by the type parameter
+
+3. A lot of these methods are forwarders/wrappers for each other, purely for convenience, and
    `*` can be used to forward the `config` object from the wrapper to the inner method
 
-2. Sometimes the parameter lists are subtly different, e.g. `walk.stream.apply` and 
-   `walk.stream.attrs` have a different type for `skip`. In such cases `unpack` cannot work
-   and so the forwarding has to be done manually. 
+4. Sometimes the parameter lists are subtly different, e.g. `walk.stream.apply` and 
+   `walk.stream.attrs` have a different type for `skip`. In such cases `*` at the call-site
+   cannot work and so the forwarding has to be done manually. 
 
 ## Detailed Behavior
 
