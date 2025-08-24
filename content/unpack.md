@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-XX - Unpack Case Classes into Parameter Lists and Argument List
+title: SIP-XX - Unpack Case Classes into Parameter Lists and Argument Lists
 ---
 
 **By: Li Haoyi**
