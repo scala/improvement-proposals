@@ -848,8 +848,8 @@ def downloadSimple(url: String,
                    readTimeout: Int)
 ```
 
-And later, perhaps in the interest of code sharing, replace it with a method `unpack`ing a ` 
-case class: 
+And later, perhaps in the interest of code sharing, replace it with a method `unpack`ing a 
+`case class`: 
 
 ```scala
 case class RequestConfig(url: String, 
@@ -955,7 +955,7 @@ write(Outer("abc", Inner(Inner2(7)))) // {"msg": "abc", "i": 7}
 ```
 
 Like `unpack`, `@flatten` can be used recursively to flatten out
-a multi-layer `case class` tree into a single flat JSON object, as shown above
+a multi-layer `case class` tree into a single flat JSON object, as shown above.
 
 ### MainArg's `case class` embedding
 
