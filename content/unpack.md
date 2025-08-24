@@ -52,7 +52,8 @@ parameters or `case class` values by making it easy to convert between them in b
 
 This proposal removes a tremendous amount of boilerplate converting between data structures
 and method calls in Scala. For example, the code snippet above without this feature would 
-have the pa:
+have the parameter list duplicated many times, and any calling the methods with data from
+a `RequestConfig` object with matching fields also requires lots of duplication:
 
 ```scala
 case class RequestConfig(url: String, 
