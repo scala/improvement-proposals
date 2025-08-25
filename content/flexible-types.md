@@ -2,11 +2,9 @@
 layout: sip
 permalink: /sips/:title.html
 stage: implementation
-status: waiting-for-implementation
+status: under-review
 title: SIP-XX - Flexible Types for TASTy Format
 ---
-
-**By: Scala 3 Compiler Team**
 
 ## History
 
@@ -130,9 +128,7 @@ Flexible Types have already been implemented in the latest Scala 3 compiler. The
 The following enhancements are planned for upcoming releases:
 
 1. Refined nullification rules for edge cases.
-
 2. Stronger TASTy forward/backward compatibility guarantees, including updating tasty-mima and tasty-query.
-
 3. A compiler warning when flexible types appear in public API boundaries.
 
 ## Related information
