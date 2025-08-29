@@ -568,12 +568,14 @@ The "ambiguity" of `'''` looking similar to the 1-character string `'\''` also d
 not appear to be a problem in practice. We expect this will provide familiarity for 
 anyone coming to Scala from other languages.
 
-The similar "single-quote Char" syntax is `'\''` is relatively rare in typical
-Scala code: a quick search of the libraries I have checked out finds 141 uses of `'\''`,
-compared to 24331 uses of `.stripMargin` that could benefit from this improved syntax,
-172 times as many use sites.
-This suggests that the benefit will be widespread and the similarity with `'\''` would
-be edge case that occurs rarely and cause minimal confusion.
+While it is tempting to come up with clever syntax and novel lexing strategies to add a new 
+multi-line string syntax into the language, that is exactly the wrong approach here. Rather, 
+we should pick the available multi-line string syntax that would be most familiar to programmers
+learning Scala with experience in other languages. After triple double-quoted strings `"""` which 
+are already taken, triple single-quoted strings `'''` are without doubt the second-most 
+widely used multi-line string syntax across the programming landscape as a whole. And so
+this proposal chooses `'''` as the delimiter to maximize familiarity and learnability to
+users who will overwhelmingly have already seen such syntax before in Python or elsewhere.
 
 Other options to consider are listed below
 
