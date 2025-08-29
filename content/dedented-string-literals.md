@@ -566,7 +566,9 @@ Dart, Elixir, and TOML all have both `"""` and `'''` strings without any apparen
 with several (Groovy, Elixir, TOML) having different semantics between the two syntaxes.
 The "ambiguity" of `'''` looking similar to the 1-character string `'\''` also does
 not appear to be a problem in practice. We expect this will provide familiarity for 
-anyone coming to Scala from other languages.
+anyone coming to Scala from other languages, and should be a relatively easy delimiter
+to lex/parse both in the compiler and in other ancilliary tools (e.g. syntax highlighters, 
+autoformatters, etc.) that should minimize the burden on downstream tool maintainers.
 
 While it is tempting to come up with clever syntax and novel lexing strategies to add a new 
 multi-line string syntax into the language, that is exactly the wrong approach here. Rather, 
