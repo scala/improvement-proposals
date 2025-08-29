@@ -569,6 +569,14 @@ not appear to be a problem in practice. We expect this will provide familiarity 
 anyone coming to Scala from other languages, and should be a relatively easy delimiter
 to lex/parse both in the compiler and in other ancilliary tools (e.g. syntax highlighters, 
 autoformatters, etc.) that should minimize the burden on downstream tool maintainers.
+We have prototype implementations of the new syntax in:
+
+- IntelliJ-Scala: https://github.com/JetBrains/intellij-scala/pull/702
+- Tree-Sitter-Scala https://github.com/tree-sitter/tree-sitter-scala
+
+Many of the other delimiters discussed below are based on indentation or other "2D" syntax,
+which would be much harder to implement in third-party lexers and parsers which overwhelmingly 
+work on a "1D" character stream with regexes or similar frameworks.
 
 While it is tempting to come up with clever syntax and novel lexing strategies to add a new 
 multi-line string syntax into the language, that is exactly the wrong approach here. Rather, 
