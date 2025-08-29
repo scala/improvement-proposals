@@ -572,6 +572,7 @@ autoformatters, etc.) that should minimize the burden on downstream tool maintai
 We have prototype implementations of the new syntax in:
 
 - IntelliJ-Scala: https://github.com/JetBrains/intellij-scala/pull/702
+- VsCode-Scala-Syntax https://github.com/scala/vscode-scala-syntax/pull/291
 - Tree-Sitter-Scala https://github.com/tree-sitter/tree-sitter-scala/pull/477
 
 Many of the other delimiters discussed below are based on indentation or other "2D" syntax,
