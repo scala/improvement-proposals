@@ -113,6 +113,19 @@ hear me moo
 '''
 ```
 
+Lastly, we _normalize newlines_ within the dedented string literals: regardless of whether the source 
+file uses `\n` or `\r` or `\r\n` or `\n\r` between those lines, the value of the `'''` string
+literal contains `\n` as the line separator. That should avoid a common problem where code such as that below may 
+compile or not compile depending on what operating system you are running in and how the code
+was acquired:
+
+```scala
+val x: "a\nb" = """a
+b"""
+```
+
+See [Newline Confusion](#newline-confusion) for more details on this
+
 Dedented string literals should be able to be used anywhere a normal `"` or triple `"""`
 can be used:
 
@@ -426,6 +439,32 @@ hear me moo""" =>
 }
 ```
 
+### Newline Confusion
+
+One problem with current triple-quoted strings is that the value depends on many factors outside
+of the code itself. For example consider the `"""` string below:
+
+```scala
+"""a
+b"""
+```
+
+What is the value of this string? You actually have no idea, and it depends on:
+|                                            | `git checkout` | Download Zip |
+|--------------------------------------------|----------------|--------------|
+| Written on Windows, Checked out on Windows |       "a\r\nb" |     "a\r\nb" |
+| Written on Unix, Checked out on Windows    |       "a\r\nb" |       "a\nb" |
+| Written on Windows, Checked out on Unix    |        "a\nb" |      "a\r\nb" |
+| Written on Unix, Checked out on Unix       |        "a\nb" |        "a\nb" |
+
+Thus `"""` multi-line strings are currently unusable for many use scenarios without
+first normalizing them, which we can see in many codebases:
+
+- [Ammonite's `Util.normalizeNewlines`](https://github.com/search?q=repo%3Acom-lihaoyi%2FAmmonite%20normalizenewlines&type=code)
+- [Mill's `.replaceAll("\r\n", "\n")](https://github.com/search?q=repo%3Acom-lihaoyi%2Fmill+replaceAll+%5Cr%5Cn&type=code)
+
+For `'''` strings, we normalize all newlines to `\n` regardless of the source file contents.
+
 ### Downstream Tooling Complexity
 
 The last major problem with the existing `""".stripMargin` pattern is that all tools
@@ -458,6 +497,8 @@ All this complexity would go away with the proposed de-dented multiline strings:
 than every downstream tool needing hard-coded support to be `stripMargin`-aware,
 tools will only need to generate `'''` multiline strings, which can then be pasted into
 user code with arbitrary indentation and they will do the right thing.
+
+
 
 ## Implementation
 
