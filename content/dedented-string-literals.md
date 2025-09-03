@@ -643,10 +643,11 @@ work on a "1D" character stream with regexes or similar frameworks:
   but do not support the kind of look-behind necessary for some of the indentation-dependent delimiters
   discussed below
   
-- IntelliJ-Scala seems to be the only IDE that can support more sophisticated indentation-based
-  grammars, with it's [Flex-based Grammar specifications](https://github.com/JetBrains/intellij-scala/blob/idea252.x/scala/scala-impl/src/org/jetbrains/plugins/scala/lang/lexer/core/_ScalaCoreLexer.flex).
+- IntelliJ-Scala seems to be the only IDE that may be able to support more sophisticated indentation-based
+  grammars, with it's [Flex-based Grammar specifications](https://github.com/JetBrains/intellij-scala/blob/idea252.x/scala/scala-impl/src/org/jetbrains/plugins/scala/lang/lexer/core/_ScalaCoreLexer.flex)
+  allowing stateful imperative Java code to be injected into the Lexer codegen.
   But doing so will be a lot more complicated than supporting `'''`-based delimiters that we did
-  in the prototype implementation above
+  in the prototype implementation above.
 
 While it is tempting to come up with clever syntax and novel lexing strategies to add a new 
 multi-line string syntax into the language, that is exactly the wrong approach here. Rather, 
