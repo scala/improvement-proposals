@@ -630,7 +630,23 @@ We have prototype implementations of the new syntax in:
 
 Many of the other delimiters discussed below are based on indentation or other "2D" syntax,
 which would be much harder to implement in third-party lexers and parsers which overwhelmingly 
-work on a "1D" character stream with regexes or similar frameworks.
+work on a "1D" character stream with regexes or similar frameworks:
+
+- VsCode-Scala-Syntax like other VSCode plugins relies on [TextMate Grammars](https://macromates.com/manual/en/language_grammars)
+  to lex your code for highlighting. TextMate Grammars rely on regexes to match tokens
+  do not support the more sophisticated indentation-dependent delimiters discussed below
+
+- Tree-Sitter-Scala relies on [Tree-Sitter's External Scanners](https://tree-sitter.github.io/tree-sitter/creating-parsers/4-external-scanners.html),
+  which are imperative C functions invoked when the starting delimiter is recognized and
+  imperatively lex the subsequent characters until deciding when to stop. External Scanners
+  support look-ahead, and support getting the current column offset (e.g. of the starting delimiter),
+  but do not support the kind of look-behind necessary for some of the indentation-dependent delimiters
+  discussed below
+  
+- IntelliJ-Scala seems to be the only IDE that can support more sophisticated indentation-based
+  grammars, with it's [Flex-based Grammar specifications](https://github.com/JetBrains/intellij-scala/blob/idea252.x/scala/scala-impl/src/org/jetbrains/plugins/scala/lang/lexer/core/_ScalaCoreLexer.flex).
+  But doing so will be a lot more complicated than supporting `'''`-based delimiters that we did
+  in the prototype implementation above
 
 While it is tempting to come up with clever syntax and novel lexing strategies to add a new 
 multi-line string syntax into the language, that is exactly the wrong approach here. Rather, 
