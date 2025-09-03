@@ -33,6 +33,18 @@ i am cow
 hear me moo
 ```
 
+Replacing the old equivalent:
+
+```scala
+> def helper = {
+    val x = """
+    |i am cow
+    |hear me moo
+    |""".stripMargin.trip.replaceAll("\r\n", "\n")
+    x
+  }
+```
+
 This is a common feature in other languages (see [Prior Art](#prior-art)) with exactly
 the same semantics, although unlike other languages Scala's `"""` already has an existing
 semantic, and so for this proposal the currently-unused `'''` syntax is chosen instead.
