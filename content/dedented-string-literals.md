@@ -40,7 +40,7 @@ Replacing the old equivalent:
     val x = """
     |i am cow
     |hear me moo
-    |""".stripMargin.trip.replaceAll("\r\n", "\n")
+    |""".stripMargin.trim.replaceAll("\r\n", "\n")
     x
   }
 ```
