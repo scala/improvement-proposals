@@ -475,6 +475,8 @@ first normalizing them, which we can see in many codebases:
 - [Ammonite's `Util.normalizeNewlines`](https://github.com/search?q=repo%3Acom-lihaoyi%2FAmmonite%20normalizenewlines&type=code)
 - [Mill's `.replaceAll("\r\n", "\n")](https://github.com/search?q=repo%3Acom-lihaoyi%2Fmill+replaceAll+%5Cr%5Cn&type=code)
 
+See also https://youtrack.jetbrains.com/issue/SCL-19643
+
 For `'''` strings, we normalize all newlines to `\n` regardless of the source file contents.
 
 ### Downstream Tooling Complexity
