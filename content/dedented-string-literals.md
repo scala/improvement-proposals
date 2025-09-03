@@ -136,7 +136,8 @@ val x: "a\nb" = """a
 b"""
 ```
 
-See [Newline Confusion](#newline-confusion) for more details on this
+See [Newline Confusion](#newline-confusion) for more details on this normalization, which is also done by
+the [Java Text Block syntax](#java).
 
 Dedented string literals should be able to be used anywhere a normal `"` or triple `"""`
 can be used:
@@ -1037,6 +1038,19 @@ String html = """
 > until at least one of the lines has a non-white space character in the leftmost position.
 > The position of the opening """ characters has no effect on the algorithm, but the position
 > of the closing """ characters does have an effect if placed on its own line.
+
+Java text blocks also support the _normalized newlines_ discussed in this proposal
+
+> Line terminators in the content are normalized from CR (`\u000D`) and CRLF (`\u000D\u000A`)
+> to LF (`\u000A`) by the Java compiler. This ensures that the string derived from the content
+> is equivalent across platforms, even if the source code has been translated to a platform
+> encoding (see `javac -encoding`).
+
+> For example, if Java source code that was created on a Unix platform (where the line terminator
+> is LF) is edited on a Windows platform (where the line terminator is CRLF), then without
+> normalization, the content would become one character longer for each line. Any algorithm
+> that relied on LF being the line terminator might fail, and any test that needed to verify
+> string equality with `String::equals` would fail.
 
 Java doesn't have extended delimiters like those proposed here, but requires you to escape
 `\"""` included in the text block using a backslash to prevent premature closing of the literal.
