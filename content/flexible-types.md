@@ -3,7 +3,7 @@ layout: sip
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-XX - Flexible Types for TASTy Format
+title: SIP-XX - Adding Flexible Types as Internal Type to Scala 3 Spec
 ---
 
 ## History
@@ -14,7 +14,7 @@ title: SIP-XX - Flexible Types for TASTy Format
 
 ## Summary
 
-This proposal specifies the encoding of Flexible Types in the TASTy (Typed Abstract Syntax Tree) format. Flexible Types are an Internal Type (see §3.1 of the Scala 3 language specification) introduced to improve interoperability with Java and legacy Scala code (compiled without explicit nulls) under explicit nulls (`-Yexplicit-nulls`). They allow reference types from Java libraries and legacy Scala code to be treated as either nullable or non-nullable depending on the usage.
+This proposal specifies the representation of Flexible Types and encoding in the TASTy (Typed Abstract Syntax Tree) format. Flexible Types are an Internal Type (see §3.1 of the Scala 3 language specification) introduced to improve interoperability with Java and legacy Scala code (compiled without explicit nulls) under explicit nulls (`-Yexplicit-nulls`). They allow reference types from Java libraries and legacy Scala code to be treated as either nullable or non-nullable depending on the usage.
 
 Flexible Types provide a type-safe bridge between implicit nullability and Scala's explicit null system, enabling smoother interoperation while maintaining safety guarantees where possible. This SIP formalizes their representation in TASTy to ensure consistent serialization and deserialization across compiler versions.
 
