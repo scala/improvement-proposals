@@ -77,13 +77,13 @@ Normalization: `(T?)? = T?` (flexible types do not nest).
 
 #### Conformance (Extension to §3.6.1)
 
-We extend the conformance relation (<:) with the following two derivation rules:
+We extend the conformance relation (<:) with the following three derivation rules:
 
 1. `S = U` and `T = U?`
 2. `S = Null` and `T = U?`
 3. `S = U?` and `T = U`
 
-We can also equivalence: `U =:= U?` and `U | Null =:= U?`, 
+We can also equivalence: `U =:= U?` and `U | Null =:= U?`,
 even though `U | Null` and `U` may be not equivalent under explicit nulls.
 
 #### Member Selection
@@ -102,10 +102,10 @@ Decoders that do not recognize `FLEXIBLEtype` may safely treat it as its underly
 
 #### Subtyping Rules in Compiler
 
-For implementors: the two conformance rules above are implemented in `TypeComparer.scala` as follows:
+The conformance cases above are implemented in `TypeComparer.scala` as follows:
 
 ```scala
-// In firstTry method 
+// In firstTry method
 case tp2: FlexibleType =>
   recur(tp1, tp2.lo)  // tp1 <: FlexibleType.lo (which is T | Null)
 
@@ -117,6 +117,35 @@ case tp1: FlexibleType =>
 #### Type Erasure (Extension to §3.8)
 
 Erasure is extended with: `|T?| = |T|` (i.e., identical to the erasure of its underlying type).
+
+This choice preserves both performance and runtime semantics compared to without explicit nulls:
+
+We only introduce flexible types for concrete reference types and for Java type parameters (i.e., when a generic `T` may be instantiated to a primitive value type). We do not create flexible types for raw primitive types in source.
+The only way a flexible type whose underlying type is a primitive type can arise is via passing a primitive type argument to a Java generic method.
+
+Example:
+
+```java
+// Java
+public class Jtest {
+  public static <T> T id(T t) { return t; }
+}
+```
+
+```scala
+// Scala (with explicit nulls enabled)
+val i = Jtest.id(1) // i is inferred as Int?
+val j = i + 1       // addition on Int
+
+// After erasure this behaves as if there were no flexible types:
+val i: Int = Int.unbox(Jtest.id(Int.box(i)))
+val j: Int = i + 1
+```
+
+The key point is that erasure does not introduce extra/less boxing beyond what would happen without flexible types.
+
+One mutable variable inference corner case may be considered: if we kept `i` as `Int?` at typer, then `i = null` would typecheck (since `Null <: Int?`) but cannot be type checked without explicit nulls.
+The post-processing step can be: stripping flexibility for inferred types whose underlying type is a primitive type, making `i`’s type `Int`, rejecting `i = null` statically.
 
 ### Compatibility
 
