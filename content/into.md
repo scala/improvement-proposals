@@ -162,7 +162,7 @@ as they are seen in a method body. Here is an example:
 Inside the `++` method, the `elems` parameter is of type `IterableOnce[A]`, not `into[IterableOne[A]]`. Hence, we can simply write `elems.iterator` to get at the `iterator` method of the `IterableOnce` class.
 
 Specifically, we erase all `into` wrappers in the local types of parameter types that appear in covariant or invariant position. Contravariant `into` wrappers are kept since these typically are on the parameters of function arguments.
-For case classes this means that class mirrors will use the transformed version of
+This means that class mirrors will use the transformed version of
 the parameter types, where `into` wrappers have been erased.
 
 ### Into Constructors in Type Aliases
