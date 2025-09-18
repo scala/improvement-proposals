@@ -152,7 +152,7 @@ Matching on a **supercase** (e.g., `Mammal`) is shorthand for matching all its s
 EnumDef         ::= 'enum' Id ':' EnumBody
 EnumBody        ::= { EnumCase }
 EnumCase        ::= 'case' EnumCaseDef
-EnumCaseDef     ::= Id [',' Ids] 
+EnumCaseDef     ::= Ids
                  | 'enum' Id ':' EnumBody
 Ids             ::= Id {',' Id}
 ```
