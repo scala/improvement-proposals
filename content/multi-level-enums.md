@@ -154,6 +154,7 @@ EnumBody        ::= { EnumCase }
 EnumCase        ::= 'case' EnumCaseDef
 EnumCaseDef     ::= Id [',' Ids] 
                  | 'enum' Id ':' EnumBody
+Ids             ::= Id {',' Id}
 ```
 
 
