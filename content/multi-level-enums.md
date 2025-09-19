@@ -77,7 +77,7 @@ The above syntax desugars to an enum tree with subtype relationships:
 sealed trait Animal
 
 object Animal:
-  sealed trait Mammal extends Animal
+  sealed abstract class Mammal extends Animal
   object Mammal:
     case object Dog extends Mammal 
     case object Cat extends Mammal
