@@ -51,7 +51,7 @@ enum Animal:
     case Sparrow, Pinguin
 ```
 
-Each nested `enum` case defines a group of related subcases. The **nested enum is itself a valid case** of the parent enum, and its members are **also valid cases**, allowing full exhaustivity and pattern matching.
+Each nested `enum` case defines a group of related subcases. The **nested enum is itself a valid subtype** of the parent enum, and its members are **valid cases** of the parent enum, allowing full exhaustivity and pattern matching.
 
 ### Specification
 
@@ -124,7 +124,7 @@ def isWarmBlooded(a: Animal): Boolean = a match
   case Fish   => false
 ```
 
-Matching on a **supercase** (e.g., `Mammal`) is shorthand for matching all its subcases.
+Matching on a **supercase type** (e.g., `m: Mammal`) is shorthand for matching all its subcases.
 
 #### `values`, `ordinal`, `valueOf`
 
@@ -216,9 +216,10 @@ enum JsValue {
     case Str(str: String)
     case Num(bigDecimal: BigDecimal)
     case JsNull
-    case enum Bool(boolean: Boolean) { 
-      case True extends Bool(true), 
-      case False extends Bool(false) }
+    case enum Bool(boolean: Boolean) {
+      case True extends Bool(true)
+      case False extends Bool(false)
+    }
   }
 }
 ```
