@@ -180,6 +180,51 @@ enum Shape:
   case Point
 ```
 
+#### Example 2: Moddeling size information
+
+```
+enum SizeInfo {
+  case Bounded(bound: Int)
+  case enum Atomic {
+    case Infinite
+    case Precise(n: Int)
+  }
+}
+```
+
+#### Example 3: Generalized `Either`
+
+```
+enum AndOr[+A, +B] {
+  case Both[+A, +B](left: A, right: B) extends AndOr[A, B]
+  case enum Either[+A, +B] extends AndOr[A, B] {
+    case Left[+A, +B](value: A) extends Either[A, B]
+    case Right[+A, +B](value: B) extends Either[A, B]
+  }
+}
+
+```
+
+#### Example 4:
+Grouping JSON values into primitives and non-primitives
+
+```
+enum JsValue {
+  case Obj(fields: Map[String, JsValue])
+  case Arr(elems: ArraySeq[JsValue])
+  case enum Primitive {
+    case Str(str: String)
+    case Num(bigDecimal: BigDecimal)
+    case JsNull
+    case enum Bool(boolean: Boolean) { 
+      case True extends Bool(true), 
+      case False extends Bool(false) }
+  }
+}
+```
+
+
+
 
 ### Compatibility
 - Fully backwards compatible: does not affect existing flat enums.
