@@ -119,7 +119,7 @@ Matching on intermediate enums is also allowed:
 
 ```scala
 def isWarmBlooded(a: Animal): Boolean = a match
-  case Mammal => true     // Covers Dog, Cat
+  case _: Mammal => true     // Covers Dog, Cat
   case Bird   => true     // Covers Sparrow, Pinguin
   case Fish   => false
 ```
