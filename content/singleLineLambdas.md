@@ -2,7 +2,7 @@
 layout: sip
 permalink: /sips/into.html
 stage: design
-presip-thread: https://contributors.scala-lang.org/t/pre-sip-allow-fully-implicit-conversions-in-scala-3-with-into/7105
+presip-thread: https://contributors.scala-lang.org/t/pre-sip-allow-single-line-lambdas-after/7258
 title: Allow single-line lambdas after `:`
 ---
 
