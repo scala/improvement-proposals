@@ -87,7 +87,7 @@ The implementation is quite straightforward. It does require a rich model of int
 
 In the Scala compiler, the lexer produces a stream of tokens that the parser consumes. The lexer can be seen as a pushdown automaton that maintains a stack of regions that record the environment of the current lexeme: whether it is enclosed in parentheses, brackets or braces, whether it is an indented block, or whether it is in the pattern of a case clause. There is a backchannel of information from parser to scanner where the parser can push a region on the stack.
 
-With the new scheme we need to enter a "single-line-lambda" region after a `:`, provided the `:` is followed by something that looks like a parameter section and a `=>`. Testing this condition can involve unlimited lookahead when a pair of matching parentheses enclosing a parameter section needs to be identified. If the test is positive, the parser instructs the lexer to create a new region representing a single line lambda. The region ends at the end of the line.
+With the new scheme we need to enter a "single-line-lambda" region after a `:`, provided the `:` is followed by something that looks like a parameter section and a `=>` or a `?=>`. Testing this condition can involve unlimited lookahead when a pair of matching parentheses enclosing a parameter section needs to be identified. If the test is positive, the parser instructs the lexer to create a new region representing a single line lambda. The region ends at the end of the line.
 
 ## Syntax Changes
 
