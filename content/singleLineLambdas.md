@@ -53,13 +53,21 @@ Seq((1, 2), (3, 4)).collect: case (a, b) if b > 2 = a
 (1, true).map: [T] => (x: T) => List(x)
 ```
 
+The syntax does not work for function values that do not contain a `=>` or `?=>`. For instance the following are illegal.
+
+```scala
+Seq((1, 2), (3, 4)).map: _ + _ // error
+
+Seq(1, 2, 3).map: plus1 // error
+```
+
 ## Detailed Spec
 
 A `:` means application if its is followed by one of the following:
 
  1. a line end and an indented block,
- 2. a parameter section, followed by `=>`, a line end and an indented block,
- 3. a parameter section, followed by `=>` and an expression on a single line,
+ 2. a parameter section, followed by `=>` or `=>?`, a line end and an indented block,
+ 3. a parameter section, followed by `=>` or `=>?` and an expression on a single line,
  4. a case clause, representing a single-case partial function.
 
 (1) and (2) is the status quo, (3) and (4) are new.
@@ -71,6 +79,23 @@ A `:` means application if its is followed by one of the following:
 )
 ```
 still means type ascription, no interpretation as function application is attempted.
+
+## Curried Multi-Line Lambdas
+
+Previously, we admitted only a single parameter section and an arrow before
+an indented block. We now also admit multiple such sections. So the following
+is now legal:
+
+```scala
+def fun(f: Int => Int => Int): Int = f(1)(2)
+
+fun: (x: Int) => y =>
+  x + y
+```
+
+In the detailed spec above, point (2) is modified as follows:
+
+2. one or more parameter sections, each followed by `=>` or `=>?`, and finally a line end and an indented block.
 
 ## Compatibility
 
@@ -92,14 +117,17 @@ With the new scheme we need to enter a "single-line-lambda" region after a `:`, 
 ## Syntax Changes
 
 ```
-ColonArgument  ::=  colon [LambdaStart]
+ColonArgument  ::=  colon {LambdaStart}
                     indent (CaseClauses | Block) outdent
                  |  colon LambdaStart expr ENDlambda
                  |  colon ExprCaseClause
 LambdaStart    ::=  FunParams (‘=>’ | ‘?=>’)
                  |  TypTypeParamClause ‘=>’```
 ```
-The second and third alternatives of `ColonArgument` are new, the rest is as before.
+Changes wrt existing syntax:
+
+ - In the first clause of `ColonArgument`, `[LambdaStart]` is now `{LambdaStart}`.
+ - The second and third alternatives of `ColonArgument` are new.
 
 Notes:
 
