@@ -95,7 +95,7 @@ fun: (x: Int) => y =>
 
 In the detailed spec above, point (2) is modified as follows:
 
-2. one or more parameter sections, each followed by `=>` or `=>?`, and finally a line end and an indented block.
+2. one or more parameter sections, each followed by `=>` or `?=>`, and finally a line end and an indented block.
 
 ## Compatibility
 
