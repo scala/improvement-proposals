@@ -10,9 +10,10 @@ title: Allow single-line lambdas after `:`
 
 ## History
 
-| Date          | Version            |
-|---------------|--------------------|
-| Sep 21, 2025  | Initial Draft      |
+| Date          | Version                        |
+|---------------|--------------------------------|
+| Sep 21, 2025  | Initial Draft                  |
+| Sep 25, 2025  | Curried Multi-Line Lambdas     |
 
 ## Summary
 
@@ -61,6 +62,11 @@ Seq((1, 2), (3, 4)).map: _ + _ // error
 Seq(1, 2, 3).map: plus1 // error
 ```
 
+Single-line lambdas can be nested, as in:
+```scala
+  xs.map: x => x.toString + xs.dropWhile: y => y > 0
+```
+
 ## Detailed Spec
 
 A `:` means application if its is followed by one of the following:
@@ -95,7 +101,7 @@ fun: (x: Int) => y =>
 
 In the detailed spec above, point (2) is modified as follows:
 
-2. one or more parameter sections, each followed by `=>` or `?=>`, and finally a line end and an indented block.
+2. _one or more_ parameter sections, _each_ followed by `=>` or `?=>`, and finally a line end and an indented block.
 
 ## Compatibility
 
@@ -113,6 +119,10 @@ The implementation is quite straightforward. It does require a rich model of int
 In the Scala compiler, the lexer produces a stream of tokens that the parser consumes. The lexer can be seen as a pushdown automaton that maintains a stack of regions that record the environment of the current lexeme: whether it is enclosed in parentheses, brackets or braces, whether it is an indented block, or whether it is in the pattern of a case clause. There is a backchannel of information from parser to scanner where the parser can push a region on the stack.
 
 With the new scheme we need to enter a "single-line-lambda" region after a `:`, provided the `:` is followed by something that looks like a parameter section and a `=>` or a `?=>`. Testing this condition can involve unlimited lookahead when a pair of matching parentheses enclosing a parameter section needs to be identified. If the test is positive, the parser instructs the lexer to create a new region representing a single line lambda. The region ends at the end of the line.
+
+## Alternatives
+
+Nested single-line lambdas could be disallowed if it is felt that they lead to unreadable code. This could be easily enforced by saying that single-line lambdas are not recognized in regions bounded by parentheses _or_ in regions representing single-line lambdas.
 
 ## Syntax Changes
 
