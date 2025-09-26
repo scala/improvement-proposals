@@ -67,7 +67,7 @@ A `:` means application if its is followed by one of the following:
 
  1. a line end and an indented block,
  2. a parameter section, followed by `=>` or `?=>`, a line end and an indented block,
- 3. a parameter section, followed by `=>` or `=>?` and an expression on a single line,
+ 3. a parameter section, followed by `=>` or `?=>` and an expression on a single line,
  4. a case clause, representing a single-case partial function.
 
 (1) and (2) is the status quo, (3) and (4) are new.
