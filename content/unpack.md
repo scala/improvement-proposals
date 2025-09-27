@@ -12,7 +12,7 @@ title: SIP-XX - Unpack Case Classes into Parameter Lists and Argument Lists
 
 | Date        | Version            |
 |-------------|--------------------|
-| 23 Aug 2024 | Initial Draft      |
+| 23 Aug 2025 | Initial Draft      |
 
 
 ## Summary
