@@ -806,6 +806,52 @@ val config = OtherConfig("www.example.com", 1000, 10000, true)
 downloadAsync(config*, retry = true)
 ```
 
+Each of the above scenarios is a concrete use case for `unpack` and `*`: I expect it to be common
+to use `unpack` at a definition site without `*` at the callsite, and similarly common to use `*`
+at a callsite without an `unpack` at the definition site. So we should support the two keywords
+being used separately or together, and not mandate than a `*` must correspond to an matching 
+`unpack`.
+
+### Binary Compatibility
+
+An important property of `unpack` is that it can be added or removed after the fact to an existing
+method without breaking binary compatibility. For example I should be able to go from existing
+methods with separate parameters To methods with a shared parameters via `unpack` without breaking
+binary compatibility:
+
+**Before**
+```scala
+
+def downloadSimple(url: String,
+                   connectTimeout: Int,
+                   readTimeout: Int) = doSomethingWith(config)
+def downloadAsync(url: String,
+                  connectTimeout: Int,
+                  readTimeout: Int,
+                  ec: ExecutionContext) = doSomethingWith(config)
+def downloadStream(url: String,
+                   connectTimeout: Int,
+                   readTimeout: Int) = doSomethingWith(config)
+```
+
+**After**
+```scala
+case class RequestConfig(url: String, 
+                         connectTimeout: Int,
+                         readTimeout: Int)
+
+def downloadSimple(unpack config: RequestConfig) = doSomethingWith(config)
+def downloadAsync(unpack config: RequestConfig, ec: ExecutionContext) = doSomethingWith(config)
+def downloadStream(unpack config: RequestConfig) = doSomethingWith(config)
+```
+
+This is important because it is an exceedingly common workflow as a library evolves: nobody
+knows up front exactly how all their parameter lists will evolve over time, and so nobody will
+be able to design the perfect `unpack` structure up front to decide which methods will need
+to share what parameters with which other methods. A user thus needs to be able to consolidate
+parameter lists into `unpack` parameters without breaking binary compatibility.
+
+
 ### Case Class Construction Semantics
 
 `unpack` may-or-may-not re-create a `case class` instance passed via `config*` to an 
