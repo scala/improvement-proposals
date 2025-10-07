@@ -194,16 +194,16 @@ This change creates no new compatibility issues and improves the compatibility o
    x match
      case `y` => true
      case _ => false
-  ```
-  `strictEquality` currently prevents this from compiling, and that is a feature, not a bug.
-  It should also be pointed out that adding a `: Any` type ascription will make all such
-  comparisons compile, regardless of the type of the pattern. This is unfortunate as type
-  ascriptions are normally a fairly safe and innocuous operation.
-  The "philosophical" justification for nevertheless allowing matching against `case object`
-  and singleton `enum case`s is that in an ideal world, we wouldn't even need to call `equals`
-  to test for equality with these – the only thing that is equal to a singleton is the
-  singleton itself, and hence we could in principle use reference equality for these cases
-  (the fact that we don't is a mere concession to backward compatibility).
+   ```
+   `strictEquality` currently prevents this from compiling, and that is a feature, not a bug.
+   It should also be pointed out that adding a `: Any` type ascription will make all such
+   comparisons compile, regardless of the type of the pattern. This is unfortunate as type
+   ascriptions are normally a fairly safe and innocuous operation.
+   The "philosophical" justification for nevertheless allowing matching against `case object`
+   and singleton `enum case`s is that in an ideal world, we wouldn't even need to call `equals`
+   to test for equality with these – the only thing that is equal to a singleton is the
+   singleton itself, and hence we could in principle use reference equality for these cases
+   (the fact that we don't is a mere concession to backward compatibility).
  
 ## Related Work
  - https://contributors.scala-lang.org/t/pre-sip-better-strictequality-support-in-pattern-matching/6781
