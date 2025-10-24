@@ -4,7 +4,7 @@ permalink: /sips/:title.html
 stage: design
 status: proposal
 presip-thread: https://contributors.scala-lang.org/t/end-markers-for-fewer-braces-blocks/6358
-title: SIP-NN - End Markers for Method Blocks
+title: SIP-77 - End Markers for Method Blocks
 ---
 
 **By: Oron Port (and AI agent)**
