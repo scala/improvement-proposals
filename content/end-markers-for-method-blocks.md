@@ -207,7 +207,7 @@ end foo
 
 ### Feature Interactions
 
-Fewer braces / optional braces: Complements existing end markers for definitions by covering application blocks and anonymous classes.
+Fewer braces / optional braces: Complements existing end markers for definitions by covering application blocks.
 
 ## Alternatives
 
