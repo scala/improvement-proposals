@@ -47,6 +47,7 @@ Seq((1, 2), (3, 4)).collect(
 )
 ```
 
+
 Multi-line `case` blocks should work with parens as well, just like multi-line function
 literals without `case` already work:
 
@@ -65,27 +66,6 @@ Seq((1, 2), (3, 4)).collect(
 )
 ```
 
-For consistency, we also allow parentheses to be used in `match` statements:
-
-```scala
-(1, 2) match (
-  case (a, b) if b > 2 => a
-  case _ => ???
-)
-```
-
-And we should allow multi-`case` single-line partial functions, just like you can already do
-with `match` today:
-
-```scala
-Seq((1, 2), (3, 4)).collect{ case (a, b) if b > 2 => a case (a, b) if a > 2 => b }
-Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a case (a, b) if a > 2 => b)
-
-// This already works today
-(1, 2) match { case (a, b) if b > 2 => a case _ => ??? }
-```
-
-
 Partial function literals should also be allowed to be defined without parentheses for
 single-line scenarios such as:
 
@@ -100,6 +80,31 @@ try ???
 catch case e: Exception => ???
 ```
 
+
+### Out of Scope
+
+For now, we do not allow parentheses to be used in `match` statements:
+
+```scala
+(1, 2) match (
+  case (a, b) if b > 2 => a
+  case _ => ???
+)
+```
+
+And we do not allow parentheses for multi-`case` single-line partial functions:
+
+```scala
+Seq((1, 2), (3, 4)).collect{ case (a, b) if b > 2 => a case (a, b) if a > 2 => b }
+Seq((1, 2), (3, 4)).collect(case (a, b) if b > 2 => a case (a, b) if a > 2 => b)
+Seq((1, 2), (3, 4)).collect(
+  case (a, b) if b > 2 => a
+  case (a, b) if a > 2 => b
+)
+```
+
+These could be added in future, but for now we left them out as they are edge cases
+that are not core to this proposal
 
 ## Motivation
 
