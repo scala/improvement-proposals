@@ -555,7 +555,7 @@ world
 ```
 
 
-All lines within a dedented `'''` string MUST be indented further than the closing
+All lines within a dedented `'''` string MUST NOT be indented less than the closing
 delimiter. That means this is illegal:
 
 ```scala
