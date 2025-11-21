@@ -49,7 +49,7 @@ Seq((1, 2), (3, 4)).map: (a, b) => a + b
 
 Seq((1, 2), (3, 4)).map: (a: Int, b: Int) => a + b
 
-Seq((1, 2), (3, 4)).collect: case (a, b) if b > 2 = a
+Seq((1, 2), (3, 4)).collect: case (a, b) if b > 2 => a
 
 (1, true).map: [T] => (x: T) => List(x)
 ```
@@ -69,7 +69,7 @@ Single-line lambdas can be nested, as in:
 
 ## Detailed Spec
 
-A `:` means application if its is followed by one of the following:
+A `:` means application if it is followed by one of the following:
 
  1. a line end and an indented block,
  2. a parameter section, followed by `=>` or `?=>`, a line end and an indented block,
