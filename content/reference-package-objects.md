@@ -1,9 +1,9 @@
 ---
 layout: sip
 permalink: /sips/:title.html
-stage: implementation
-status: under-review
-title: SIP-XX - Reference-able Package Objects
+stage: completed
+status: shipped
+title: SIP-68 - Reference-able Package Objects
 ---
 
 **By: Li Haoyi**
