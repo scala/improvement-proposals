@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 57
 permalink: /sips/:title.html
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-replace-non-sensical-unchecked-annotations/6342
 stage: completed
 status: shipped
-title: SIP-57 - Replace non-sensical @unchecked annotations
+title: Replace non-sensical @unchecked annotations
 ---
 
 **By: Martin Odersky and Jamie Thompson**

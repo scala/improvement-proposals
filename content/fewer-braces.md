@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 44
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-44 - Fewer Braces
+title: Fewer Braces
 ---
 
 **By: Martin Odersky**

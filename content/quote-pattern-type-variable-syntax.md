@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 53
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-53 - Quote pattern explicit type variable syntax
+title: Quote pattern explicit type variable syntax
 ---
 
 **By: Nicolas Stucki**

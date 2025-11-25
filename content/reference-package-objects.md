@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 68
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-68 - Reference-able Package Objects
+title: Reference-able Package Objects
 ---
 
 **By: Li Haoyi**

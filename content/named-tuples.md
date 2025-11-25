@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 58
 permalink: /sips/named-tuples.html
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-named-tuples/6403/164
 stage: completed
 status: shipped
-title: SIP-58 - Named Tuples
+title: Named Tuples
 ---
 
 **By: Martin Odersky**

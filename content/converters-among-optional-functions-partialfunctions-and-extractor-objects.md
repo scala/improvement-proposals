@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 38
 permalink: /sips/:title.html
 redirect_from: /sips/pending/converters-among-optional-functions-partialfunctions-and-extractor-object.html
 stage: completed
 status: shipped
-title: SIP-38 - Converters among optional Functions, PartialFunctions and extractor objects
+title: Converters among optional Functions, PartialFunctions and extractor objects
 ---
 
 > This proposal has been implemented in Scala 2.13.0 and Scala 3.0.0.

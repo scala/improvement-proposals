@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 27
 permalink: /sips/:title.html
 redirect_from: /sips/pending/trailing-commas.html
 stage: completed
 status: shipped
-title: SIP-27 - Trailing Commas
+title: Trailing Commas
 ---
 
 > This proposal has been shipped in Scala 2.12.2.

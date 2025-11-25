@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 18
 permalink: /sips/:title.html
 redirect_from: /sips/pending/modularizing-language-features.html
 stage: completed
 status: shipped
-title: SIP-18 - Modularizing Language Features
+title: Modularizing Language Features
 ---
 
 

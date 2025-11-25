@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 52
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-52 - Binary APIs
+title: Binary APIs
 ---
 
 **By: Author Nicolas Stucki**

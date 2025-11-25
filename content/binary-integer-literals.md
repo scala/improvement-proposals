@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 42
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-42 - Support Binary Integer Literals
+title: Support Binary Integer Literals
 ---
 
 **By: NthPortal**

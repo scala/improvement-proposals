@@ -1,10 +1,11 @@
 ---
 layout: sip
+number: 15
 permalink: /sips/:title.html
 redirect_from: /sips/pending/value-classes.html
 stage: completed
 status: shipped
-title: SIP-15 - Value Classes
+title: Value Classes
 ---
 
 **By: Martin Odersky and Jeff Olson and Paul Phillips and Joshua Suereth**

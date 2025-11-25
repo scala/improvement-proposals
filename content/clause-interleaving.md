@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 47
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-47 - Clause Interleaving
+title: Clause Interleaving
 ---
 
 **By: Quentin Bernet and Guillaume Martres and Sébastien Doeraene**

@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 54
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-54 - Multi-Source Extension Overloads
+title: Multi-Source Extension Overloads
 ---
 
 **By: Sébastien Doeraene and Martin Odersky**

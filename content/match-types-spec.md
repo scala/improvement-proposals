@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 56
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-56 - Proper Specification for Match Types
+title: Proper Specification for Match Types
 ---
 
 **By: Sébastien Doeraene**

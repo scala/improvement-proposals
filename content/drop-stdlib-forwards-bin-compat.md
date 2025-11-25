@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 51
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-51 - Drop Forwards Binary Compatibility of the Scala 2.13 Standard Library
+title: Drop Forwards Binary Compatibility of the Scala 2.13 Standard Library
 ---
 
 **By: Lukas Rytz**

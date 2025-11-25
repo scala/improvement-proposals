@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 46
 permalink: /sips/:title.html
 stage: completed
 status: shipped
-title: SIP-46 - Scala CLI as default Scala command
+title: Scala CLI as default Scala command
 ---
 
 **By: Krzysztof Romanowski and  Scala CLI team**

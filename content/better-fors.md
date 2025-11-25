@@ -1,9 +1,10 @@
 ---
 layout: sip
+number: 62
 permalink: /sips/:title.html
 stage: implementation
 status: under-review
-title: SIP-62 - For comprehension improvements
+title: For comprehension improvements
 ---
 
 **By: Kacper Korban (VirtusLab)**
