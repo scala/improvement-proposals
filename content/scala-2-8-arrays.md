@@ -1,10 +1,12 @@
 ---
+kind: SID
 layout: sip
+number: 7
 permalink: /sips/:title.html
 redirect_from: /sips/pending/scala-2-8-arrays.html
 stage: completed
 status: shipped
-title: SID-7 - Scala 2.8 Arrays
+title: Scala 2.8 Arrays
 ---
 
 *(This is an older SID, its original PDF can be found [here](https://www.scala-lang.org/sid/7))*
