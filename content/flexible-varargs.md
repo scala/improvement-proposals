@@ -53,16 +53,6 @@ val numbers2 = Seq(4, 5, 6)
 val total = sum(numbers1*, numbers2*) // 21
 ```
 
-And allow `Option`s to be unpacked, as it is very common to have some of the values
-you want to pass to a varargs be optional:
-
-```scala
-val number1: Int = 1
-val number2: Option[Int] = Some(2)
-val number3: Int = 3
-
-val total = sum(number1, number2*, number3) // 6
-```
 
 ## Motivation
 
@@ -226,9 +216,26 @@ may be valid. Thus there is no way to implement it efficiently in general, as it
 require an expensive (`O(2^n)`) backtracking search to try and find a valid assignment 
 of the elements that satisfies all sub-patterns. 
 
+### Not Support unpacking `Option`s
+
+
+We considered allowing `Option`s to be unpacked, as it is very common to have some of the values
+you want to pass to a varargs be optional:
+
+```scala
+val number1: Int = 1
+val number2: Option[Int] = Some(2)
+val number3: Int = 3
+
+val total = sum(number1, number2*, number3) // 6
+```
+
+For now we left it as out of scope, though that doesn't rule out some design and implementation 
+in future.
+
 ### Not supporting unpacking arbitrary `Iterable`s
 
-Given we propose to allow unpacking `Seq` and `Option`, its worth asking if we should 
+Given we propose to allow unpacking `Seq`, its worth asking if we should 
 support unpacking `Iterable` or `IterableOnce`. This proposal avoids those types for now,
 but if anyone wants to unpack them it's trivial to call `.toSeq`. For `Option`, we think
 that the use case of calling a vararg method with optional values is frequent enough that 
