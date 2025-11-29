@@ -7,7 +7,7 @@ status: draft
 
 # SIP-NN: Trailing Comma Syntax for Tuple Types and Values
 
-**By: [Author Name]**
+**By: [Ruslan Shevchenko]**
 
 ## History
 
@@ -104,15 +104,20 @@ def process(x: Any) = x match
 
 #### Grammar Changes
 
-The grammar for tuple types and tuple expressions is extended to allow an optional trailing comma:
+The grammar for tuple types and tuple expressions is extended to allow a trailing comma:
 
 ```
-TupleType     ::= '(' Types ','? ')'
-TupleExpr     ::= '(' Exprs ','? ')'
-TuplePattern  ::= '(' Patterns ','? ')'
+TupleType     ::= '(' ')' | '(' ',' ')' | '(' Type ',' ')' | '(' Type {',' Type} ','? ')'
+TupleExpr     ::= '(' ')' | '(' ',' ')' | '(' Expr ',' ')' | '(' Expr {',' Expr} ','? ')'
+TuplePattern  ::= '(' ')' | '(' ',' ')' | '(' Pattern ',' ')' | '(' Pattern {',' Pattern} ','? ')'
 ```
 
-Where the presence of a trailing comma after a single element forces tuple interpretation instead of parenthesized expression.
+The new/changed productions are:
+- `'(' ',' ')'` - empty tuple with explicit comma (equivalent to `EmptyTuple`)
+- `'(' Type ',' ')'` / `'(' Expr ',' ')'` / `'(' Pattern ',' ')'` - single-element tuple
+- `','?` at the end of multi-element tuples - optional trailing comma
+
+Note: Multi-line trailing commas are already supported by SIP-27 at the scanner level. This proposal extends trailing comma support to single-line contexts for tuples, where the trailing comma serves a semantic purpose (disambiguating single-element tuples from parenthesized expressions).
 
 #### Parsing Rules
 
@@ -162,6 +167,30 @@ Fully TASTy compatible:
 - The trailing comma is a parsing-only distinction, not preserved in TASTy
 
 ### Feature Interactions
+
+#### Interaction with Trailing Comma Tolerance (SIP-27)
+
+Scala supports trailing commas in multi-line contexts via SIP-27, where a trailing comma followed by a newline and closing delimiter is silently ignored. This proposal requires special handling to ensure trailing commas in tuple contexts are preserved rather than ignored.
+
+Without this handling, the following code would be ambiguous:
+
+```scala
+val x = (1,
+)
+```
+
+Should this be a single-element tuple `(1,)` or a parenthesized expression `(1)` with an ignored trailing comma? This proposal ensures it is consistently parsed as a single-element tuple, regardless of whitespace.
+
+Similarly, for multi-element tuples:
+
+```scala
+val y = (1, 2,
+)
+```
+
+The trailing comma is preserved and parsed as part of the tuple syntax.
+
+The implementation requires slightly more complex interaction between the scanner and parser to preserve trailing commas in tuple contexts while maintaining existing behavior elsewhere.
 
 #### Interaction with Pattern Matching
 
@@ -263,11 +292,17 @@ Continue requiring `*: EmptyTuple` or `Tuple1[A]` for single-element tuples.
 
 ### Proof of Concept
 
-A proof-of-concept implementation has been developed for the Scala 3 compiler:
-- **Pull Request**: https://github.com/scala/scala3/pull/24591
+Two proof-of-concept implementations have been developed for the Scala 3 compiler, available in the [rssh/dotty fork](https://github.com/rssh/dotty):
 
-The implementation modifies:
-- `compiler/src/dotty/tools/dotc/ast/untpd.scala` - `makeTupleOrParens` function
-- `compiler/src/dotty/tools/dotc/parsing/Parsers.scala` - Parser modifications for detecting trailing comma
+| Variant | Branch | Description |
+|---------|--------|-------------|
+| **Full** | [`feat/one-element-tuple-syntax`](https://github.com/rssh/dotty/tree/feat/one-element-tuple-syntax) | Allows trailing comma for all tuple sizes: `(a,)`, `(a, b,)`, `(,)` |
+| **Minimal** | [`feat/one-element-tuple-syntax-min`](https://github.com/rssh/dotty/tree/feat/one-element-tuple-syntax-min) | Only allows trailing comma where semantically meaningful: `(a,)`, `(,)` (multi-element `(a, b,)` is rejected) |
 
-The implementation adds approximately 50 lines of code to the parser and passes all existing tuple-related tests.
+- **Related PR (full variant)**: https://github.com/scala/scala3/pull/24591
+
+The implementations pass all existing tuple-related tests and include new tests for:
+- Single-element tuples: `(a,)`, `(Int,)`
+- Multi-element tuples with trailing comma: `(a, b,)`, `(Int, String,)` (full variant only)
+- Empty tuples: `(,)`
+- Multiline variants: `(a,<newline>)`, `(a, b,<newline>)`, `(,<newline>)`
