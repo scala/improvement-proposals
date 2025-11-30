@@ -67,8 +67,6 @@ There is also no concise syntax for empty tuple types - `EmptyTuple` must be wri
 val empty: EmptyTuple = EmptyTuple  // No shorthand syntax available
 ```
 
-Scala supports trailing commas in multi-line contexts (parameters, arguments, imports, tuples, etc.) when the closing delimiter is on its own line (SIP-27). However, there is no way to use a trailing comma to disambiguate single-element tuples from parenthesized expressions, since `(a,)` is a syntax error.
-
 ## Proposed Solution
 
 ### High-Level Overview
@@ -177,15 +175,6 @@ val x = (1,
 ```
 
 Should this be a single-element tuple `(1,)` or a parenthesized expression `(1)` with an ignored trailing comma? This proposal ensures it is consistently parsed as a single-element tuple, regardless of whitespace.
-
-Similarly, for multi-element tuples:
-
-```scala
-val y = (1, 2,
-)
-```
-
-The trailing comma is preserved and parsed as part of the tuple syntax.
 
 The implementation requires slightly more complex interaction between the scanner and parser to preserve trailing commas in tuple contexts while maintaining existing behavior elsewhere.
 
