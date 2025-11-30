@@ -13,6 +13,7 @@ status: draft
 
 | Date          | Version       |
 |---------------|---------------|
+| Nov 30th 2025 | Expanded grammar specification and SIP-27 interaction |
 | Nov 29th 2025 | Initial Draft |
 
 ## Summary
@@ -25,7 +26,7 @@ This change enables more ergonomic syntax when working with tuple-based APIs, pa
 
 ## Motivation
 
-### Problem: Single-Element Tuples Are Cumbersome
+### Single-Element Tuples Are Cumbersome
 
 Currently, there is no concise way to express a single-element tuple in Scala 3. The parenthesized notation `(A)` is parsed as a simple parenthesized expression, not a tuple:
 
@@ -58,17 +59,13 @@ class Component(using AppContextProvider[Dependency *: EmptyTuple])
 class Component(using AppContextProvider[(Dependency,)])
 ```
 
-### Problem: No Concise Syntax for Empty Tuple Type
+### No Concise Syntax for Empty Tuple Type
 
-There is no concise syntax for empty tuple types - `EmptyTuple` must be written explicitly:
+There is also no concise syntax for empty tuple types - `EmptyTuple` must be written explicitly:
 
 ```scala
 val empty: EmptyTuple = EmptyTuple  // No shorthand syntax available
 ```
-
-Note: `()` is `Unit`, not `EmptyTuple` - these are different types in Scala.
-
-### Problem: No Trailing Comma Support in Tuples
 
 Scala supports trailing commas in multi-line contexts (parameters, arguments, imports, tuples, etc.) when the closing delimiter is on its own line (SIP-27). However, there is no way to use a trailing comma to disambiguate single-element tuples from parenthesized expressions, since `(a,)` is a syntax error.
 
