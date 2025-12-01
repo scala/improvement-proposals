@@ -330,3 +330,4 @@ Multiple assigments have also been studied extensively in scienific literature (
 
 1. Edsger W. Dijkstra: A Discipline of Programming. Prentice-Hall 1976, ISBN 013215871X
 2. Ralph-Johan Back, Joakim von Wright: Refinement Calculus - A Systematic Introduction. Graduate Texts in Computer Science, Springer 1998, ISBN 978-0-387-98417-9
+
