@@ -2,8 +2,8 @@
 layout: sip
 number: 68
 permalink: /sips/:title.html
-stage: implementation
-status: under-review
+stage: completed
+status: accepted
 title: Reference-able Package Objects
 ---
 
