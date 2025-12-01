@@ -252,3 +252,4 @@ index b820dff8c3..29ba15bcdd 100644
  
    override def multiType: Array[TypeResult] = {
 ```
+
