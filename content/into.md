@@ -4,6 +4,7 @@ permalink: /sips/into.html
 stage: completed
 status: shipped
 number: 71
+shipped: 3.8.0
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-allow-fully-implicit-conversions-in-scala-3-with-into/7105
 title: Allow fully implicit conversions in Scala 3 with `into`
 ---
