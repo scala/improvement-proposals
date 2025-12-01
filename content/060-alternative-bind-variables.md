@@ -330,3 +330,4 @@ More investigation is needed to see how quoted patterns with bind variables in a
 
 Many thanks to **Zainab Ali** for proof-reading the draft, **Nicolas Stucki** and **Guillaume Martres** for their pointers on the dotty
 compiler codebase.
+
