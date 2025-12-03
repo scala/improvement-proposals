@@ -936,3 +936,4 @@ artifacts and can be used in your own projects already:
 
 - Compiler Plugin: `ivy"com.lihaoyi::unroll-plugin:0.1.12"`
 - Annotation: `ivy"com.lihaoyi::unroll-annotation:0.1.12"`
+
