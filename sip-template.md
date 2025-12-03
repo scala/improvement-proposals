@@ -1,7 +1,8 @@
 ---
 layout: sip
 number: NN
-permalink: /sips/:title.html
+permalink: /sips/:number
+redirect_from: /sips/:title.html
 stage: implementation
 status: waiting-for-implementation
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-foo-bar/9999
