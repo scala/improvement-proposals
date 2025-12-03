@@ -222,7 +222,6 @@ Parser error messages should be updated to suggest the trailing comma syntax whe
    - Option B (restrictive): Only allow trailing comma when meaningful (single-element) or multi-line (SIP-27 style)
    - Pro for B: More consistent with SIP-27, prevents pointless trailing commas
    - Pro for A: Simpler mental model, easier for code generation/macros
-   - Note: If Option A is chosen, a separate proposal could extend single-line trailing commas to other contexts (parameter lists, arguments, etc.) for consistency - but that's outside the scope of this SIP
 
 2. **Should trailing comma be allowed in single-element named tuples?**
    - Named tuples already support single-element syntax: `(name: String)` is unambiguous
