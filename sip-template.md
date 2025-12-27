@@ -1,10 +1,14 @@
 ---
 layout: sip
-permalink: /sips/:title.html
+number: NN
+permalink: /sips/:number.html
+redirect_from:
+  - /sips/:title.html
+  - /sips/:number
 stage: implementation
 status: waiting-for-implementation
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-foo-bar/9999
-title: SIP-NN - Title of the Proposal
+title: Title of the Proposal
 ---
 
 **By: Author A and Author B and Author C**
