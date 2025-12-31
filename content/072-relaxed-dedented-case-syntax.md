@@ -156,14 +156,15 @@ case "bar" => 2
 ```
 
 This makes the syntax of `case` statements more consistent across the language,
-so users do not need to remember special rules about whether indentation is required or not
+so users do not need to remember special rules about whether indentation is required or not.
 
 Note that the indented form remains valid. This proposal only adds additional valid
 syntax; it does not remove the existing indented form.
 
 ## Compatibility
 
-There are no backwards compatibility considerations
+There are no backwards compatibility considerations, as all syntax proposed is invalid today,
+and there are no semantic changes to the language
 
 ## Implementation
 
