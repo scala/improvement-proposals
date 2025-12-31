@@ -253,6 +253,35 @@ then y
 else z
 ```
 
+## Prior Art
+
+Haskell has long had top-level pattern matching at the level of methods, which is basically 
+identical to what we are proposing here: 
+
+```haskell
+pf :: String -> Int
+pf "foo" = 1
+pf "bar" = 2
+```
+
+```scala
+def pf: (String => Int) =
+case "foo" => 1
+case "bar" => 2
+```
+
+FSharp is another language with pattern amtching where de-dented `case`s (spelled `|`) are the
+default:
+
+```fsharp
+let filter123 x =
+    match x with
+    | 1 | 2 | 3 -> printfn "Found 1, 2, or 3!"
+    | a -> printfn "%d" a
+```
+
+Both Haskell and FSharp are indentation-delimited languages, similar to Scala 3.
+
 ## Compatibility
 
 There are no backwards compatibility considerations, as all syntax proposed is invalid today,
