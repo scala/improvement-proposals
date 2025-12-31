@@ -163,7 +163,8 @@ syntax; it does not remove the existing indented form.
 
 ## Considerations
 
-This change would make some kinds of hard-to-read code now possible, since consecutive 
+This change would make some kinds of hard-to-read code now possible, since consecutive blocks
+of `xs.map:`/`catch` would no longer be force to have varied indentation:
 
 ```scala
 xs.map:
