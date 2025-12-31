@@ -137,7 +137,7 @@ val pf: PartialFunction[String, Int] =
 
 ```scala
 // Partial function without extra indentation
-xs.collect:
+xs.map:
 case Some(x) => x
 case None => 0
 
@@ -160,6 +160,95 @@ so users do not need to remember special rules about whether indentation is requ
 
 Note that the indented form remains valid. This proposal only adds additional valid
 syntax; it does not remove the existing indented form.
+
+## Considerations
+
+This change would make some kinds of hard-to-read code now possible, since consecutive 
+
+```scala
+xs.map:
+case Some(x) => y
+case None => z
+xs.map:
+case Some(x) => y
+case None => z
+xs.map:
+case Some(x) => y
+case None => z
+```
+
+But such code is already possible with `match` statements:
+```scala
+x match
+case Some(x) => y
+case None => z
+x match
+case Some(x) => y
+case None => z
+x match
+case Some(x) => y
+case None => z
+```
+
+Or `if`/`then`/`else`:
+
+```scala
+if x
+then y
+else z
+if x
+then y
+else z
+if x
+then y
+else z
+```
+
+So this proposal would not result in any novel ways of writing confusing code. Formatting
+the code to be readable is the job of the developer (or the developer's `.scalafmt.conf`),
+as has always been the case:
+
+```scala
+xs.map:
+case Some(x) => y
+case None => z
+
+xs.map:
+case Some(x) => y
+case None => z
+
+xs.map:
+case Some(x) => y
+case None => z
+```
+
+```scala
+x match
+case Some(x) => y
+case None => z
+
+x match
+case Some(x) => y
+case None => z
+
+x match
+case Some(x) => y
+case None => z
+```
+
+```scala
+if x
+then y
+else z
+
+if x
+then y
+else z
+
+if x
+then y
+else z
+```
 
 ## Compatibility
 
