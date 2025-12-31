@@ -280,7 +280,9 @@ let filter123 x =
     | a -> printfn "%d" a
 ```
 
-Both Haskell and FSharp are indentation-delimited languages, similar to Scala 3.
+Both Haskell and FSharp are indentation-delimited languages, similar to Scala 3, so there is
+precedence for this kind of non-indented `case` statements in languages with similar syntax 
+and semantics.
 
 ## Compatibility
 
