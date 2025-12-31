@@ -177,7 +177,9 @@ case Some(x) => y
 case None => z
 ```
 
-But such code is already possible with `match` statements:
+But such code is already possible with `match` statements, so this proposal would not be adding
+any new ways of writing hard-to-read code:
+
 ```scala
 x match
 case Some(x) => y
