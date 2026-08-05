@@ -1,9 +1,13 @@
 ---
 layout: sip
 number: 61
-permalink: /sips/:title.html
+permalink: /sips/:number.html
+redirect_from:
+  - /sips/:number
+  - /sips/:title.html
 stage: completed
-status: accepted
+status: shipped
+shipped: 3.10.0
 title: Unroll Default Arguments for Binary Compatibility
 ---
 
@@ -933,4 +937,3 @@ artifacts and can be used in your own projects already:
 
 - Compiler Plugin: `ivy"com.lihaoyi::unroll-plugin:0.1.12"`
 - Annotation: `ivy"com.lihaoyi::unroll-annotation:0.1.12"`
-
