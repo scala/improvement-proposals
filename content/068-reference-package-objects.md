@@ -1,9 +1,13 @@
 ---
 layout: sip
 number: 68
-permalink: /sips/:title.html
+permalink: /sips/:number.html
+redirect_from:
+  - /sips/:number
+  - /sips/:title.html
 stage: completed
-status: accepted
+status: shipped
+shipped: 3.10.0
 title: Reference-able Package Objects
 ---
 
@@ -252,4 +256,3 @@ index b820dff8c3..29ba15bcdd 100644
  
    override def multiType: Array[TypeResult] = {
 ```
-
