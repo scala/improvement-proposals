@@ -5,7 +5,7 @@ permalink: /sips/:number.html
 redirect_from:
   - /sips/:number
   - /sips/:title.html
-stage: pre-sip
+stage: design
 status: submitted
 presip-thread: https://contributors.scala-lang.org/t/pre-sip-bindings-in-while-and-if-conditions/7567
 title: Bindings in `while` and `if` Conditions
@@ -236,10 +236,6 @@ have to apply:
 - The body or the branches refer to a definition of the same name from an enclosing scope.
 - The type checker does not catch the change. In many cases, the two definitions have
   different types, and the program no longer compiles.
-
-In addition, the compiler will emit a warning during a transitional phase whenever a name
-in the body or the branches refers to a definition in the condition block that shadows a
-definition from an enclosing scope.
 
 **Binary and TASTy compatibility, macros.** The proposal does not add new kinds of trees,
 and the condition of a `while` or `if` remains an ordinary expression. Instead, the
